@@ -229,20 +229,40 @@ function makeHorse(h){
   return group;
 }
 function makeTrees(parent,trees){
-  const n=trees.length;
-  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.62,.9,3.8,6),mat(colors.timber),n);
-  const crowns=new THREE.InstancedMesh(new THREE.ConeGeometry(4.8,10,7),mat(colors.tree),n);
-  const crowns2=new THREE.InstancedMesh(new THREE.ConeGeometry(3.7,7,7),mat(0x63904b),n);
-  const dummy=new THREE.Object3D();
+  // Duas silhuetas: copas arredondadas de mata brasileira e coníferas de campos altos.
+  // Instancing: poucas chamadas de desenho mesmo com mais de mil árvores.
+  const broad=trees.filter((_,i)=>i%5<3);
+  const conifers=trees.filter((_,i)=>i%5>=3);
+  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.65,.93,3.9,6),mat(colors.timber),trees.length);
+  const round=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),mat(0x648c50),broad.length);
+  const round2=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),mat(0x789f5b),broad.length);
+  const cones=new THREE.InstancedMesh(new THREE.ConeGeometry(4.4,9.3,7),mat(0x467442),conifers.length);
+  const cones2=new THREE.InstancedMesh(new THREE.ConeGeometry(3.4,7,7),mat(0x55834a),conifers.length);
+  const dummy=new THREE.Object3D();let nb=0,nc=0;
   trees.forEach((tree,i)=>{
-    const scale=tree.s*.95;
-    dummy.position.set(tree.x,1.8*scale,tree.y);dummy.scale.set(scale,scale,scale);dummy.updateMatrix();
-    trunks.setMatrixAt(i,dummy.matrix);
-    dummy.position.y=7.8*scale;dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
-    dummy.position.y=11.2*scale;dummy.updateMatrix();crowns2.setMatrixAt(i,dummy.matrix);
+    const scale=(tree.s||1)*(i%6===0?.85:1);
+    dummy.position.set(tree.x,1.9*scale,tree.y);
+    dummy.rotation.set(0,0,0);
+    dummy.scale.set(scale,scale,scale);
+    dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
+    if(i%5<3){
+      dummy.position.set(tree.x,7.0*scale,tree.y);
+      dummy.scale.set(4.8*scale,3.65*scale,4.5*scale);
+      dummy.updateMatrix();round.setMatrixAt(nb,dummy.matrix);
+      dummy.position.set(tree.x-1.25*scale,8.3*scale,tree.y+.6*scale);
+      dummy.scale.set(3.1*scale,2.8*scale,3.5*scale);
+      dummy.updateMatrix();round2.setMatrixAt(nb,dummy.matrix);
+      nb++;
+    }else{
+      dummy.position.set(tree.x,7.4*scale,tree.y);
+      dummy.scale.set(scale,scale,scale);
+      dummy.updateMatrix();cones.setMatrixAt(nc,dummy.matrix);
+      dummy.position.set(tree.x,10.5*scale,tree.y);
+      dummy.updateMatrix();cones2.setMatrixAt(nc,dummy.matrix);
+      nc++;
+    }
   });
-  trunks.instanceMatrix.needsUpdate=true;crowns.instanceMatrix.needsUpdate=true;crowns2.instanceMatrix.needsUpdate=true;
-  parent.add(trunks,crowns,crowns2);
+  for(const m of [trunks,round,round2,cones,cones2]){m.instanceMatrix.needsUpdate=true;parent.add(m)}
 }
 function drawWorld(s){
   const root=new THREE.Group(); scene.add(root);
