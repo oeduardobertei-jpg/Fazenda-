@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.6
+# Fazenda Viva — versão 0.8.7
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=086
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=087
 
 ## Novidades da série 0.8
 
@@ -70,6 +70,18 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - **Partida nova em cada abertura:** desativados `load()` e `save()`, assim o jogo não carrega nem grava progresso automaticamente. O armazenamento antigo só será excluído caso o usuário confirme o reset.
 - O HUD agora usa `🏡 estruturas · 👷 obras · 👨‍🌾 NPCs`, com texto mais curto para o Android.
 
+### 0.8.7 — circulação de trabalhadores, produtividade e caminhos rurais
+- **Navegação A\*** local em cada fazenda: trabalhadores usam uma grade de 4 unidades, evitam instalações, respeitam os limites das glebas e não cruzam as quinas de edifícios.
+- **Planejamento sob demanda:** grades de circulação são reutilizadas; mudanças na localização das construções atualizam as áreas bloqueadas. Caso um caminho fique ocupado por uma obra, o funcionário procura uma nova rota.
+- **Três tarefas com conclusão:** tratadores atendem cocheiras e piquetes, agricultores visitam galpões e piquetes, administradores percorrem casas e instalações. Cada funcionário executa tarefas em pontos acessíveis e registra os serviços concluídos.
+- **Impacto na economia:** serviços criam bônus temporários e limitados na produção equestre, agrícola e na administração. Três trabalhadores por cabanha também geram folha salarial em cada ciclo. O painel de construção detalha as tarefas, bônus e custos.
+- **Trilhas orgânicas internas:** são geradas entre entrada, sede e instalações prontas usando os mesmos corredores acessíveis. As trilhas aparecem tanto em Canvas 2D quanto no Three.js 3D; no 3D são instanciadas para reduzir chamadas de desenho.
+- **Localizar funcionários:** o botão `Construir → Ver próximo trabalhador` percorre os três NPCs da sua cabanha e mostra função, estado e serviços executados.
+- **Hotfixes de estabilidade:** remoção de três chamadas remanescentes a `save()` que podiam interromper a simulação, construção ou compra após a desativação dos salvamentos na 0.8.6.
+- **Sem persistência:** continua sendo uma partida nova ao reabrir o jogo, conforme solicitado.
+
+**Limites atuais:** a navegação é local a cada propriedade e as tarefas têm impactos simplificados na economia. Funcionários não operam máquinas reais nem atravessam a região para negociar; isso pertence a fases posteriores. Rotas e construções ainda devem ser conferidas visualmente em Android/WebGL.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -81,7 +93,7 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - **Construir:** selecionar uma estrutura e tocar em terreno válido.
 - **Comprar cavalo:** precisa de recursos e capacidade nas cocheiras.
 - **Modo 2D:** trocar do WebGL para Canvas de compatibilidade.
-- **Construir → Ver trabalhadores:** aproxima a câmera dos funcionários da sua propriedade.
+- **Construir → Ver próximo trabalhador:** aproxima a câmera dos funcionários da sua propriedade.
 - **Construir → Reiniciar do dia 1:** descarta a partida atual e recarrega um novo jogo (com confirmação).
 
 ## Estrutura
@@ -97,6 +109,6 @@ Executados testes automatizados com simulação de centenas de dias, conferindo 
 
 ## Próximas entregas
 
-0.8.7 — caminhos de serviço, trabalhadores com tarefas, navegação sem atravessar estruturas e QA visual mobile;
+0.8.8 — vegetação regional, acabamento de caminhos, tarefas visíveis no mapa e QA visual mobile;
 0.9 — HUD, usabilidade, progressão, economia e testes longos;
 1.0 — integração e critérios de estabilidade.
