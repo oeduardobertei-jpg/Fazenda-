@@ -491,9 +491,9 @@ function syncTrails(s){
   }
 }
 function scatterPasture(s){
-  const trailCount=(s.trails||[]).length;
+  // Revalidar o tapete vegetal também quando as rotas mudarem mantendo a contagem.
   const signature=s.buildings.map(b=>b.x.toFixed(1)+','+b.y.toFixed(1)+','+b.type).join(';')
-    +'|'+trailCount;
+    +'|'+trailStamp3D;
   if(grassStamp3D===signature)return;
   grassStamp3D=signature;
   for(const m of [...grassLayer.children])grassLayer.remove(m);
