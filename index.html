@@ -60,6 +60,20 @@ let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,lowGraphics=false,paused=false,speed=1
 ];
 let ruralEvent=null,nextRuralEventDay=101;
 const ruralEventHistory=[];
+function updateRuralEvent(){
+ if(ruralEvent&&day>=ruralEvent.endsAt){
+   ruralEventHistory.push({name:ruralEvent.name,begin:ruralEvent.startDay,end:day});
+   if(ruralEventHistory.length>12)ruralEventHistory.shift();
+   ruralEvent=null;
+ }
+ if(!ruralEvent&&day>=nextRuralEventDay){
+   const kind=ruralEvents[Math.floor(rnd()*ruralEvents.length)];
+   ruralEvent={...kind,startDay:day,endsAt:day+45,claimed:false};
+   nextRuralEventDay=day+160+Math.floor(rnd()*9)*5;
+   $('news').textContent='📣 Evento regional: '+kind.name+'. Veja Gestão → Mercado.';
+ }
+}
+
 function marketIndex(type){
  const m=ruralEvent?(type==='horse'?ruralEvent.horseFactor:ruralEvent.grainFactor):1;
  return Math.min(1.7,Math.max(.65,market[type]*m));
