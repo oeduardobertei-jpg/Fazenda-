@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.1 — rede viária coerente e locomoção compartilhada 2D/3D.
+/* Fazenda Viva 0.9.2 — locomoção viária dos NPCs, entradas rurais e animação equestre refinada.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -305,13 +305,24 @@ function makeHorse(h){
     mesh.position.set(x,py,z);parent.add(mesh);return mesh;
   };
   part(group,3.8,1.5,1.4,0,2.3,0);
+  // Peito e garupa dão uma silhueta equestre mais identificável sem esqueleto pesado.
+  part(group,.94,1.62,1.33,1.22,2.26,0);
+  part(group,1.22,1.61,1.43,-1.18,2.26,0);
+  box(group,2.25,.11,1.16,-.18,3.12,0,0x9e8060);
   const neckPivot=new THREE.Group();
   neckPivot.position.set(1.45,2.85,0);group.add(neckPivot);
   part(neckPivot,1.12,1.84,1.0,0,.20,-.05);
   part(neckPivot,1.19,.9,1.1,.40,.95,0);
   box(neckPivot,.20,1.2,.72,-.10,.7,-.07,0x48372e);
-  for(const z of [-.27,.27])
-    box(neckPivot,.23,.55,.23,.60,1.50,z,0x4f3b31);
+  // Olhos e focinho tornam o movimento do pescoço perceptível de lado.
+  box(neckPivot,.32,.31,.83,1.02,.79,0,0xa38c75);
+  for(const side of [-1,1]){
+    box(neckPivot,.13,.15,.10,.79,1.12,side*.58,0x2f251f);
+    box(neckPivot,.16,.11,.10,1.16,.70,side*.43,0x43352f);
+    box(neckPivot,.23,.55,.23,.60,1.50,side*.27,0x4f3b31);
+  }
+  for(let i=0;i<4;i++)
+    box(neckPivot,.27,.25,.52,-.52,.90-i*.31,-.03,0x493b31);
   const legs=[];
   for(const x of [-1.25,1.25])for(const z of [-.48,.48]){
     const pivot=new THREE.Group();
@@ -323,6 +334,10 @@ function makeHorse(h){
   const tailPivot=new THREE.Group();
   tailPivot.position.set(-2.0,2.58,0);group.add(tailPivot);
   box(tailPivot,.37,1.2,.4,-.12,-.58,0,0x49382c);
+  // Variação discreta por indivíduo, mas mantém a leitura das pelagens em zoom.
+  if(h.id%4===0){
+    box(group,.46,.16,1.12,.58,3.10,0,0xcbb897);
+  }
   group.userData.horse=h;
   group.userData.legs=legs;
   group.userData.neck=neckPivot;
@@ -671,7 +686,7 @@ function sync(s){
         -.60+Math.sin(h.phase*.32)*.06:
         walking?Math.sin(gait*.5)*.08:-.05;
     if(mesh.userData.tail)
-      mesh.userData.tail.rotation.z=-.18+Math.sin(h.phase*.48+h.id)*.10;
+      mesh.userData.tail.rotation.z=-.18+Math.sin(h.phase*.48+h.id)*.14;
   });
   if(workerLayer.children.length!==s.farmers.length){
     for(const child of [...workerLayer.children])workerLayer.remove(child);
