@@ -1212,6 +1212,20 @@ $('manageBody').onclick=e=>{
   if(action==='buyHorse'){
     $('buyhorse').onclick();renderManagement(true);return;
   }
+  if(action==='breedHorse'){
+    breedHorses();renderManagement(true);return;
+  }
+  if(action==='joinEvent'){
+    joinRuralEvent();renderManagement(true);return;
+  }
+  if(action==='sellHorse'){
+    const animal=ownHorses()[index];
+    if(!animal)return;
+    if(confirm('Vender '+animal.name+' por '+brl(horseSalePrice(animal))+'?')){
+      sellHorse(animal);renderManagement(true);
+    }
+    return;
+  }
   const obj=action==='findHorse'?ownHorses()[index]:action==='findWorker'?ownFarmers()[index]:null;
   if(!obj)return;
   panX=obj.x;panY=obj.y;zoom=3.45;overview=false;
