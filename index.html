@@ -818,6 +818,79 @@ let reputation=0,manageTab='resumo',lastManagementRender=0;
 const ownBuildings=()=>buildings.filter(b=>b.o===owners[0]);
 const ownHorses=()=>horses.filter(h=>h.o===owners[0]);
 const ownFarmers=()=>farmers.filter(f=>f.o===owners[0]);
+
+const pregnancies=[];
+function breedingPair(o=owners[0]){
+  const herd=horses.filter(h=>h.o===o);
+  if(herd.length+pregnancies.filter(p=>p.o===o).length>=capacity(o))return null;
+  const mothers=herd.filter(h=>h.sex==='femea'&&horseAge(h)>=3&&
+    !pregnancies.some(p=>p.motherId===h.id)&&
+    (h.lastBreedingDay===undefined||day-h.lastBreedingDay>=365));
+  const fathers=herd.filter(h=>h.sex==='macho'&&horseAge(h)>=3);
+  if(!mothers.length||!fathers.length)return null;
+  const candidates=[];
+  for(const mother of mothers)for(const father of fathers){
+    // Não acasalar pais/filhos ou irmãos com parentes coincidentes.
+    const ancestors=new Set([mother.id,mother.motherId,mother.fatherId].filter(Number.isInteger));
+    if(ancestors.has(father.id)||[father.motherId,father.fatherId]
+      .some(id=>Number.isInteger(id)&&ancestors.has(id)))continue;
+    candidates.push({mother,father,score:mother.quality+father.quality+
+      (mother.breed===father.breed?12:0)});
+  }
+  return candidates.sort((a,b)=>b.score-a.score)[0]||null;
+}
+function breedHorses(o=owners[0]){
+  const pair=breedingPair(o);
+  if(!pair){$('status').textContent='🐎 Reprodução exige macho e fêmea adultos, espaço livre e linhagem compatível';return false}
+  if(o.cash<850){$('status').textContent='💰 Reprodução: são necessários R$ 850';return false}
+  o.cash-=850;
+  pair.mother.lastBreedingDay=day;
+  pregnancies.push({o,motherId:pair.mother.id,fatherId:pair.father.id,
+    fatherQuality:pair.father.quality,fatherBreed:pair.father.breed,
+    fatherCoat:pair.father.coat,dueDay:day+330});
+  $('news').textContent='🐎 Reprodução programada: '+pair.mother.name+
+    ' × '+pair.father.name+'. Nascimento previsto para o dia '+(day+330)+'.';
+  $('status').textContent='🐴 Linhagem registrada; baia reservada para o futuro potro.';
+  refresh();
+  return true;
+}
+function processBirths(){
+  for(let i=pregnancies.length-1;i>=0;i--){
+    const pending=pregnancies[i];
+    if(day<pending.dueDay)continue;
+    const mother=horses.find(h=>h.id===pending.motherId);
+    if(!mother){pregnancies.splice(i,1);continue}
+    if(horses.filter(h=>h.o===pending.o).length>=capacity(pending.o))continue;
+    const foal=makeHorse(pending.o);
+    foal.age=0;foal.bornDay=day;
+    foal.quality=Math.max(35,Math.min(96,Math.round(
+      (mother.quality+pending.fatherQuality)/2+(rnd()-.5)*14)));
+    foal.breed=mother.breed===pending.fatherBreed?mother.breed:
+      (rnd()<.5?mother.breed:pending.fatherBreed);
+    foal.coat=rnd()<.5?mother.coat:pending.fatherCoat;
+    foal.motherId=mother.id;foal.fatherId=pending.fatherId;
+    foal.name='Potro '+horseNames[(foal.id-1)%horseNames.length]+' '+foal.id;
+    horses.push(foal);
+    pregnancies.splice(i,1);
+    horseSlotsKey='';
+    $('news').textContent='🐴 Nasceu '+foal.name+' na '+pending.o.name+
+      ', qualidade '+foal.quality+'/100.';
+    $('status').textContent='🌱 Um novo potro nasceu! Veja a genealogia em Gestão → Cavalos.';
+  }
+}
+function sellHorse(h){
+  if(!h||h.o!==owners[0])return false;
+  if(pregnancies.some(p=>p.motherId===h.id)){
+    $('status').textContent='🐎 A égua tem reprodução em andamento e não pode ser vendida.';return false;
+  }
+  const price=horseSalePrice(h),index=horses.indexOf(h);
+  if(index<0)return false;
+  horses.splice(index,1);owners[0].cash+=price;horseSlotsKey='';
+  $('status').textContent='💰 '+h.name+' vendido por '+brl(price)+'.';
+  $('news').textContent='📈 Negociação concluída: '+h.name+' · '+brl(price)+'.';
+  refresh();return true;
+}
+
 function cabanhaAssets(o=owners[0]){
   const construction=buildings.filter(b=>b.o===o).reduce((n,b)=>{
     const base=defs[b.type]?.cost||0;
