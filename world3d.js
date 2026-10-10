@@ -401,34 +401,13 @@ function sync(s){
     for(const child of [...horseLayer.children])horseLayer.remove(child);
     for(const h of s.horses)horseLayer.add(makeHorse(h));
   }
-  // Cada cavalo fica no piquete ou perto da cocheira da própria cabanha.
-  // Distribuir por baia, não pela origem global, evita animais soltos em estradas.
-  const groups=new Map();
-  s.horses.forEach((h,i)=>{if(!groups.has(h.o))groups.set(h.o,[]);groups.get(h.o).push(i)});
-  for(const [owner,indices] of groups){
-    const paddocks=s.buildings.filter(b=>b.o===owner&&b.type==='paddock');
-    const stables=s.buildings.filter(b=>b.o===owner&&b.type==='stable');
-    indices.forEach((horseIndex,j)=>{
-      const h=s.horses[horseIndex],mesh=horseLayer.children[horseIndex];
-      if(!mesh)return;
-      let x,z;
-      if(paddocks.length){
-        const paddock=paddocks[Math.floor(j/5)%paddocks.length];
-        const slot=j%5,cols=[[-.23,-.24],[.22,-.24],[-.23,.22],[.22,.22],[0,0]];
-        const space=cols[slot];
-        x=paddock.x+paddock.w*space[0]+Math.cos(h.phase*.23+j)*.8;
-        z=paddock.y+paddock.h*space[1]+Math.sin(h.phase*.23+j)*.6;
-      }else if(stables.length){
-        const stable=stables[j%stables.length];
-        x=stable.x+(j%3-1)*4;
-        z=stable.y+stable.h*.69+2.3+Math.floor(j/3)*4;
-      }else{
-        x=owner.x+Math.cos(j*2.4)*18;z=owner.y+Math.sin(j*2.4)*15;
-      }
-      mesh.position.set(x,.1,z);
-      mesh.rotation.y=Math.sin(h.phase*.27+j)*.4;
-    });
-  }
+  // A simulação define as posições de cada cavalo para evitar choques 2D/3D.
+  // Não recalcular slots em cada renderizador.
+  s.horses.forEach((h,i)=>{
+    const mesh=horseLayer.children[i];if(!mesh)return;
+    mesh.position.set(h.x??h.o.x,.12,h.y??h.o.y);
+    mesh.rotation.y=h.heading||0;
+  });
 }
 function updateLabels(s){
   for(let i=0;i<s.owners.length;i++){
