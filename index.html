@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.0</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.1</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#17271c;color:#fff;font:14px system-ui;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#hud{position:fixed;top:10px;left:10px;right:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;pointer-events:none}.pill{background:#152d25e8;border:1px solid #7a9877;border-radius:12px;padding:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#bottom{position:fixed;bottom:12px;left:8px;right:8px;display:flex;gap:5px}button{background:#254d38;color:white;border:1px solid #93b58c;border-radius:9px;padding:12px 6px;flex:1;font:inherit}#panel{position:fixed;bottom:76px;left:8px;right:8px;background:#183628f2;border:1px solid #7a9877;border-radius:14px;padding:12px;max-height:50dvh;overflow:auto}#panel[hidden]{display:none}#actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}#status{position:fixed;top:102px;left:8px;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none;transition:opacity .4s}#error{position:fixed;top:35%;left:12px;right:12px;background:#4a2828;border:2px solid orange;border-radius:12px;padding:15px}#error[hidden]{display:none}@media(max-width:450px){button{font-size:12px;padding:11px 3px}.pill{font-size:11px}}#game{position:fixed;inset:0;z-index:0}
 #hud,#status,#economy{z-index:5}
 #bottom{z-index:6}
@@ -38,7 +38,7 @@
 @media(max-width:450px){#management{bottom:73px;max-height:79dvh}#manageBody{padding:8px 10px 14px}
 #manageBody .mgValue{font-size:16px}#management .manageHead strong{font-size:15px}}
 </style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.9.0</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Sua cabanha · Construção e gestão</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button" style="display:block;width:100%;margin-top:7px">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" style="display:block;width:100%;margin-top:7px" aria-pressed="false">⚙️ Gráficos: normal</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Menu</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-label="Gestão da cabanha" aria-modal="true" role="dialog" hidden>
+<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.9.1</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Sua cabanha · Construção e gestão</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button" style="display:block;width:100%;margin-top:7px">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" style="display:block;width:100%;margin-top:7px" aria-pressed="false">⚙️ Gráficos: normal</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Menu</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-label="Gestão da cabanha" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong>📊 Gestão da cabanha</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" aria-label="Seções da gestão">
 <button data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -372,48 +372,103 @@ function farmRoute(o,sx,sy,tx,ty){
   return route.slice(0,55);
 }
 
+// 0.9.1: a rede visual é uma árvore conectada à entrada real de cada fazenda.
+// A* continua exclusivamente responsável por caminhar e desviar dos obstáculos.
 let trailStamp='',trailData=[];
 function trailEntry(o,b){
-  const pad=5;
-  return [{x:b.x-b.w/2-pad,y:b.y},{x:b.x+b.w/2+pad,y:b.y},
-    {x:b.x,y:b.y-b.h/2-pad},{x:b.x,y:b.y+b.h/2+pad}]
-    .filter(p=>workerSafe(o,p.x,p.y,2.4));
+  const pad=6;
+  return [
+    {x:b.x-b.w/2-pad,y:b.y,side:'oeste'},
+    {x:b.x+b.w/2+pad,y:b.y,side:'leste'},
+    {x:b.x,y:b.y-b.h/2-pad,side:'norte'},
+    {x:b.x,y:b.y+b.h/2+pad,side:'sul'}
+  ].filter(p=>workerSafe(o,p.x,p.y,3));
+}
+function farmGate(o){
+  // Coincide com o vão físico da cerca e com a via de acesso do mapa 3D.
+  return o.x<-100?{outside:{x:o.x+122,y:o.y},inside:{x:o.x+96,y:o.y}}:
+    o.x>100?{outside:{x:o.x-122,y:o.y},inside:{x:o.x-96,y:o.y}}:
+    {outside:{x:o.x,y:o.y+120},inside:{x:o.x,y:o.y+95}};
 }
 function farmTrails(){
   const ready=buildings.filter(isBuilt);
-  const stamp=buildings.length+'-'+ready.length;
+  const stamp=ready.map(b=>b.x.toFixed(1)+':'+b.y.toFixed(1)+':'+b.w+':'+b.h).join('|');
   if(stamp===trailStamp)return trailData;
-  const list=[],dedup=new Set();
-  function collect(start,route,width){
-    let prev=start;
-    for(const p of route){
-      if(Math.hypot(prev.x-p.x,prev.y-p.y)<1.4){prev=p;continue}
-      const a=Math.round(prev.x/3)+','+Math.round(prev.y/3),b=Math.round(p.x/3)+','+Math.round(p.y/3);
-      const key=a<b?a+'|'+b:b+'|'+a;
-      if(!dedup.has(key)){list.push({x1:prev.x,y1:prev.y,x2:p.x,y2:p.y,w:width});dedup.add(key)}
-      prev=p;
-    }
+  const segments=[],dedup=new Set();
+  const keyPoint=p=>Math.round(p.x*2)/2+','+Math.round(p.y*2)/2;
+  const segmentKey=(a,b)=>keyPoint(a)<keyPoint(b)?
+    keyPoint(a)+'|'+keyPoint(b):keyPoint(b)+'|'+keyPoint(a);
+  function pushSegment(o,a,b,width,kind){
+    const distance=Math.hypot(a.x-b.x,a.y-b.y);
+    if(distance<1.2)return false;
+    const key=o.name+':'+segmentKey(a,b);
+    if(dedup.has(key))return false;
+    dedup.add(key);
+    segments.push({x1:a.x,y1:a.y,x2:b.x,y2:b.y,w:width,owner:o.name,kind});
+    return true;
   }
   for(const o of owners){
-    const own=ready.filter(b=>b.o===o);
-    const home=own.find(b=>b.type==='house')||own[0];
-    if(!home)continue;
-    const entrances=trailEntry(o,home),hub=entrances.find(p=>p.y>home.y)||entrances[0];
-    if(!hub)continue;
-    const gate=o.x<-100?{x:o.x+121,y:o.y}:o.x>100?{x:o.x-121,y:o.y}:{x:o.x,y:o.y+118};
-    collect(gate,farmRoute(o,gate.x,gate.y,hub.x,hub.y),3.2);
-    const priority={stable:0,barn:1,house:2,paddock:3};
-    const targets=own.filter(b=>b!==home).sort((a,b)=>priority[a.type]-priority[b.type]).slice(0,17);
-    for(const b of targets){
-      const pts=trailEntry(o,b);
-      pts.sort((a,b)=>Math.hypot(a.x-hub.x,a.y-hub.y)-Math.hypot(b.x-hub.x,b.y-hub.y));
-      for(const p of pts){
-        const route=farmRoute(o,hub.x,hub.y,p.x,p.y);
-        if(route.length){collect(hub,route,2.4);break}
+    const owned=ready.filter(b=>b.o===o);
+    if(!owned.length)continue;
+    const home=owned.find(b=>b.type==='house')||owned[0];
+    const gates=farmGate(o);
+    const entries=trailEntry(o,home);
+    entries.sort((a,b)=>Math.hypot(a.x-gates.inside.x,a.y-gates.inside.y)-
+      Math.hypot(b.x-gates.inside.x,b.y-gates.inside.y));
+    if(!entries.length)continue;
+    // Eixo principal: entrada física > acesso à sede. Sem ponto fictício atrás da casa.
+    let main=[];
+    for(const entrance of entries){
+      const route=farmRoute(o,gates.inside.x,gates.inside.y,entrance.x,entrance.y);
+      if(route.length){main=route;break}
+    }
+    if(!main.length)continue;
+    const nodes=[];
+    function add(a,b,width,kind){
+      if(!pushSegment(o,a,b,width,kind))return;
+      const len=Math.hypot(b.x-a.x,b.y-a.y);
+      for(let t=0;t<=Math.ceil(len/10);t++){
+        const r=t/Math.max(1,Math.ceil(len/10));
+        nodes.push({x:a.x+(b.x-a.x)*r,y:a.y+(b.y-a.y)*r});
       }
     }
+    // O primeiro trecho passa pelo vão da cerca e termina na estrada regional.
+    add(gates.outside,gates.inside,3.7,'entrada');
+    let prev=gates.inside;
+    for(const p of main){add(prev,p,3.5,'principal');prev=p}
+    // Cada nova instalação busca o PONTO MAIS PRÓXIMO da rede existente.
+    // Nunca volta forçadamente ao centro da casa, eliminando o efeito de estrela.
+    const pending=owned.filter(b=>b!==home);
+    const connected=new Set();
+    while(connected.size<pending.length){
+      const pairs=[];
+      for(const b of pending){
+        if(connected.has(b))continue;
+        for(const entrance of trailEntry(o,b)){
+          let nearest=null,best=Infinity;
+          for(const node of nodes){
+            const distance=Math.hypot(node.x-entrance.x,node.y-entrance.y);
+            if(distance<best){best=distance;nearest=node}
+          }
+          if(nearest)pairs.push({b,entrance,nearest,distance:best});
+        }
+      }
+      pairs.sort((a,b)=>a.distance-b.distance);
+      let routed=false;
+      for(const candidate of pairs.slice(0,Math.min(16,pairs.length))){
+        const route=farmRoute(o,candidate.nearest.x,candidate.nearest.y,
+          candidate.entrance.x,candidate.entrance.y);
+        if(!route.length)continue;
+        let last=candidate.nearest;
+        for(const p of route){add(last,p,2.5,'servico');last=p}
+        connected.add(candidate.b);routed=true;break;
+      }
+      if(!routed)break;
+    }
   }
-  trailStamp=stamp;trailData=list;return list;
+  // Mesma geometria de referência para as duas visualizações.
+  trailStamp=stamp;trailData=segments;
+  return trailData;
 }
 const workerJobs={tratador:'Tratando animais',agricultor:'Organizando produção',administrador:'Administrando a cabanha'};
 function chooseFarmerTarget(f){
@@ -1045,4 +1100,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=090"></script></body></html>
+</script><script type="module" src="./world3d.js?v=091"></script></body></html>
