@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.1
+# Fazenda Viva — versão 0.9.2
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=091
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=092
 
 ## Novidades da série 0.8
 
@@ -133,6 +133,20 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 **Limites:** os personagens continuam sendo modelos low-poly simples. A nova animação é procedural e mais coerente, mas não equivale a animações complexas de esqueleto feitas em Blender/GLB. Falta a conferência visual das posições e dos caminhos no **Android/WebGL real**.
 
+### 0.9.2 — NPCs percorrem caminhos reais; detalhes equestres e entradas
+A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadores ainda utilizavam rotas A* independentes do desenho das estradas. Agora a circulação tem correspondência física:
+
+- **Grafo navegável derivado da geometria visual:** a rede compartilhada de trilhas é dividida em segmentos e nós reais. Bifurcações que terminam no meio de um trecho são identificadas e conectadas.
+- **Rotas com busca de menor custo:** trabalhadores selecionam pontos de acesso seguros da rede e caminham por ela usando Dijkstra. Trechos de ligação entre o trabalhador e a rede passam por verificação de obstáculos; A* é mantido como contingência se não houver acesso viável.
+- **Trânsito sem atravessar construções:** segmentos livres, distâncias entre NPCs, cercas de propriedade e edifícios são considerados durante a caminhada. Rotas são recalculadas quando há uma alteração estrutural.
+- **Economia de processamento:** o grafo de cada propriedade é armazenado em cache por versão da malha e só é reconstruído após modificações físicas.
+- **Gestão rural:** a aba Equipe indica para cada funcionário se ele está seguindo a rede de trilhas ou usando um desvio seguro pelo terreno.
+- **Cavalos mais legíveis:** novos volumes de peito e garupa, focinho, olhos, crina, orelhas e variações discretas de pelagem. A silhueta 2D também foi aprimorada para acompanhar o modelo tridimensional.
+- **Portões de fazenda:** pares de mourões físicos marcam cada entrada e foram alinhados às conexões viárias sem bloquear passagem.
+- **Regressões:** os testes automáticos verificam agora o uso predominante das trilhas pelos funcionários e a ausência de edifícios cortados pelas rotas. Um teste prolongado simulado alcançou o **dia 2.131**, com **64 instalações**, **1.383 tarefas realizadas**, **111 segmentos internos** e **zero colisões de trilhas com prédios** detectadas nas amostras.
+
+**Limite e próximo passo:** a animação continua procedural e low-poly. Falta conferir o resultado diretamente em um Android com WebGL real. Os testes não provam ausência total de artefatos de renderização; cobrem geometria lógica e renderizador Three.js simulado.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -169,6 +183,6 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.8.9 — concluída em código, pendente de inspeção visual Android;
 0.9.0 — gestão e progressão funcional, implementadas e testadas na simulação; falta inspeção visual no Android;
 0.9.1 — correção arquitetural das trilhas e locomoção procedural 2D/3D; pendente inspeção visual Android;
-0.9.2 — refinamento visual dos animais, deslocamento dos NPCs pelas trilhas e testes mobile;
-0.9.3 — equilíbrio econômico, objetivos avançados e eventos rurais;
+0.9.2 — locomoção dos NPCs sobre a rede real, visual equestre, portões e regressões automatizadas; falta QA visual no Android;
+0.9.3 — equilíbrio econômico, objetivos avançados, eventos rurais e revisão do desempenho mobile;
 1.0 — integração e critérios de estabilidade.
