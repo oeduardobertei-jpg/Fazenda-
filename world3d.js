@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.4 — correções de paisagem, câmera e lagos.
+/* Fazenda Viva 0.8.5 — construção sequencial, piquetes completos e estabilidade de LOD.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -122,19 +122,50 @@ function rails(parent,w,d,color=colors.fence,y=1.4) {
 function building(b,detail=true){
   const group=new THREE.Group();group.position.set(b.x,0,b.y);
   const w=b.w,d=b.h,t=Math.max(1,Math.min(3,b.tier||1));
+  const progress=Math.max(0,Math.min(100,b.progress??100));
+  if(b.status==='building'){
+    // Uma obra visível por propriedade: terraplenagem -> pilares -> travamentos -> telhado.
+    flat(group,w-.5,d-.5,0,0,0xa68b68,.30);
+    flat(group,w-.9,d-.9,0,0,0xd0b58c,.39);
+    const posts=[[-w*.43,-d*.40],[w*.43,-d*.40],[-w*.43,d*.40],[w*.43,d*.40]];
+    posts.forEach(([x,z],i)=>{
+      if(progress>=i*20){
+        box(group,.38,2.7,.38,x,1.45,z,0x806247);
+        if(progress>55)box(group,w*.83,.20,.20,0,2.8,z,0x95714c);
+      }
+    });
+    if(progress>=70)box(group,w*.68,.18,d*.70,0,3.1,0,0xc39861);
+    if(detail){
+      box(group,2.5,1,1.2,-w*.25,.64,d*.12,0xbe9867);
+      box(group,2.1,.25,1.1,w*.26,.38,-d*.2,0x806247);
+      // Progresso materializado em tábuas no chão, nunca vários lotes preparatórios vazios.
+      flat(group,(w-2)*Math.max(.1,progress/100),.45,-(w-2)*(1-progress/100)/2,-d*.36,0xe0c76d,.51);
+    }
+    group.userData.building=b;
+    return group;
+  }
   const variety=(Math.abs(Math.round(b.x*17+b.y*23))%5);
   const pad=detail?0.65:.2;
   if(b.type==='paddock'){
     flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
     rails(group,w-.7,d-.7,PALETTE.lightWood);
     if(detail){
-      // Cochos discretos, bebedouro e capim no interior do piquete.
-      box(group,2.2,.72,.95,-w*.27,.5,d*.24,0x98734f);
-      box(group,2.6,.45,1,w*.25,.48,-d*.29,0x638f9c);
-      for(let i=0;i<3;i++){
-        const x=-w*.16+i*1.7,z=d*.10+Math.sin(i)*2;
-        cylinder(group,.38,.54,.7,x,.45,z,0x719852,5);
+      // Um piquete CONCLUÍDO contém abrigo, bebedouro, cocho e capim — não é um canteiro de obras.
+      flat(group,w*.78,d*.73,0,0,variety%2?0x84ac65:0x79a35c,.33);
+      box(group,2.2,.72,.95,-w*.27,.65,d*.24,0x98734f);
+      box(group,2.6,.45,1,w*.25,.67,-d*.29,0x638f9c);
+      // Abrigo simples no canto, dentro do espaço cercado.
+      const sx=w*.29,sz=d*.22;
+      for(const x of [sx-2.5,sx+2.5])for(const z of [sz-1.6,sz+1.6])
+        box(group,.23,2.35,.23,x,1.2,z,0xaa8256);
+      box(group,5.8,.25,4.0,sx,2.46,sz,0xa2764d);
+      for(let i=0;i<7;i++){
+        const x=-w*.30+(i%4)*1.7,z=-d*.21+Math.floor(i/4)*3.4;
+        cylinder(group,.28,.45,.7,x,.52,z,0x658f48,5);
       }
+      // Fardos e pilhas de material funcional de manejo.
+      cylinder(group,.9,1.0,.68,-w*.24,.53,-d*.26,0xc4ad69,8);
+      cylinder(group,.9,1.0,.68,-w*.11,.53,-d*.26,0xbca05d,8);
     }
     group.userData.building=b;return group;
   }
@@ -212,6 +243,15 @@ function building(b,detail=true){
   if(t>1)for(let j=0;j<t-1;j++){
     const x=usedW*.5-1.1-j*1.4;
     box(group,.30,2.5,.32,x,1.25,front+.19,PALETTE.lightWood);
+  }
+  if(b.status==='upgrading'){
+    // Estrutura atual continua de pé enquanto ocorre uma ampliação localizada.
+    for(const sign of [-1,1]){
+      const px=sign*(w*.48);
+      box(group,.20,Math.min(5,height),.20,px,Math.min(5,height)/2,0,0xd1aa73);
+      box(group,.18,.22,d*.75,px,2.5,0,0xc69d63);
+    }
+    box(group,w*.6,.20,.24,0,height*.80,usedD*.50,0xdebd7e);
   }
   group.userData.building=b;return group;
 }
@@ -337,7 +377,7 @@ function sync(s){
   const highDetail=s.zoom>=1.10;
   const radius=s.zoom>=1.6?220:s.zoom>=.72?445:1380;
   const near=s.buildings.filter(b=>Math.abs(b.x-s.panX)<radius&&Math.abs(b.y-s.panY)<radius);
-  const newStamp=(highDetail?'H':'L')+'|'+near.map(b=>[b.type,b.x,b.y,b.tier||1,s.owners.indexOf(b.o)].join(':')).join('|');
+  const newStamp=(highDetail?'H':'L')+'|'+near.map(b=>[b.type,b.x,b.y,b.tier||1,b.status||'complete',b.progress??100,b.plannedTier||0,s.owners.indexOf(b.o)].join(':')).join('|');
   if(newStamp!==stamp){
     for(const child of [...content.children])content.remove(child);
     for(const b of near)content.add(building(b,highDetail));
