@@ -1125,16 +1125,40 @@ function managementContent(tab){
   }
   if(tab==='mercado'){
     const comps=owners.filter(f=>f!==o).map(f=>({name:f.name,score:cabanhaScore(f),
-      animals:horses.filter(h=>h.o===f).length,structures:buildings.filter(b=>b.o===f&&isBuilt(b)).length}));
-    const price=(v)=>Math.round(v*100)+'%';
+      animals:horses.filter(h=>h.o===f).length,
+      structures:buildings.filter(b=>b.o===f&&isBuilt(b)).length}));
+    const price=v=>Math.round(v*100)+'%';
+    const actions={
+      feira:'Inscrever cavalo na mostra',
+      safra:'Fechar contrato agrícola',
+      insumos:'Comprar suprimentos coletivos',
+      mutirao:'Participar do mutirão'
+    };
+    const descriptions={
+      feira:'O mercado equestre recebe valorização temporária. Leve seu melhor animal à mostra.',
+      safra:'A procura por grãos sobe. Galpões concluídos permitem novos contratos.',
+      insumos:'Custos gerais sobem; compras coletivas podem reduzir despesas em seis ciclos.',
+      mutirao:'Construções na região avançam mais rapidamente durante o evento.'
+    };
+    const activity=ruralEvent?
+      '<div class="mgCard"><strong>📣 '+ruralEvent.name+'</strong>'+
+      '<p class="mgSmall">'+descriptions[ruralEvent.id]+'</p>'+
+      '<p class="mgSmall">Até o dia '+ruralEvent.endsAt+
+      ' · '+Math.max(0,ruralEvent.endsAt-day)+' dias restantes</p>'+
+      (ruralEvent.claimed?'<strong>✅ Participação concluída</strong>':
+      '<button type="button" data-mgaction="joinEvent">'+actions[ruralEvent.id]+
+      ' · '+brl(ruralEvent.price)+'</button>')+'</div>':
+      '<div class="mgCard">📅 Próximo evento regional a partir do dia '+
+      nextRuralEventDay+'.</div>';
     return '<div class="mgGrid">'+
-      statCard('🐎','Índice equestre',price(market.horse),market.horse>=1?'Acima da referência':'Abaixo da referência')+
-      statCard('🌾','Índice agrícola',price(market.grain),market.grain>=1?'Acima da referência':'Abaixo da referência')+
-      '</div><h4>🏘️ Competidores autônomos</h4>'+
-      comps.map(c=>'<div class="mgRow"><strong>'+c.name+'</strong>'+
-        '<div class="mgLine"><span>Estruturas / cavalos</span><span>'+c.structures+' / '+c.animals+'</span></div>'+
-        '<div class="mgLine"><span>Índice econômico</span><strong>'+c.score+' pontos</strong></div></div>').join('')+
-      '<p class="mgNote">Os índices variam de 75% a 140% na simulação e afetam receitas. O mercado ainda não possui negociações entre propriedades.</p>';
+      statCard('🐎','Índice equestre',price(marketIndex('horse')))+
+      statCard('🌾','Índice agrícola',price(marketIndex('grain')))+
+      '</div><h4>🌾 Agenda regional</h4>'+activity+
+      '<h4>🏘️ Competidores autônomos</h4>'+
+      comps.map(p=>'<div class="mgRow"><strong>'+p.name+'</strong>'+
+        '<div class="mgLine"><span>Estruturas / cavalos</span><span>'+p.structures+' / '+p.animals+'</span></div>'+
+        '<div class="mgLine"><span>Índice econômico</span><strong>'+p.score+' pontos</strong></div></div>').join('')+
+      '<p class="mgNote">Mercado e eventos inteiramente simulados, com efeitos temporários em preços, custos e obras. A participação é opcional e ocorre uma vez por evento.</p>';
   }
   if(tab==='metas'){
     const level=managementLevel();
