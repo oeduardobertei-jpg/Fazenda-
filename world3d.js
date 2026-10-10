@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.3 — qualidade adaptativa e renderização seletiva.
+/* Fazenda Viva 0.8.4 — correções de paisagem, câmera e lagos.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -58,20 +58,26 @@ function box(parent,w,h,d,x,y,z,color) {
   const m = new THREE.Mesh(sharedBox(w,h,d),mat(color));
   m.position.set(x,y,z);parent.add(m);return m;
 }
-function flat(parent,w,d,x,z,color,y=.08) {
+function flat(parent,w,d,x,z,color,y=.16) {
   return box(parent,w,.13,d,x,y,z,color);
 }
 function cylinder(parent,rTop,rBottom,h,x,y,z,color,segments=7) {
   const m=new THREE.Mesh(new THREE.CylinderGeometry(rTop,rBottom,h,segments),mat(color));
   m.position.set(x,y,z);parent.add(m);return m;
 }
-function ellipse(parent,x,z,rx,rz,color) {
-  const m=new THREE.Mesh(new THREE.CircleGeometry(1,28),mat(color));
-  m.rotation.x=-Math.PI/2;m.position.set(x,.14,z);m.scale.set(rx,rz,1);parent.add(m);return m;
+function ellipse(parent,x,z,rx,rz,color,elevation=.09) {
+  // Paisagem em níveis físicos distintos: evita z-fighting (triângulos/radiais nos açudes).
+  const m=new THREE.Mesh(new THREE.CircleGeometry(1,48),mat(color));
+  m.rotation.x=-Math.PI/2;
+  m.position.set(x,elevation,z);
+  m.scale.set(rx,rz,1);
+  m.renderOrder=Math.round(elevation*100);
+  parent.add(m);
+  return m;
 }
 function road(parent,x1,z1,x2,z2,width=9) {
   const dx=x2-x1,dz=z2-z1,dist=Math.hypot(dx,dz);
-  const m=flat(parent,width,dist,(x1+x2)/2,(z1+z2)/2,colors.path,.085);
+  const m=flat(parent,width,dist,(x1+x2)/2,(z1+z2)/2,colors.path,.16);
   m.rotation.y=Math.atan2(-dx,dz);
 }
 function roof(parent,w,d,h,ridgeY,color) {
@@ -119,7 +125,7 @@ function building(b,detail=true){
   const variety=(Math.abs(Math.round(b.x*17+b.y*23))%5);
   const pad=detail?0.65:.2;
   if(b.type==='paddock'){
-    flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.09);
+    flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
     rails(group,w-.7,d-.7,PALETTE.lightWood);
     if(detail){
       // Cochos discretos, bebedouro e capim no interior do piquete.
@@ -141,7 +147,7 @@ function building(b,detail=true){
   const roofColor=b.type==='house'?(variety%2===0?PALETTE.tile:PALETTE.tile2):
                   b.type==='stable'?0x79543e:PALETTE.metal;
   const zFront=usedD*.50;
-  flat(group,w-.1,d-.1,0,0,variety%2===0?0xbca17c:0xa8987f,.11);
+  flat(group,w-.1,d-.1,0,0,variety%2===0?0xbca17c:0xa8987f,.28);
   // Plataforma e edifício contidos integralmente no lote: nenhum telhado ultrapassa o footprint.
   box(group,usedW,height,usedD*.88,0,height*.5,-.2,facade);
   roof(group,usedW+.25,usedD*.99,height,height+(b.type==='house'?2.9:2.0),roofColor);
@@ -244,10 +250,11 @@ function drawWorld(s){
   flat(root,3600,3400,0,0,colors.grass,-.12);
   // Grandes manchas de pastagem orgânica. Evita quadrados escuros perfeitamente repetidos.
   const rng=(n)=>{const v=Math.sin(n*93.174+8.32)*43758.5453;return v-Math.floor(v)};
-  for(let i=0;i<155;i++){
-    const x=rng(i*3)*3000-1500,z=rng(i*3+1)*2800-1400;
-    const rx=24+rng(i+91)*70,rz=22+rng(i+134)*59;
-    ellipse(root,x,z,rx,rz,i%4===0?0x93b277:i%3===0?0x80a268:0x87aa6c);
+  for(let i=0;i<88;i++){
+    const x=rng(i*3)*2800-1400,z=rng(i*3+1)*2600-1300;
+    const rx=20+rng(i+91)*48,rz=18+rng(i+134)*41;
+    const tint=i%4===0?0x8eaf73:i%3===0?0x86a66c:0x8aaa70;
+    ellipse(root,x,z,rx,rz,tint,.065+(i%4)*.013);
   }
   // Pátios e conexões internos são desenhados sem cruzar as baias.
 
@@ -258,11 +265,11 @@ function drawWorld(s){
     if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8);
     else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8);
     else road(root,o.x,140,o.x,o.y+120,8);
-    ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779);
+    ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779,.24);
     // Solo compactado junto à entrada, sem passar por baixo das estruturas.
     const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
     const entranceY=Math.abs(o.x)<100?o.y+112:o.y;
-    ellipse(root,entranceX,entranceY,8,7,0xbaa17b);
+    ellipse(root,entranceX,entranceY,8,7,0xbaa17b,.275);
     // Cercas físicas de dois trilhos; a entrada fica voltada para a estrada de acesso.
     const n=60, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.9,3,.9),mat(0xe4ca98),n);
     const rails=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.28,.42),mat(0xd3b583),n*2);
@@ -289,12 +296,12 @@ function drawWorld(s){
     root.add(posts,rails);
   }
   for(const f of s.fields){
-    flat(root,f.w,f.h,f.x,f.y,colors.crop,.15);
-    for(let i=-3;i<=3;i++)flat(root,1.2,f.h-3,f.x+i*f.w/8,f.y,0x6d8f4c,.23);
+    flat(root,f.w,f.h,f.x,f.y,colors.crop,.29);
+    for(let i=-3;i<=3;i++)flat(root,1.2,f.h-3,f.x+i*f.w/8,f.y,0x6d8f4c,.38);
   }
   for(const p of s.ponds){
-    ellipse(root,p.x,p.y,p.rx+2,p.ry+2,0xc1bb87);
-    ellipse(root,p.x,p.y,p.rx,p.ry,colors.water);
+    ellipse(root,p.x,p.y,p.rx+3,p.ry+3,0xc1bb87,.38);
+    ellipse(root,p.x,p.y,p.rx,p.ry,colors.water,.46);
     for(let i=0;i<12;i++){
       const a=(i*2.39996),x=p.x+(p.rx+1)*Math.cos(a),z=p.y+(p.ry+1)*Math.sin(a);
       cylinder(root,.35,.5,2.1,x,1.08,z,i%2?0x57833c:0x6c984e,5);
@@ -372,11 +379,21 @@ function animate(now=0){
     const hw=innerWidth/(2*scale),hh=innerHeight/(2*scale);
     camera.left=-hw;camera.right=hw;camera.top=hh;camera.bottom=-hh;camera.updateProjectionMatrix();
     const distance=350;
-    // Ortográfica oblíqua: preserva a legibilidade 3D e evita quase-top-down.
+    // Em mapa regional usa câmera mais vertical; na fazenda usa oblíqua.
+    // Saltos grandes de localização são instantâneos (não parecem câmera travada).
     if(!cameraInitialized){smoothCenter.set(s.panX,0,s.panY);cameraInitialized=true}
-    smoothCenter.x+=(s.panX-smoothCenter.x)*.18;
-    smoothCenter.z+=(s.panY-smoothCenter.z)*.18;
-    camera.position.set(smoothCenter.x+distance*.47,distance*.64,smoothCenter.z+distance*.62);
+    const jump=Math.hypot(s.panX-smoothCenter.x,s.panY-smoothCenter.z);
+    if(jump>140){smoothCenter.set(s.panX,0,s.panY)}
+    else{
+      smoothCenter.x+=(s.panX-smoothCenter.x)*.32;
+      smoothCenter.z+=(s.panY-smoothCenter.z)*.32;
+    }
+    const regional=Math.max(0,Math.min(1,(.82-s.zoom)/.59));
+    camera.position.set(
+      smoothCenter.x+distance*(.47-regional*.40),
+      distance*(.64+regional*.46),
+      smoothCenter.z+distance*(.62-regional*.53)
+    );
     camera.lookAt(smoothCenter.x,0,smoothCenter.z);
     sync(s);
     renderer.render(scene,camera);
