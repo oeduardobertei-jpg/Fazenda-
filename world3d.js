@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8 — renderizador WebGL progressivo.
+/* Fazenda Viva 0.8.1 — renderizador WebGL progressivo.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -17,9 +17,10 @@ const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
 let renderer, scene, camera, content, horseLayer;
 let enabled = false, stamp = '';
+let smoothCenter=new THREE.Vector3(), cameraInitialized=false;
 let labelLayer, labelNodes = [];
 const colors = {
-  grass: 0x83a968, grass2: 0x9bb97b, earth: 0xb8a17a,
+  grass: 0x89a970, grass2: 0x9bb97b, earth: 0xb8a17a,
   fence: 0xc9a775, timber: 0x806042, path: 0xc5aa86,
   water: 0x629ba1, crop: 0xb0a76c, tree: 0x487c40
 };
@@ -156,20 +157,29 @@ function makeTrees(parent,trees){
 }
 function drawWorld(s){
   const root=new THREE.Group(); scene.add(root);
-  flat(root,1320,1220,0,0,colors.grass,.0);
-  // grandes manchas de vegetação, evitando o antigo retângulo pequeno isolado
-  for(let i=0;i<90;i++){
-    const x=(i*317.21%1160)-580,z=(i*193.39%1060)-530;
-    flat(root,25+(i%5)*11,24+(i%4)*14,x,z,i%3===0?0x83aa6b:0x8daf76,.09);
+  // O plano deve ocupar toda a extensão visível em zoom regional — sem bordas azuis.
+  flat(root,3600,3400,0,0,colors.grass,-.12);
+  // Grandes manchas de pastagem orgânica. Evita quadrados escuros perfeitamente repetidos.
+  const rng=(n)=>{const v=Math.sin(n*93.174+8.32)*43758.5453;return v-Math.floor(v)};
+  for(let i=0;i<155;i++){
+    const x=rng(i*3)*3000-1500,z=rng(i*3+1)*2800-1400;
+    const rx=24+rng(i+91)*70,rz=22+rng(i+134)*59;
+    ellipse(root,x,z,rx,rz,i%4===0?0x93b277:i%3===0?0x80a268:0x87aa6c);
   }
+  // Pátios e conexões internos são desenhados sem cruzar as baias.
+
   road(root,-140,-580,-140,580,14);
   road(root,140,-580,140,580,14);
   road(root,-580,140,580,140,14);
   for(const o of s.owners){
-    const lx=o.x<-100?-140:o.x>100?140:o.x;
-    if(o.x!==lx)road(root,o.x,o.y,lx,o.y,8);
-    road(root,lx,o.y,lx,140,8);
+    if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8);
+    else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8);
+    else road(root,o.x,140,o.x,o.y+120,8);
     ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779);
+    // Solo compactado junto à entrada, sem passar por baixo das estruturas.
+    const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
+    const entranceY=Math.abs(o.x)<100?o.y+112:o.y;
+    ellipse(root,entranceX,entranceY,8,7,0xbaa17b);
     // Cercas físicas de dois trilhos; a entrada fica voltada para a estrada de acesso.
     const n=60, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.9,3,.9),mat(0xe4ca98),n);
     const rails=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.28,.42),mat(0xd3b583),n*2);
@@ -199,7 +209,14 @@ function drawWorld(s){
     flat(root,f.w,f.h,f.x,f.y,colors.crop,.15);
     for(let i=-3;i<=3;i++)flat(root,1.2,f.h-3,f.x+i*f.w/8,f.y,0x6d8f4c,.23);
   }
-  for(const p of s.ponds)ellipse(root,p.x,p.y,p.rx,p.ry,colors.water);
+  for(const p of s.ponds){
+    ellipse(root,p.x,p.y,p.rx+2,p.ry+2,0xc1bb87);
+    ellipse(root,p.x,p.y,p.rx,p.ry,colors.water);
+    for(let i=0;i<12;i++){
+      const a=(i*2.39996),x=p.x+(p.rx+1)*Math.cos(a),z=p.y+(p.ry+1)*Math.sin(a);
+      cylinder(root,.35,.5,2.1,x,1.08,z,i%2?0x57833c:0x6c984e,5);
+    }
+  }
   makeTrees(root,s.trees);
   content=new THREE.Group();scene.add(content);
   horseLayer=new THREE.Group();scene.add(horseLayer);
@@ -215,17 +232,41 @@ function sync(s){
     horseLayer.clear();
     for(const h of s.horses)horseLayer.add(makeHorse(h));
   }
-  s.horses.forEach((h,i)=>{
-    const mesh=horseLayer.children[i];
-    if(!mesh)return;
-    const dx=Math.cos(h.phase)*12+(h.offset||0),dz=12+Math.sin(h.phase)*9;
-    mesh.position.set(h.o.x+dx,.18,h.o.y+dz);
-    mesh.rotation.y=-h.phase+.6;
-  });
+  // Cada cavalo fica no piquete ou perto da cocheira da própria cabanha.
+  // Distribuir por baia, não pela origem global, evita animais soltos em estradas.
+  const groups=new Map();
+  s.horses.forEach((h,i)=>{if(!groups.has(h.o))groups.set(h.o,[]);groups.get(h.o).push(i)});
+  for(const [owner,indices] of groups){
+    const paddocks=s.buildings.filter(b=>b.o===owner&&b.type==='paddock');
+    const stables=s.buildings.filter(b=>b.o===owner&&b.type==='stable');
+    indices.forEach((horseIndex,j)=>{
+      const h=s.horses[horseIndex],mesh=horseLayer.children[horseIndex];
+      if(!mesh)return;
+      let x,z;
+      if(paddocks.length){
+        const paddock=paddocks[Math.floor(j/5)%paddocks.length];
+        const slot=j%5,cols=[[-.23,-.24],[.22,-.24],[-.23,.22],[.22,.22],[0,0]];
+        const space=cols[slot];
+        x=paddock.x+paddock.w*space[0]+Math.cos(h.phase*.23+j)*.8;
+        z=paddock.y+paddock.h*space[1]+Math.sin(h.phase*.23+j)*.6;
+      }else if(stables.length){
+        const stable=stables[j%stables.length];
+        x=stable.x+(j%3-1)*4;
+        z=stable.y+stable.h*.69+2.3+Math.floor(j/3)*4;
+      }else{
+        x=owner.x+Math.cos(j*2.4)*18;z=owner.y+Math.sin(j*2.4)*15;
+      }
+      mesh.position.set(x,.1,z);
+      mesh.rotation.y=Math.sin(h.phase*.27+j)*.4;
+    });
+  }
 }
 function updateLabels(s){
   for(let i=0;i<s.owners.length;i++){
-    const o=s.owners[i],p=new THREE.Vector3(o.x,10,o.y).project(camera);
+    const o=s.owners[i];
+    // Em zoom de detalhe as etiquetas não devem esconder telhados nem cavalos.
+    if(s.zoom>1.13){labelNodes[i].style.display='none';continue}
+    const p=new THREE.Vector3(o.x,14,o.y-40).project(camera);
     const x=(p.x*.5+.5)*innerWidth, y=(-p.y*.5+.5)*innerHeight;
     const label=labelNodes[i];
     label.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';
@@ -239,9 +280,13 @@ function animate(){
     const scale=Math.min(innerWidth/300,innerHeight/260)*zoom;
     const hw=innerWidth/(2*scale),hh=innerHeight/(2*scale);
     camera.left=-hw;camera.right=hw;camera.top=hh;camera.bottom=-hh;camera.updateProjectionMatrix();
-    const distance=300;
-    camera.position.set(s.panX,distance*.66,s.panY+distance*.75);
-    camera.lookAt(s.panX,0,s.panY);
+    const distance=350;
+    // Ortográfica oblíqua: preserva a legibilidade 3D e evita quase-top-down.
+    if(!cameraInitialized){smoothCenter.set(s.panX,0,s.panY);cameraInitialized=true}
+    smoothCenter.x+=(s.panX-smoothCenter.x)*.18;
+    smoothCenter.z+=(s.panY-smoothCenter.z)*.18;
+    camera.position.set(smoothCenter.x+distance*.47,distance*.64,smoothCenter.z+distance*.62);
+    camera.lookAt(smoothCenter.x,0,smoothCenter.z);
     sync(s);
     renderer.render(scene,camera);
     updateLabels(s);
@@ -257,7 +302,7 @@ function stop(reason){
   if(labelLayer)labelLayer.style.display='none';
   api.mode(false);
   btn.textContent='🌐 Ativar 3D';
-  if(reason)fail.textContent=reason+' · Modo 2D preservado.';
+  if(reason){fail.style.display='block';fail.textContent=reason+' · Modo 2D preservado.'}
 }
 function start(){
   if(!renderer||!scene||!labelLayer){fail.textContent='Three.js não inicializou; o modo 2D continua disponível.';return}
@@ -267,6 +312,7 @@ function start(){
   api.mode(true);
   btn.textContent='🗺️ Modo 2D';
   fail.textContent='🌄 Three.js ativo';
+  fail.style.display='none';
   requestAnimationFrame(animate);
 }
 function init(){
@@ -280,7 +326,7 @@ function init(){
   document.body.insertBefore(renderer.domElement,document.getElementById('hud'));
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();stop('Contexto gráfico interrompido')});
   window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight)});
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbfc9);scene.fog=new THREE.Fog(0x9bbfc9,850,1800);
+  scene=new THREE.Scene();scene.background=new THREE.Color(colors.grass);scene.fog=new THREE.Fog(colors.grass,1500,2600);
   camera=new THREE.OrthographicCamera(-100,100,100,-100,.1,2400);
   scene.add(new THREE.HemisphereLight(0xe4f3fa,0x50664b,2.05));
   const sun=new THREE.DirectionalLight(0xffe5b9,1.55);sun.position.set(-210,310,180);scene.add(sun);
