@@ -181,6 +181,34 @@ try{
   ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'metas'}})}});
   assert.ok(ui.get('manageBody').innerHTML.includes('Concluída'),
     'recompensas por metas concluídas');
+  // A primeira implementação de linhagem deve efetivamente gerar descendentes,
+  // não apenas mostrar botões no painel de controle.
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
+  const player=get().owners[0];
+  const stable=get().buildings.find(b=>b.o===player&&b.type==='stable');
+  stable.tier=3;
+  for(let k=0;k<25;k++){ms+=50;step(ms)}
+  const originalHerd=get().horses.filter(h=>h.o===player).length;
+  const cashBefore=player.cash;
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'breedHorse'}})}});
+  assert.equal(get().pregnancies.length,1,'reprodução registra uma gestação');
+  assert.equal(player.cash,cashBefore-850,'reprodução cobra a taxa prevista');
+  const pending=get().pregnancies[0],due=pending.dueDay;
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'breedHorse'}})}});
+  assert.equal(get().pregnancies.length,1,'não duplicar gestação');
+  assert.equal(player.cash,cashBefore-850,'não cobrar taxa em tentativa bloqueada');
+  let advance=0;
+  while(get().day<due&&advance++<1500){ms+=50;step(ms)}
+  assert.ok(get().horses.filter(h=>h.o===player).length>originalHerd,
+    'potro nasce ao final da gestação');
+  const foal=get().horses.find(h=>h.motherId===pending.motherId);
+  assert.ok(foal&&foal.age===0&&foal.fatherId===pending.fatherId,
+    'identidade genética e idade inicial do potro');
+  assert.ok(foal.quality>=35&&foal.quality<=96,'qualidade genética limitada');
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'mercado'}})}});
+  assert.ok(ui.get('manageBody').innerHTML.includes('Agenda regional'),
+    'mercado descreve eventos');
+  assert.ok(get().ruralEventHistory.length>=1,'calendário rural apresenta eventos');
   ui.get('manageClose').onclick();
   assert.equal(ui.get('error').textContent,'','sem erros fatais');
   ui.get('resetGame').onclick();
