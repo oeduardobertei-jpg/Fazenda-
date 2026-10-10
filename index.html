@@ -74,6 +74,26 @@ function updateRuralEvent(){
  }
 }
 
+function joinRuralEvent(){
+ const e=ruralEvent,o=owners[0];
+ if(!e||e.claimed)return false;
+ if(o.cash<e.price){$('status').textContent='💰 Saldo insuficiente.';return false}
+ const owned=horses.filter(h=>h.o===o);
+ const barns=buildings.filter(b=>b.o===o&&b.type==='barn'&&isBuilt(b)).length;
+ if(e.id==='feira'&&!owned.length)return false;
+ if(e.id==='safra'&&!barns)return false;
+ if(e.id==='mutirao'&&!activeSite(o))return false;
+ o.cash-=e.price;e.claimed=true;
+ let income=0,rep=0;
+ if(e.id==='feira'){income=170+Math.round(Math.max(...owned.map(h=>h.quality))*7.1);rep=4}
+ if(e.id==='safra'){income=190+Math.min(5,barns)*205;rep=2}
+ if(e.id==='insumos'){o.supplyCycles=(o.supplyCycles||0)+6;rep=1}
+ if(e.id==='mutirao'){activeSite(o).progress=Math.min(99,activeSite(o).progress+35);rep=3}
+ o.cash+=income;reputation+=rep;
+ $('news').textContent='🌾 '+e.name+': '+(income?'Recebidos '+brl(income)+'. ':'')+'Reputação +'+rep+'.';
+ $('status').textContent='✅ Participação concluída: '+e.name+'.';
+ refresh();return true;
+}
 function marketIndex(type){
  const m=ruralEvent?(type==='horse'?ruralEvent.horseFactor:ruralEvent.grainFactor):1;
  return Math.min(1.7,Math.max(.65,market[type]*m));
