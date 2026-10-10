@@ -266,7 +266,7 @@ function building(b,detail=true){
 function makeHorse(h){
   const group=new THREE.Group();
   const coat = mat(h.coat||0x81553d);
-  const part=(w,y,d,x,py,z)=>{let m=new THREE.Mesh(new THREE.BoxGeometry(w,y,d),coat);m.position.set(x,py,z);group.add(m)};
+  const part=(w,y,d,x,py,z)=>{let m=new THREE.Mesh(sharedBox(w,y,d),coat);m.position.set(x,py,z);group.add(m)};
   part(3.8,1.5,1.4,0,2.3,0);
   part(1.1,2,1.0,1.45,2.9,-.05);
   part(1.2,.9,1.1,1.85,3.75,0);
@@ -429,7 +429,11 @@ function sync(s){
   // Não recalcular slots em cada renderizador.
   s.horses.forEach((h,i)=>{
     const mesh=horseLayer.children[i];if(!mesh)return;
-    mesh.position.set(h.x??h.o.x,.12,h.y??h.o.y);
+    const x=h.x??h.o.x,z=h.y??h.o.y;
+    // LOD mobile: não renderizar dezenas de cavalos fora do enquadramento.
+    mesh.visible=s.zoom>.42&&Math.abs(x-s.panX)<245&&Math.abs(z-s.panY)<245;
+    if(!mesh.visible)return;
+    mesh.position.set(x,.12,z);
     mesh.rotation.y=h.heading||0;
   });
   if(workerLayer.children.length!==s.farmers.length){
