@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.7
+# Fazenda Viva — versão 0.8.8
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=087
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=088
 
 ## Novidades da série 0.8
 
@@ -82,6 +82,17 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 **Limites atuais:** a navegação é local a cada propriedade e as tarefas têm impactos simplificados na economia. Funcionários não operam máquinas reais nem atravessam a região para negociar; isso pertence a fases posteriores. Rotas e construções ainda devem ser conferidas visualmente em Android/WebGL.
 
+### 0.8.8 — Paisagem rural, atividades visíveis e cavalos vivos
+- **Trilhas de terra remodeladas:** faixa externa de solo compactado, superfície de areia e duas marcas longitudinais de passagem. Utilizam apenas três malhas instanciadas no WebGL; no Canvas 2D recebem a mesma leitura em camadas.
+- **Paisagismo nas glebas:** até cerca de 145 pontos candidatos de capim, touceiras e pequenas flores por propriedade. A geração determinística respeita construções, caminhos e açudes, atualizando quando surgem novas obras ou caminhos.
+- **Arquitetura variada:** cinco variações de paleta para fachadas e coberturas das cocheiras e galpões; cumeeiras, rufos, ventilação e identificação visual de propriedade nas fachadas.
+- **NPCs com instrumentos:** tratadores levam balde de ração/água, agricultores usam enxada e administradores carregam prancheta. Os equipamentos movimentam-se durante o trabalho; o modo 2D indica tarefas em execução no zoom próximo.
+- **Cavalos em movimento:** pequenas caminhadas individuais dentro dos espaços reservados, com orientação da cabeça, oscilação de pernas e cauda em 3D. As amplitudes são limitadas para preservar distância entre os animais e das cercas.
+- **Convivência de funcionários:** trabalhadores cedem passagem em encontros próximos para não ocuparem o mesmo ponto da propriedade.
+- **Compatibilidade:** o botão de reset e o início de partida no dia 1 permanecem; salvamento automático continua desligado conforme solicitação anterior.
+
+**QA automatizado:** a simulação de teste alcançou o dia 1.731 com 64 construções, 15 NPCs e 90 cavalos distribuídos pelas cinco fazendas. Nos intervalos amostrados, nenhum NPC atravessou o interior de prédios, não houve funcionários fora de suas propriedades, e a distância mínima medida entre cavalos foi de cerca de 6,46 unidades. Os testes de inicialização simulada do módulo 3D também passaram (modelos, trilhas, vegetação e mudanças de câmera). **Esses testes não substituem conferência visual WebGL no Android real.**
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -109,6 +120,6 @@ Executados testes automatizados com simulação de centenas de dias, conferindo 
 
 ## Próximas entregas
 
-0.8.8 — vegetação regional, acabamento de caminhos, tarefas visíveis no mapa e QA visual mobile;
+0.8.9 — inspeção visual Android, polimento da interação, desempenho e integração dos sistemas;
 0.9 — HUD, usabilidade, progressão, economia e testes longos;
 1.0 — integração e critérios de estabilidade.
