@@ -19,7 +19,7 @@ let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grass
 let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
 const modelsByBuilding=new Map();
 let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
-let workerLabels=[],last3DWorkersShown=0;
+let workerLabels=[],last3DWorkersShown=0,appliedLowGraphics=null;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [];
@@ -594,9 +594,12 @@ function modelVersion(b,highDetail){
 }
 function sync(s){
   syncTrails(s);
-  scatterPasture(s);
+  // No modo econômico preservamos a navegação e o mundo, ocultando somente decoração.
+  grassLayer.visible=!s.lowGraphics;
+  if(!s.lowGraphics)scatterPasture(s);
   // Histerese: mudanças pequenas no zoom não transformam todos os modelos.
-  if(detailMode===null)detailMode=s.zoom>=1.05;
+  if(s.lowGraphics)detailMode=s.zoom>=3.3;
+  else if(detailMode===null)detailMode=s.zoom>=1.05;
   else if(detailMode&&s.zoom<.89)detailMode=false;
   else if(!detailMode&&s.zoom>1.18)detailMode=true;
   const highDetail=detailMode;
@@ -685,7 +688,7 @@ function updateLabels(s){
     item,dist:Math.hypot(item.f.x-s.panX,item.f.y-s.panY)
   })).sort((a,b)=>a.dist-b.dist);
   const chosen=new Set(
-    s.zoom>=2.55?ordered.filter(x=>x.dist<42).slice(0,2).map(x=>x.item):[]
+    !s.lowGraphics&&s.zoom>=2.55?ordered.filter(x=>x.dist<42).slice(0,2).map(x=>x.item):[]
   );
   for(const item of workerLabels){
     const el=item.el,f=item.f;
@@ -705,10 +708,18 @@ function updateLabels(s){
 function animate(now=0){
   if(!enabled)return;
   requestAnimationFrame(animate);
-  if(now>0&&now-lastFrameAt<(innerWidth<=620?32:16))return;
+  if(now>0&&now-lastFrameAt<(innerWidth<=620?(appliedLowGraphics?45:32):(appliedLowGraphics?30:16)))return;
   if(now>0)lastFrameAt=now;
   try{
     const s=api.state(),zoom=s.zoom;
+    if(appliedLowGraphics!==!!s.lowGraphics){
+      appliedLowGraphics=!!s.lowGraphics;
+      const maxDpr=innerWidth<=620?(appliedLowGraphics?.85:1.2):(appliedLowGraphics?1:1.5);
+      renderer.setPixelRatio(Math.min(devicePixelRatio||1,maxDpr));
+      renderer.setSize(innerWidth,innerHeight);
+      // Alternar o LOD não precisa reiniciar o renderizador WebGL.
+      detailMode=null;
+    }
     const scale=Math.min(innerWidth/300,innerHeight/260)*zoom;
     const hw=innerWidth/(2*scale),hh=innerHeight/(2*scale);
     camera.left=-hw;camera.right=hw;camera.top=hh;camera.bottom=-hh;camera.updateProjectionMatrix();
