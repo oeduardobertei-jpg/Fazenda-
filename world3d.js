@@ -296,71 +296,79 @@ function building(b,detail=true){
   }
   group.userData.building=b;return group;
 }
+// Os pivôs ficam na articulação, não no centro das caixas. A fase da passada
+// vem da distância realmente percorrida na simulação (mesma fonte do 2D).
 function makeHorse(h){
-  const group=new THREE.Group();
-  const coat=mat(h.coat||0x81553d);
-  const part=(w,y,d,x,py,z)=>{
+  const group=new THREE.Group(),coat=mat(h.coat||0x81553d);
+  const part=(parent,w,y,d,x,py,z)=>{
     const mesh=new THREE.Mesh(sharedBox(w,y,d),coat);
-    mesh.position.set(x,py,z);group.add(mesh);return mesh;
+    mesh.position.set(x,py,z);parent.add(mesh);return mesh;
   };
-  part(3.8,1.5,1.4,0,2.3,0);
-  const neck=part(1.1,2,1.0,1.45,2.9,-.05);
-  const head=part(1.2,.9,1.1,1.85,3.75,0);
+  part(group,3.8,1.5,1.4,0,2.3,0);
+  const neckPivot=new THREE.Group();
+  neckPivot.position.set(1.45,2.85,0);group.add(neckPivot);
+  part(neckPivot,1.12,1.84,1.0,0,.20,-.05);
+  part(neckPivot,1.19,.9,1.1,.40,.95,0);
+  box(neckPivot,.20,1.2,.72,-.10,.7,-.07,0x48372e);
+  for(const z of [-.27,.27])
+    box(neckPivot,.23,.55,.23,.60,1.50,z,0x4f3b31);
   const legs=[];
   for(const x of [-1.25,1.25])for(const z of [-.48,.48]){
-    const leg=part(.35,1.7,.32,x,.9,z);
-    legs.push(leg);
-    box(group,.43,.28,.40,x,.17,z,0x5d4c3e);
+    const pivot=new THREE.Group();
+    pivot.position.set(x,1.68,z);group.add(pivot);
+    part(pivot,.35,1.55,.32,0,-.75,0);
+    box(pivot,.43,.28,.40,.08,-1.47,.06,0x5d4c3e);
+    legs.push(pivot);
   }
-  const tail=box(group,.38,1.2,.4,-2.15,2.05,0,0x49382c);
-  tail.rotation.z=-.30;
-  // Crina e orelhas em geometria simples: legíveis no zoom do celular.
-  box(group,.20,1.18,.72,1.35,3.45,-.07,0x48372e);
-  for(const z of [-.27,.27])box(group,.23,.55,.23,2.06,4.29,z,0x4f3b31);
-  group.userData.horse=h;group.userData.legs=legs;
-  group.userData.head=head;group.userData.tail=tail;group.userData.neck=neck;
+  const tailPivot=new THREE.Group();
+  tailPivot.position.set(-2.0,2.58,0);group.add(tailPivot);
+  box(tailPivot,.37,1.2,.4,-.12,-.58,0,0x49382c);
+  group.userData.horse=h;
+  group.userData.legs=legs;
+  group.userData.neck=neckPivot;
+  group.userData.tail=tailPivot;
   return group;
 }
 function makeWorker(f){
-  const group=new THREE.Group();
-  const skin=0xd6a17d,shirt=f.color||'#759389';
+  const group=new THREE.Group(),skin=0xd6a17d,shirt=f.color||'#759389';
   const legs=[],arms=[];
   for(const sign of [-1,1]){
-    const leg=box(group,.36,1.04,.39,sign*.29,.62,0,0x4e5045);
+    const leg=new THREE.Group();
+    leg.position.set(sign*.30,1.29,0);
+    group.add(leg);
+    box(leg,.37,1.08,.39,0,-.53,0,0x4e5045);
+    box(leg,.54,.2,.70,.10,-1.09,.13,0x514237);
     legs.push(leg);
-    box(group,.54,.19,.7,sign*.29,.17,.17,0x514237);
-    const sleeve=box(group,.29,1.1,.32,sign*.74,1.83,0,shirt);
-    arms.push(sleeve);
-    box(group,.27,.30,.30,sign*.75,1.13,0,skin);
+    const arm=new THREE.Group();
+    arm.position.set(sign*.74,2.37,0);group.add(arm);
+    box(arm,.29,1.02,.32,0,-.50,0,shirt);
+    box(arm,.27,.30,.30,0,-1.08,0,skin);
+    arms.push(arm);
   }
   box(group,1.35,1.45,.80,0,1.92,0,shirt);
   box(group,.50,.44,.45,0,2.73,0,skin);
   const head=new THREE.Mesh(new THREE.SphereGeometry(.56,8,6),mat(skin));
   head.position.set(0,3.10,0);group.add(head);
-  // Chapéu de palha, brim e cor são discretos no estilo low-poly rural.
   const brim=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.12,10),mat(0xd4b477));
   brim.position.set(0,3.50,0);group.add(brim);
   cylinder(group,.44,.55,.51,0,3.75,0,0xbc995c,9);
+  // Peito/frente na direção +X, para combinar com o rumo no Canvas.
+  box(group,.18,.36,.40,.72,2.22,0,0xe2d0a3);
   const tool=new THREE.Group();group.add(tool);
   if(f.role==='tratador'){
-    // Balde de água/ração de manejo e alça de metal.
     cylinder(tool,.43,.32,.68,1.15,.84,.30,0x668b92,9);
     box(tool,.11,.55,.11,1.15,1.37,.30,0xbdc4ba);
     box(tool,.42,.12,.13,1.15,1.58,.30,0xbdc4ba);
   }else if(f.role==='agricultor'){
-    // Enxada de cabo longo, com lâmina visível na base.
     box(tool,.15,2.2,.15,1.12,1.28,.30,0xa77f4e);
     box(tool,.62,.11,.38,1.12,.28,.32,0x758481);
-    box(tool,.25,.15,.15,1.12,2.42,.30,0x68523d);
   }else{
-    // Prancheta/registro de inspeção da fazenda.
     box(tool,.98,1.18,.12,1.08,1.52,.38,0x8e683e);
     box(tool,.80,.91,.14,1.08,1.53,.48,0xe4d8ba);
-    for(let i=0;i<3;i++)
-      box(tool,.48,.06,.03,1.03,1.75-i*.24,.57,0x9f9d87);
   }
-  group.userData.legs=legs;group.userData.arms=arms;
-  group.userData.tool=tool;group.userData.farmer=f;
+  group.userData.legs=legs;
+  group.userData.arms=arms;
+  group.userData.tool=tool;
   return group;
 }
 function makeTrees(parent,trees){
@@ -646,15 +654,21 @@ function sync(s){
     const x=h.x??h.o.x,z=h.y??h.o.y;
     mesh.visible=s.zoom>.42&&Math.abs(x-s.panX)<245&&Math.abs(z-s.panY)<245;
     if(!mesh.visible)return;
-    mesh.position.set(x,.12+Math.sin(h.phase*1.3+h.id)*.045,z);
+    const walking=h.motion==='walk',gait=h.gait||0;
+    mesh.position.set(x,.12+(walking?Math.abs(Math.sin(gait))*.055:0),z);
     mesh.rotation.y=h.heading||0;
     const legs=mesh.userData.legs||[];
-    for(let j=0;j<legs.length;j++)
-      legs[j].rotation.z=Math.sin(h.phase*.83+j*Math.PI*.75)*.095;
-    if(mesh.userData.head)
-      mesh.userData.head.rotation.z=Math.sin(h.phase*.37+h.id)*.045;
+    for(let j=0;j<legs.length;j++){
+      // Passada diagonal; pares opostos não patinam em sincronia.
+      const pair=(j===0||j===3)?0:Math.PI;
+      legs[j].rotation.z=walking?Math.sin(gait+pair)*.27:0;
+    }
+    if(mesh.userData.neck)
+      mesh.userData.neck.rotation.z=h.motion==='graze'?
+        -.60+Math.sin(h.phase*.32)*.06:
+        walking?Math.sin(gait*.5)*.08:-.05;
     if(mesh.userData.tail)
-      mesh.userData.tail.rotation.z=-.28+Math.sin(h.phase*.65+h.id)*.19;
+      mesh.userData.tail.rotation.z=-.18+Math.sin(h.phase*.48+h.id)*.10;
   });
   if(workerLayer.children.length!==s.farmers.length){
     for(const child of [...workerLayer.children])workerLayer.remove(child);
@@ -665,19 +679,21 @@ function sync(s){
     const character=workerLayer.children[i];if(!character)return;
     character.visible=Math.abs(f.x-s.panX)<235&&Math.abs(f.y-s.panY)<235;
     if(!character.visible)return;
-    character.position.set(f.x,.14,f.y);
-    character.rotation.y=-f.heading||0;
+    const walking=f.motion==='walk',working=f.motion==='work';
+    character.position.set(f.x,.14+(walking?Math.abs(Math.sin(f.gait||0))*.055:0),f.y);
+    character.rotation.y=-(f.visualHeading??f.heading??0);
     const legs=character.userData.legs||[];
     const arms=character.userData.arms||[];
     for(let k=0;k<legs.length;k++)
-      legs[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.24:0;
+      legs[k].rotation.z=walking?Math.sin((f.gait||0)+k*Math.PI)*.34:0;
     for(let k=0;k<arms.length;k++)
-      arms[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.11:
-        f.working?Math.sin(f.phase*.55+k)*.10:0;
+      arms[k].rotation.z=walking?
+        Math.sin((f.gait||0)+k*Math.PI)*.24:
+        working?Math.sin((f.animTime||0)*3.0+k)*.12:0;
     const tool=character.userData.tool;
     if(tool){
-      tool.rotation.z=f.working?Math.sin(f.phase*.65)*.13:0;
-      tool.position.y=f.working?Math.sin(f.phase*.65)*.08:0;
+      tool.rotation.z=working?Math.sin((f.animTime||0)*3.2)*.12:0;
+      tool.position.y=working?Math.sin((f.animTime||0)*3.2)*.07:0;
     }
   });
 }
