@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.0 — gestão rural integrada à simulação e visualização 3D otimizada.
+/* Fazenda Viva 0.9.1 — rede viária coerente e locomoção compartilhada 2D/3D.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -90,7 +90,7 @@ function road(parent,x1,z1,x2,z2,width=9,elevation=.16) {
   // Estradas que se cruzam usam alturas diferentes: evita z-fighting em zoom elevado.
   const dx=x2-x1,dz=z2-z1,dist=Math.hypot(dx,dz);
   const m=flat(parent,width,dist,(x1+x2)/2,(z1+z2)/2,colors.path,elevation);
-  m.rotation.y=Math.atan2(-dx,dz);
+  m.rotation.y=Math.atan2(dx,dz);
   return m;
 }
 function roof(parent,w,d,h,ridgeY,color) {
@@ -474,49 +474,58 @@ function drawWorld(s){
 // Estradas internas são quads leves em uma única malha instanciada.
 function syncTrails(s){
   const segments=s.trails||[];
-  // A rede é imutável por versão de layout; evita serializar coordenadas em cada frame.
   if(segments===lastTrailObject&&segments.length===lastTrailLength)return;
   lastTrailObject=segments;lastTrailLength=segments.length;
-  // Um número estável de segmentos não é suficiente: precisamos verificar as coordenadas.
-  const key=segments.map(t=>[
-    t.x1.toFixed(1),t.y1.toFixed(1),t.x2.toFixed(1),t.y2.toFixed(1)
-  ].join(',')).join('|');
+  const key=segments.map(t=>
+    [t.x1,t.y1,t.x2,t.y2,t.w].map(v=>Number(v).toFixed(1)).join(',')).join('|');
   if(key===trailStamp3D)return;
   for(const old of [...trailLayer.children]){
     trailLayer.remove(old);
-    // InstancedMesh possui buffer GPU próprio, mesmo usando geometria compartilhada.
     old.dispose?.();
+    if(old.geometry?.__fvTransient)old.geometry.dispose?.();
   }
   trailStamp3D=key;
   if(!segments.length)return;
-  // Três faixas por trilha: barro compactado, superfície central e marcas de rodas.
-  // InstancedMesh mantém somente três draw calls, mesmo em fazendas grandes.
-  const soil=new THREE.InstancedMesh(sharedBox(1,.035,1),mat(0x8b835c),segments.length);
-  const path=new THREE.InstancedMesh(sharedBox(1,.045,1),mat(0xc3ac82),segments.length);
-  const tracks=new THREE.InstancedMesh(sharedBox(.15,.022,1),mat(0xa58a69),segments.length*2);
+  // Todos os trechos usam orientação +atan2(dx,dz): no Three.js
+  // o eixo +Z de um objeto rotacionado em Y aponta para (sin(yaw),cos(yaw)).
+  // A rotação negativa anterior espelhava TODOS os caminhos diagonais.
+  const soil=new THREE.InstancedMesh(sharedBox(1,.035,1),mat(0xa68c6b),segments.length);
+  const path=new THREE.InstancedMesh(sharedBox(1,.035,1),mat(0xc3ad88),segments.length);
+  const tracks=new THREE.InstancedMesh(sharedBox(.14,.012,1),mat(0xb69e7c),segments.length*2);
+  const capsGeo=new THREE.CylinderGeometry(1,1,.035,10);
+  capsGeo.__fvTransient=true;
+  const caps=new THREE.InstancedMesh(capsGeo,mat(0xc3ad88),segments.length*2);
   const dummy=new THREE.Object3D();
   for(let i=0;i<segments.length;i++){
     const t=segments[i],dx=t.x2-t.x1,dz=t.y2-t.y1;
-    const len=Math.hypot(dx,dz),angle=-Math.atan2(dx,dz);
-    const mx=(t.x1+t.x2)*.5,mz=(t.y1+t.y2)*.5;
-    const perpX=-dz/(len||1),perpZ=dx/(len||1);
-    const width=t.w||2.4;
-    dummy.rotation.set(0,angle,0);
-    dummy.position.set(mx,.322,mz);
-    dummy.scale.set(width+1.10,1,len+.4);dummy.updateMatrix();
+    const len=Math.hypot(dx,dz);
+    if(len<.05)continue;
+    const mx=(t.x1+t.x2)/2,mz=(t.y1+t.y2)/2;
+    const yaw=Math.atan2(dx,dz);
+    const perpX=dz/len,perpZ=-dx/len;
+    const width=t.w||2.5;
+    dummy.rotation.set(0,yaw,0);
+    dummy.position.set(mx,.317,mz);
+    dummy.scale.set(width+.48,1,len+.20);dummy.updateMatrix();
     soil.setMatrixAt(i,dummy.matrix);
-    dummy.position.set(mx,.364,mz);
-    dummy.scale.set(width,1,len+.3);dummy.updateMatrix();
+    dummy.position.set(mx,.354,mz);
+    dummy.scale.set(width,1,len+.25);dummy.updateMatrix();
     path.setMatrixAt(i,dummy.matrix);
-    for(let k=0;k<2;k++){
-      const side=k===0?-1:1,offset=side*width*.24;
-      dummy.position.set(mx+perpX*offset,.409,mz+perpZ*offset);
-      dummy.scale.set(1,1,len+.15);dummy.updateMatrix();
-      tracks.setMatrixAt(i*2+k,dummy.matrix);
+    for(let j=0;j<2;j++){
+      const offset=(j?1:-1)*width*.21;
+      dummy.position.set(mx+perpX*offset,.381,mz+perpZ*offset);
+      dummy.scale.set(1,1,len+.10);dummy.updateMatrix();
+      tracks.setMatrixAt(i*2+j,dummy.matrix);
+    }
+    dummy.rotation.set(0,0,0);
+    for(const [j,x,z] of [[0,t.x1,t.y1],[1,t.x2,t.y2]]){
+      dummy.position.set(x,.356,z);
+      dummy.scale.set(width*.5,1,width*.5);dummy.updateMatrix();
+      caps.setMatrixAt(i*2+j,dummy.matrix);
     }
   }
-  for(const mesh of [soil,path,tracks]){
-    mesh.instanceMatrix.needsUpdate=true;
+  for(const mesh of [soil,path,tracks,caps]){
+    mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;
     trailLayer.add(mesh);
   }
 }
