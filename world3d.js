@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.7 — caminhos internos, navegação de funcionários e trabalho rural.
+/* Fazenda Viva 0.8.8 — vegetação de pastagem, trilhas naturais e trabalhos animados.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -15,8 +15,8 @@ const api = window.FazendaVivaBridge;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer;
-let enabled = false, stamp = '',detailMode=null, trailStamp3D='';
+let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer;
+let enabled = false, stamp = '',detailMode=null, trailStamp3D='', grassStamp3D='';
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [];
@@ -405,29 +405,116 @@ function drawWorld(s){
   horseLayer=new THREE.Group();scene.add(horseLayer);
   workerLayer=new THREE.Group();scene.add(workerLayer);
   trailLayer=new THREE.Group();scene.add(trailLayer);
+  grassLayer=new THREE.Group();scene.add(grassLayer);
 }
 // Estradas internas são quads leves em uma única malha instanciada.
 function syncTrails(s){
   const segments=s.trails||[];
-  const key=segments.map(t=>[t.x1.toFixed(1),t.y1.toFixed(1),t.x2.toFixed(1),t.y2.toFixed(1)].join(',')).join('|');
+  // Um número estável de segmentos não é suficiente: precisamos verificar as coordenadas.
+  const key=segments.map(t=>[
+    t.x1.toFixed(1),t.y1.toFixed(1),t.x2.toFixed(1),t.y2.toFixed(1)
+  ].join(',')).join('|');
   if(key===trailStamp3D)return;
-  for(const old of [...trailLayer.children]){trailLayer.remove(old);if(old.dispose)old.dispose()}
+  for(const old of [...trailLayer.children])trailLayer.remove(old);
   trailStamp3D=key;
   if(!segments.length)return;
-  const mesh=new THREE.InstancedMesh(sharedBox(1,.045,1),mat(0xb29a75),segments.length);
+  // Três faixas por trilha: barro compactado, superfície central e marcas de rodas.
+  // InstancedMesh mantém somente três draw calls, mesmo em fazendas grandes.
+  const soil=new THREE.InstancedMesh(sharedBox(1,.035,1),mat(0x8b835c),segments.length);
+  const path=new THREE.InstancedMesh(sharedBox(1,.045,1),mat(0xc3ac82),segments.length);
+  const tracks=new THREE.InstancedMesh(sharedBox(.15,.022,1),mat(0xa58a69),segments.length*2);
   const dummy=new THREE.Object3D();
-  segments.forEach((t,i)=>{
-    const dx=t.x2-t.x1,dz=t.y2-t.y1,len=Math.hypot(dx,dz);
-    dummy.position.set((t.x1+t.x2)/2,.355,(t.y1+t.y2)/2);
-    dummy.rotation.set(0,-Math.atan2(dx,dz),0);
-    dummy.scale.set(t.w||2.4,1,len);
-    dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
-  });
-  mesh.instanceMatrix.needsUpdate=true;
-  trailLayer.add(mesh);
+  for(let i=0;i<segments.length;i++){
+    const t=segments[i],dx=t.x2-t.x1,dz=t.y2-t.y1;
+    const len=Math.hypot(dx,dz),angle=-Math.atan2(dx,dz);
+    const mx=(t.x1+t.x2)*.5,mz=(t.y1+t.y2)*.5;
+    const perpX=-dz/(len||1),perpZ=dx/(len||1);
+    const width=t.w||2.4;
+    dummy.rotation.set(0,angle,0);
+    dummy.position.set(mx,.322,mz);
+    dummy.scale.set(width+1.10,1,len+.4);dummy.updateMatrix();
+    soil.setMatrixAt(i,dummy.matrix);
+    dummy.position.set(mx,.364,mz);
+    dummy.scale.set(width,1,len+.3);dummy.updateMatrix();
+    path.setMatrixAt(i,dummy.matrix);
+    for(let k=0;k<2;k++){
+      const side=k===0?-1:1,offset=side*width*.24;
+      dummy.position.set(mx+perpX*offset,.409,mz+perpZ*offset);
+      dummy.scale.set(1,1,len+.15);dummy.updateMatrix();
+      tracks.setMatrixAt(i*2+k,dummy.matrix);
+    }
+  }
+  for(const mesh of [soil,path,tracks]){
+    mesh.instanceMatrix.needsUpdate=true;
+    trailLayer.add(mesh);
+  }
+}
+function scatterPasture(s){
+  const trailCount=(s.trails||[]).length;
+  const signature=s.buildings.map(b=>b.x.toFixed(1)+','+b.y.toFixed(1)+','+b.type).join(';')
+    +'|'+trailCount;
+  if(grassStamp3D===signature)return;
+  grassStamp3D=signature;
+  for(const m of [...grassLayer.children])grassLayer.remove(m);
+  // Em áreas externas aos prédios, touceiras discretas quebram o 'tapete verde'.
+  // O algoritmo é determinístico: elas não mudam de lugar quando a câmera se move.
+  const patches=[],blooms=[],trails=s.trails||[];
+  const hash=n=>{const k=Math.sin(n*73.619+12.7)*43758.545;return k-Math.floor(k)};
+  const farFromTrail=(x,z)=>{
+    for(const tr of trails){
+      const dx=tr.x2-tr.x1,dz=tr.y2-tr.y1,len2=dx*dx+dz*dz||1;
+      const t=Math.max(0,Math.min(1,((x-tr.x1)*dx+(z-tr.y1)*dz)/len2));
+      if(Math.hypot(x-(tr.x1+t*dx),z-(tr.y1+t*dz))<(tr.w||2.4)*.5+2.25)return false;
+    }
+    return true;
+  };
+  for(let k=0;k<s.owners.length;k++){
+    const o=s.owners[k];
+    for(let i=0;i<145;i++){
+      const angle=hash(i*19.7+k*81.3)*Math.PI*2;
+      const radius=Math.sqrt(hash(i*11.13+k*137+78))*106;
+      const x=o.x+Math.cos(angle)*radius,z=o.y+Math.sin(angle)*radius;
+      if(s.buildings.some(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+3.9&&Math.abs(z-b.y)<b.h/2+3.9))continue;
+      if(!farFromTrail(x,z))continue;
+      // Evitar acessos asfaltados/água e manter clareiras junto aos estábulos.
+      if(s.ponds.some(p=>Math.hypot((x-p.x)/p.rx,(z-p.y)/p.ry)<1.2))continue;
+      const height=.45+hash(i*5+k*51)*.95,scale=.42+hash(i*7+k*37)*.55;
+      patches.push({x,z,height,scale,shade:Math.floor(hash(i*17+k*4)*4)});
+      if(i%8===0)blooms.push({x:x+.3,z:z-.3,scale:.65+hash(i*3+k)*.6});
+    }
+  }
+  if(patches.length){
+    const clusters=new THREE.InstancedMesh(new THREE.ConeGeometry(.82,1,5),mat(0x71984e),patches.length);
+    const dummy=new THREE.Object3D();
+    for(let i=0;i<patches.length;i++){
+      const g=patches[i];
+      dummy.position.set(g.x,.37+g.height*.5,g.z);
+      dummy.rotation.set(0,(i*2.39996)%(Math.PI*2),0);
+      dummy.scale.set(g.scale,g.height,g.scale);
+      dummy.updateMatrix();clusters.setMatrixAt(i,dummy.matrix);
+      if(clusters.setColorAt){
+        clusters.setColorAt(i,new THREE.Color([0x668e48,0x779951,0x829f58,0x688945][g.shade]));
+      }
+    }
+    clusters.instanceMatrix.needsUpdate=true;
+    if(clusters.instanceColor)clusters.instanceColor.needsUpdate=true;
+    grassLayer.add(clusters);
+  }
+  if(blooms.length){
+    const flower=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.35,0),mat(0xddc379),blooms.length);
+    const dummy=new THREE.Object3D();
+    for(let i=0;i<blooms.length;i++){
+      const g=blooms[i];
+      dummy.position.set(g.x,.83,g.z);dummy.rotation.set(0,0,0);
+      dummy.scale.set(g.scale,g.scale*.55,g.scale);dummy.updateMatrix();
+      flower.setMatrixAt(i,dummy.matrix);
+    }
+    flower.instanceMatrix.needsUpdate=true;grassLayer.add(flower);
+  }
 }
 function sync(s){
   syncTrails(s);
+  scatterPasture(s);
   // Somente estruturas próximas à câmera entram no grafo 3D detalhado.
   // No zoom regional o mesmo sistema usa modelos simplificados.
   // LOD com histerese impede reconstruções repetidas na fronteira do zoom.
