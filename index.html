@@ -137,6 +137,12 @@ function render(){
     else{let x=o.x<0?-140:140;drawRoad(o.x,o.y,x,o.y,7);drawRoad(x,o.y,x,140,7)}
   }
   drawLandscape();
+  // Caminhos de serviço seguem os mesmos corredores seguros dos funcionários.
+  for(const t of farmTrails()){
+    const a=screen(t.x1,t.y1),b=screen(t.x2,t.y2);
+    ctx.lineCap='round';ctx.strokeStyle='#b69d77';ctx.lineWidth=Math.max(1,t.w*s);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  }
   for(const o of owners){
     let p=screen(o.x,o.y);
     if(p.x<-180||p.x>W+180||p.y<-180||p.y>H+180)continue;
@@ -671,7 +677,7 @@ $('visitFarm').onclick=()=>{
 $('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;$('panel').hidden=true;$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 window.FazendaVivaBridge={
-  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,zoom,panX,panY,day}),
+  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day}),
   mode:(active)=>{mode3D=!!active;document.getElementById('renderStatus').textContent=active?'🌄 3D ativo':'🗺️ 2D compatível'}
 };
 setTimeout(()=>{
