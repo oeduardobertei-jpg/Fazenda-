@@ -4,12 +4,13 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.m
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
+window.FazendaViva3DReady=true;
 const api = window.FazendaVivaBridge;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
 let renderer, scene, camera, content, horseLayer;
-let enabled = false, wanted = true, stamp = '';
+let enabled = false, stamp = '';
 let labelLayer, labelNodes = [];
 const colors = {
   grass: 0x83a968, grass2: 0x9bb97b, earth: 0xb8a17a,
@@ -155,12 +156,13 @@ function drawWorld(s){
     const x=(i*317.21%1160)-580,z=(i*193.39%1060)-530;
     flat(root,25+(i%5)*11,24+(i%4)*14,x,z,i%3===0?0x83aa6b:0x8daf76,.09);
   }
-  road(root,-110,-575,-110,575,15);
-  road(root,-575,110,575,110,15);
+  road(root,-140,-580,-140,580,14);
+  road(root,140,-580,140,580,14);
+  road(root,-580,140,580,140,14);
   for(const o of s.owners){
-    const lx=o.x<-100?-110:o.x>100?110:o.x;
-    road(root,o.x,o.y,lx,o.y,8);
-    road(root,lx,o.y,lx,110,8);
+    const lx=o.x<-100?-140:o.x>100?140:o.x;
+    if(o.x!==lx)road(root,o.x,o.y,lx,o.y,8);
+    road(root,lx,o.y,lx,140,8);
     ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779);
     // cerca divisória da gleba — cerca com ~96 postes, uma só malha instanciada
     const n=52, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(1,3,1),mat(0xe4ca98),n);
@@ -237,7 +239,7 @@ function stop(reason){
   if(reason)fail.textContent=reason+' · Modo 2D preservado.';
 }
 function start(){
-  if(!renderer){fail.textContent='Seu aparelho não suporta WebGL';return}
+  if(!renderer||!scene||!labelLayer){fail.textContent='Three.js não inicializou; o modo 2D continua disponível.';return}
   if(enabled)return;
   enabled=true;renderer.domElement.style.display='block';
   labelLayer.style.display='block';
@@ -247,10 +249,6 @@ function start(){
   requestAnimationFrame(animate);
 }
 function init(){
-  const canvas=document.createElement('canvas');
-  const test=canvas.getContext('webgl2',{failIfMajorPerformanceCaveat:false})||
-             canvas.getContext('webgl',{failIfMajorPerformanceCaveat:false});
-  if(!test)throw Error('WebGL indisponível neste navegador');
   const fresh=document.createElement('canvas');
   renderer=new THREE.WebGLRenderer({canvas:fresh,antialias:false,powerPreference:'low-power',alpha:false});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
@@ -261,7 +259,7 @@ function init(){
   document.body.insertBefore(renderer.domElement,document.getElementById('hud'));
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();stop('Contexto gráfico interrompido')});
   window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight)});
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbfc9);scene.fog=new THREE.Fog(0x9bbfc9,420,970);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbfc9);scene.fog=new THREE.Fog(0x9bbfc9,850,1800);
   camera=new THREE.OrthographicCamera(-100,100,100,-100,.1,2400);
   scene.add(new THREE.HemisphereLight(0xe4f3fa,0x50664b,2.05));
   const sun=new THREE.DirectionalLight(0xffe5b9,1.55);sun.position.set(-210,310,180);scene.add(sun);
