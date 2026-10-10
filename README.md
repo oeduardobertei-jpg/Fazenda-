@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.3
+# Fazenda Viva — versão 0.8.4
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=083
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=084
 
 ## Novidades da série 0.8
 
@@ -38,10 +38,20 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - Zonas funcionais nas decisões das IAs: áreas residenciais, equestres, agrícolas e de piquetes.
 - Limite inicial de expansão automática de até 24 estruturas por propriedade vizinha; instalações antigas de salvamentos anteriores não são removidas.
 
+### 0.8.4 — correções a partir das capturas do Android
+- Gestos de câmera reescritos para um e dois dedos, com estado separado de pinça e arrasto; cancelamento e retirada de dedos não deixam o zoom preso.
+- Botões **+** e **−** no canto superior direito, para aproximação e afastamento mesmo quando um gesto falha.
+- O movimento com toque no 3D agora usa a projeção real do terreno para deslocar a câmera.
+- Nova passagem de câmera entre vista regional (quase vertical) e vista da cabanha (oblíqua); saltos grandes de posição não ficam demorando a acompanhar.
+- Níveis diferentes para camadas do cenário (pastagem, estradas, terrenos, açudes e água) para eliminar artefatos triangulares de z-fighting.
+- Vegetação mais variada, combinando árvores de copas arredondadas e coníferas, mantendo instancing para desempenho mobile.
+- A área total do terreno continua ampliada; o progresso da versão anterior permanece salvo.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
-- **Pinça:** aproximar e afastar.
+- **Pinça:** aproximar e afastar, com retorno seguro após levantar um dedo.
+- **+ / −:** zoom alternativo pelo botão em mobile.
 - **Fazenda:** voltar à cabanha do jogador.
 - **Mapa:** visão de toda a região.
 - **Visitar outra fazenda:** navegar entre as propriedades pelo painel.
@@ -62,6 +72,6 @@ Executados testes automatizados com simulação de centenas de dias, conferindo 
 
 ## Próximas entregas
 
-0.8.4 — identidade rural regional, natureza e interiores externos mais orgânicos;
+0.8.5 — QA da câmera, naturalização de caminhos, melhor integração das construções;
 0.9 — HUD, usabilidade, progressão, economia e testes longos;
 1.0 — integração e critérios de estabilidade.
