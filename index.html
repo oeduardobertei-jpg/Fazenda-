@@ -1039,6 +1039,9 @@ function financialBreakdown(o){
     '<div class="mgLine"><span>Receitas operacionais</span><span class="mgGood">'+brl(e.gross)+'</span></div>'+
     '<div class="mgLine"><span>Despesas totais</span><span class="mgBad">− '+brl(e.cost)+'</span></div>'+
     '<div class="mgLine"><span>Folha salarial (incluída nas despesas)</span><span>'+brl(e.payroll)+'</span></div>'+
+    (e.eventSurcharge?'<div class="mgLine"><span>Impacto do evento nos custos</span><span class="mgBad">+'+brl(e.eventSurcharge)+'</span></div>':'')+
+    (e.supplyDiscount?'<div class="mgLine"><span>Economia de insumos</span><span class="mgGood">− '+brl(e.supplyDiscount)+'</span></div>':'')+
+    (o.supplyCycles?'<p class="mgSmall">Suprimentos contratados por mais '+o.supplyCycles+' ciclos.</p>':'')+
     '<div class="mgLine"><span>Produção da equipe (incluída nas receitas)</span><span>'+brl(e.bonus)+'</span></div>'+
     '<hr style="border:0;border-top:1px solid #537660">'+
     '<div class="mgLine"><strong>Resultado líquido</strong><strong class="'+(e.net>=0?'mgGood':'mgBad')+'">'+brl(e.net)+'</strong></div></div>'+
