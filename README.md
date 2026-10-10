@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.8
+# Fazenda Viva — versão 0.8.9
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=088
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=089
 
 ## Novidades da série 0.8
 
@@ -93,6 +93,17 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 **QA automatizado:** a simulação de teste alcançou o dia 1.731 com 64 construções, 15 NPCs e 90 cavalos distribuídos pelas cinco fazendas. Nos intervalos amostrados, nenhum NPC atravessou o interior de prédios, não houve funcionários fora de suas propriedades, e a distância mínima medida entre cavalos foi de cerca de 6,46 unidades. Os testes de inicialização simulada do módulo 3D também passaram (modelos, trilhas, vegetação e mudanças de câmera). **Esses testes não substituem conferência visual WebGL no Android real.**
 
+### 0.8.9 — Performance real, câmera Android e QA automático
+- **3D incremental:** o Three.js agora mantém uma malha por estrutura visível e reconstrói somente as construções que realmente mudaram, foram concluídas ou entraram/saíram da câmera. O sistema anterior recriava todas as estruturas próximas após cada alteração.
+- **Memória WebGL:** geometrias transitórias de colunas/cilindros são liberadas ao substituir modelos, e os buffers das trilhas e da vegetação são descartados quando essas camadas são geradas novamente. Geometrias e materiais compartilhados permanecem em cache para evitar alocação excessiva.
+- **Zoom com âncora no terreno:** a pinça do modo 3D consulta a projeção real sobre o chão antes de alterar o zoom; o modo 2D conserva o cálculo ortográfico. Isso reduz deslocamentos repentinos ao aproximar com dois dedos.
+- **Trabalhadores identificáveis no 3D:** ao aproximar, aparecem no máximo dois indicadores próximos com função e estado (trabalhando, caminhando ou aguardando). As etiquetas ficam escondidas na vista regional e evitam o HUD.
+- **Modo econômico opcional:** no painel `Construir → Gráficos`, é possível trocar entre **normal** e **econômico**. O modo econômico reduz a resolução interna do WebGL, simplifica a geometria das construções, oculta flores/touceiras decorativas e ajusta o ritmo do renderizador sem alterar a velocidade da simulação nem retirar os trabalhadores.
+- **Preparação para a 0.9:** criado `tests/smoke.mjs` para verificar integridade do JS, versão/cache, inicialização sem salvamentos, dia 1, 15 trabalhadores, circulação sem atravessar prédios, distanciamento entre cavalos, obras sequenciais, zoom, qualidade gráfica e reset. O workflow `.github/workflows/qa.yml` executa automaticamente o teste em pushes e pull requests para `main`.
+- **Compatibilidade:** a partida continua começando no dia 1 em cada carregamento, conforme solicitado. O botão de reset e a alternativa em Canvas 2D foram preservados.
+
+**Validação 0.8.9:** a simulação automatizada executada na sessão alcançou o **dia 1.866**, com 64 estruturas, 15 NPCs, 1.639 serviços concluídos e 113 segmentos de caminhos. Não foram detectados NPCs atravessando edifícios nos pontos amostrados. A inicialização 3D também passou por simulação, incluindo alternância normal/econômico, construção alterada, atualização de trilhas e visão regional. **Ainda falta conferir visualmente o WebGL no Android real.**
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -105,21 +116,24 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - **Comprar cavalo:** precisa de recursos e capacidade nas cocheiras.
 - **Modo 2D:** trocar do WebGL para Canvas de compatibilidade.
 - **Construir → Ver próximo trabalhador:** aproxima a câmera dos funcionários da sua propriedade.
+- **Construir → Gráficos:** alterna normal/econômico no 3D, sem alterar a economia.
 - **Construir → Reiniciar do dia 1:** descarta a partida atual e recarrega um novo jogo (com confirmação).
 
 ## Estrutura
 
-- `index.html`: economia, expansão de IAs, compras, posicionamento, câmera, HUD, Canvas 2D e salvamento.
-- `world3d.js`: Three.js, construções e cavalos 3D, paisagem, iluminação, câmera oblíqua e seleção do terreno.
+- `index.html`: economia, expansão de IAs, compras, posicionamento, câmera, HUD, Canvas 2D, reinício e qualidade gráfica.
+- `world3d.js`: Three.js, modelos 3D com atualização incremental, paisagem, trabalhadores, câmera oblíqua e qualidade adaptável.
+- `tests/smoke.mjs`: teste de regressão em Node 22, sem dependências externas.
+- `.github/workflows/qa.yml`: verifica o teste em push e pull requests.
 
 ## Validação
 
-Executados testes automatizados com simulação de centenas de dias, conferindo limite das propriedades, separação de construções e salvamento. Também foi realizado teste simulado da inicialização do renderizador, alternância de modos e conversão de toque para coordenadas do terreno.
+Execute localmente `node tests/smoke.mjs` para verificar simulação, controles, qualidade, obras e integridade do código. O mesmo teste foi configurado no GitHub Actions para detectar regressões a cada atualização. Também foram feitos testes simulados do renderizador 3D e da conversão dos toques para coordenadas do terreno.
 
 **Atenção:** não houve nova validação visual dessa versão em um aparelho Android real. É necessário conferir o resultado pelo GitHub Pages e enviar capturas para continuar o QA. O Three.js usa CDN externo na primeira abertura; se falhar, o modo 2D permanece disponível.
 
 ## Próximas entregas
 
-0.8.9 — inspeção visual Android, polimento da interação, desempenho e integração dos sistemas;
-0.9 — HUD, usabilidade, progressão, economia e testes longos;
+0.8.9 — concluída em código, pendente de inspeção visual Android;
+0.9 — gestão da cabanha, HUD, objetivos, equilíbrio econômico, refinamento mobile e testes longos;
 1.0 — integração e critérios de estabilidade.
