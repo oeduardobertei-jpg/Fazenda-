@@ -228,7 +228,7 @@ function drawRoad(x1,y1,x2,y2,width=9){
 }
 // Silhuetas 2D usam os mesmos heading/gait/motion usados nos modelos Three.js.
 function drawHorseSprite(h){
-  const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom;
+  const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom*(horseAge(h)<1?.64:horseAge(h)<2?.82:1);
   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-h.heading);ctx.scale(s,s*.67);
   const movement=h.motion==='walk'?Math.sin(h.gait):0;
   const grazing=h.motion==='graze';
@@ -947,7 +947,7 @@ function cabanhaAssets(o=owners[0]){
     return n+Math.round(base*(.70+.30*(b.tier||1))*
       (b.status==='building'?Math.max(.25,b.progress/100):1));
   },0);
-  const herd=horses.filter(h=>h.o===o).reduce((n,h)=>n+900+Math.round(h.quality*29),0);
+  const herd=horses.filter(h=>h.o===o).reduce((n,h)=>n+horseSalePrice(h),0);
   return {construction,herd,total:Math.round(o.cash)+construction+herd};
 }
 function cabanhaScore(o=owners[0]){
@@ -1501,7 +1501,7 @@ $('visitFarm').onclick=()=>{
 $('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;$('panel').hidden=true;$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 window.FazendaVivaBridge={
-  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics}),
+  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market}),
   mode:(active)=>{mode3D=!!active;document.getElementById('renderStatus').textContent=active?'🌄 3D ativo':'🗺️ 2D compatível'}
 };
 setTimeout(()=>{
