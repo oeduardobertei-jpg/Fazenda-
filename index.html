@@ -186,6 +186,9 @@ function tick(){
       $('news').textContent='👷 '+o.name+' iniciou ampliação de '+typeNames[b.type]+'.';
       continue;
     }
+    // Patrimônio antigo permanece intacto, mas uma fazenda já lotada não abre novos lotes.
+    const totalLimit=Object.values(policy).reduce((sum,n)=>sum+n,0);
+    if(own.length>=totalLimit)continue;
     const counts={house:0,stable:0,barn:0,paddock:0};
     for(const b of own)counts[b.type]=(counts[b.type]||0)+1;
     const maxPaddocks=Math.min(policy.paddock,Math.max(2,Math.ceil(herd/5)+1));
