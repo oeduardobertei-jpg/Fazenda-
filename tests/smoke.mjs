@@ -89,7 +89,7 @@ try{
   assert.equal(get().lowGraphics,false,'modo normal');
   ui.get('speed').onclick();ui.get('speed').onclick(); // 8x
   let ms=performance.now(),overlap=0,outside=0,maxSite=0,minHorse=1e9;
-  let trailIntersections=0,unconnectedStructures=0;
+  let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0;
   const horseStates=new Set(),workerStates=new Set();
   for(let i=0;i<1300;i++){
     ms+=50;step(ms);
@@ -130,6 +130,8 @@ try{
       const workers=s.farmers.filter(w=>w.o===o),
         horses=s.horses.filter(h=>h.o===o);
       for(const w of workers){
+        if(w.pathMode==='rede')roadSamples++;
+        else if(w.pathMode==='terreno')landSamples++;
         if(s.buildings.some(b=>b.o===o&&
             Math.abs(w.x-b.x)<b.w/2+.3&&Math.abs(w.y-b.y)<b.h/2+.3))overlap++;
         if(Math.hypot((w.x-o.x)/110,(w.y-o.y)/107)>1.02)outside++;
@@ -143,6 +145,7 @@ try{
         s.buildings.filter(b=>b.o===o&&b.status!=='complete').length);
     }
   }
+  assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
   assert.ok(get().day>1,'dias devem avançar');
   assert.ok(get().trails.length>0,'caminhos existentes');
   assert.ok(get().farmers.some(f=>(f.tasksDone||0)>0),'tarefas em execução');
