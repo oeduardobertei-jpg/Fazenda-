@@ -18,6 +18,7 @@ const fail = document.getElementById('renderStatus');
 let renderer, scene, camera, content, horseLayer;
 let enabled = false, stamp = '',detailMode=null;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false;
+const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [];
 const colors = {
   grass: 0x89a970, grass2: 0x9bb97b, earth: 0xb8a17a,
@@ -298,13 +299,13 @@ function sync(s){
   const highDetail=s.zoom>=.72;
   const newStamp=(highDetail?'H':'L')+'|'+s.buildings.map(b=>[b.type,b.x,b.y,b.tier||1,s.owners.indexOf(b.o)].join(':')).join('|');
   if(newStamp!==stamp){
-    content.clear();
-    // Geometrias básicas e materiais são reutilizados: evita perdas de VRAM nas expansões da IA.
+    // Reutilização das geometrias básicas reduz picos de alocação durante a simulação.
+    for(const child of [...content.children])content.remove(child);
     for(const b of s.buildings)content.add(building(b,highDetail));
     stamp=newStamp;
   }
   if(horseLayer.children.length!==s.horses.length){
-    horseLayer.clear();
+    for(const child of [...horseLayer.children])horseLayer.remove(child);
     for(const h of s.horses)horseLayer.add(makeHorse(h));
   }
   // Cada cavalo fica no piquete ou perto da cocheira da própria cabanha.
@@ -371,6 +372,13 @@ function animate(){
   }
   requestAnimationFrame(animate);
 }
+api.groundAt=(clientX,clientY)=>{
+  if(!enabled||!camera)return null;
+  const p=new THREE.Vector2(clientX/innerWidth*2-1,-(clientY/innerHeight)*2+1);
+  groundRay.setFromCamera(p,camera);
+  const hit=groundRay.ray.intersectPlane(groundPlane,groundHit);
+  return hit?{x:hit.x,y:hit.z}:null;
+};
 function stop(reason){
   enabled=false;
   if(renderer)renderer.domElement.style.display='none';
