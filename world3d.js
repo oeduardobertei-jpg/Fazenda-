@@ -8,7 +8,7 @@ try {
 
 /* Fazenda Viva 0.8.8 — vegetação de pastagem, trilhas naturais e trabalhos animados.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
- * Todos os controles, economia e salvamento seguem no index.html.
+ * Controles, economia e reinício de partidas permanecem no index.html.
  */
 window.FazendaViva3DReady=true;
 const api = window.FazendaVivaBridge;
