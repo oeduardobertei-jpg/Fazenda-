@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.9
+# Fazenda Viva — versão 0.9.0
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=089
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=090
 
 ## Novidades da série 0.8
 
@@ -104,6 +104,21 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 **Validação 0.8.9:** a simulação automatizada executada na sessão alcançou o **dia 1.866**, com 64 estruturas, 15 NPCs, 1.639 serviços concluídos e 113 segmentos de caminhos. Não foram detectados NPCs atravessando edifícios nos pontos amostrados. A inicialização 3D também passou por simulação, incluindo alternância normal/econômico, construção alterada, atualização de trilhas e visão regional. **Ainda falta conferir visualmente o WebGL no Android real.**
 
+### 0.9.0 — Gestão econômica e progressão da cabanha
+- **Painel de gestão mobile:** em `☰ Menu → 📊 Gestão da cabanha`, seis abas: Resumo, Finanças, Cavalos, Equipe, Mercado e Metas. O painel é independente das construções e não ocupa a tela quando fechado.
+- **Resumo patrimonial:** saldo, patrimônio estimado, lucro líquido, capacidade e tamanho do plantel, reputação rural, nível da cabanha, obras ativas e classificação regional das cinco propriedades.
+- **Finanças:** demonstração econômica simplificada por ciclo de cinco dias, separando receitas, despesas, folha salarial e bônus produtivo da equipe; patrimônio estimado dividido em saldo, instalações e cavalos.
+- **Histórico financeiro:** gráfico de evolução do saldo com até 72 snapshots registrados durante os ciclos econômicos (exibição dos últimos 36 pontos). Sem gravação no navegador: começa do zero ao abrir nova partida.
+- **Gestão do plantel:** lista de cavalos com nome, raça, idade, pelagem e qualidade; botão para localizar um cavalo no mapa e opção de comprar outro, respeitando saldo e capacidade.
+- **Equipe rural:** tarefas, serviços concluídos, salários e produtividade, com botão para seguir individualmente cada trabalhador.
+- **Mercado e competição:** índices equestre e agrícola, desempenho e estrutura de cada fazenda vizinha, ranking calculado por patrimônio, instalações, número de cavalos e resultado operacional.
+- **Progressão real:** sete metas com recompensas em dinheiro e reputação, concedidas uma única vez por partida; níveis de reconhecimento de criador iniciante a referência nacional. A conquista depende de construções, produtividade, expansão do plantel e patrimônio.
+- **HUD simplificado:** mostra construções próprias/regionais e reputação; o botão principal agora se chama `☰ Menu`, facilitando encontrar a gestão.
+- **Testes automáticos:** o smoke de regressão cobre abertura e fechamento das seis abas, localização de cavalos e trabalhadores, integridade do saldo, progressão, motor da simulação, colisões, zoom, modo econômico e reset.
+- **Reinício:** continua começando no dia 1 e não armazena progresso automaticamente, conforme solicitado.
+
+**Nota sobre valores financeiros:** são preços, índices e patrimônio *simulados para gameplay*, não cotações oficiais, demonstrações contábeis reais ou avaliações de mercado verificadas. O gráfico de saldo e as metas não utilizam servidores externos nem persistência local.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -112,7 +127,9 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - **Fazenda:** voltar à cabanha do jogador.
 - **Mapa:** visão de toda a região.
 - **Visitar outra fazenda:** navegar entre as propriedades pelo painel.
+- **☰ Menu:** acessar a construção, opções gráficas e o botão `📊 Gestão da cabanha`.
 - **Construir:** selecionar uma estrutura e tocar em terreno válido.
+- **Gestão da cabanha:** consultar balanço econômico simulado, cavalos, trabalhadores, mercado regional e objetivos; toque em `✕` para voltar ao mapa.
 - **Comprar cavalo:** precisa de recursos e capacidade nas cocheiras.
 - **Modo 2D:** trocar do WebGL para Canvas de compatibilidade.
 - **Construir → Ver próximo trabalhador:** aproxima a câmera dos funcionários da sua propriedade.
@@ -121,7 +138,7 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 ## Estrutura
 
-- `index.html`: economia, expansão de IAs, compras, posicionamento, câmera, HUD, Canvas 2D, reinício e qualidade gráfica.
+- `index.html`: economia, mercado, rankings, metas, painel de gestão, expansão das IAs, interação, HUD, Canvas 2D, reinício e qualidade gráfica.
 - `world3d.js`: Three.js, modelos 3D com atualização incremental, paisagem, trabalhadores, câmera oblíqua e qualidade adaptável.
 - `tests/smoke.mjs`: teste de regressão em Node 22, sem dependências externas.
 - `.github/workflows/qa.yml`: verifica o teste em push e pull requests.
@@ -135,5 +152,6 @@ Execute localmente `node tests/smoke.mjs` para verificar simulação, controles,
 ## Próximas entregas
 
 0.8.9 — concluída em código, pendente de inspeção visual Android;
-0.9 — gestão da cabanha, HUD, objetivos, equilíbrio econômico, refinamento mobile e testes longos;
+0.9.0 — gestão e progressão funcional, implementadas e testadas na simulação; falta inspeção visual no Android;
+0.9.1 — equilíbrio econômico, objetivos avançados, eventos de fazenda e testes visuais mobile;
 1.0 — integração e critérios de estabilidade.
