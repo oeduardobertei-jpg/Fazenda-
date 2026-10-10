@@ -75,10 +75,12 @@ function ellipse(parent,x,z,rx,rz,color,elevation=.09) {
   parent.add(m);
   return m;
 }
-function road(parent,x1,z1,x2,z2,width=9) {
+function road(parent,x1,z1,x2,z2,width=9,elevation=.16) {
+  // Estradas que se cruzam usam alturas diferentes: evita z-fighting em zoom elevado.
   const dx=x2-x1,dz=z2-z1,dist=Math.hypot(dx,dz);
-  const m=flat(parent,width,dist,(x1+x2)/2,(z1+z2)/2,colors.path,.16);
+  const m=flat(parent,width,dist,(x1+x2)/2,(z1+z2)/2,colors.path,elevation);
   m.rotation.y=Math.atan2(-dx,dz);
+  return m;
 }
 function roof(parent,w,d,h,ridgeY,color) {
   const key=[w,d,h,ridgeY].map(x=>Number(x).toFixed(3)).join(':');
@@ -319,18 +321,18 @@ function drawWorld(s){
   }
   // Pátios e conexões internos são desenhados sem cruzar as baias.
 
-  road(root,-140,-580,-140,580,14);
-  road(root,140,-580,140,580,14);
-  road(root,-580,140,580,140,14);
+  road(root,-140,-580,-140,580,14,.16);
+  road(root,140,-580,140,580,14,.16);
+  road(root,-580,140,580,140,14,.205);
   for(const o of s.owners){
-    if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8);
-    else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8);
-    else road(root,o.x,140,o.x,o.y+120,8);
+    if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8,.235);
+    else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8,.235);
+    else road(root,o.x,140,o.x,o.y+120,8,.235);
     ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779,.24);
     // Solo compactado junto à entrada, sem passar por baixo das estruturas.
     const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
     const entranceY=Math.abs(o.x)<100?o.y+112:o.y;
-    ellipse(root,entranceX,entranceY,8,7,0xbaa17b,.275);
+    ellipse(root,entranceX,entranceY,8,7,0xbaa17b,.34);
     // Cercas físicas de dois trilhos; a entrada fica voltada para a estrada de acesso.
     const n=60, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.9,3,.9),mat(0xe4ca98),n);
     const rails=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.28,.42),mat(0xd3b583),n*2);
@@ -356,6 +358,8 @@ function drawWorld(s){
     posts.instanceMatrix.needsUpdate=true;rails.instanceMatrix.needsUpdate=true;
     root.add(posts,rails);
   }
+  // Terraplenagem suaviza cruzamentos em vez de dois retângulos coplanares.
+  for(const x of [-140,140])ellipse(root,x,140,10.2,10.2,0xc8b18c,.33);
   for(const f of s.fields){
     flat(root,f.w,f.h,f.x,f.y,colors.crop,.29);
     for(let i=-3;i<=3;i++)flat(root,1.2,f.h-3,f.x+i*f.w/8,f.y,0x6d8f4c,.38);
