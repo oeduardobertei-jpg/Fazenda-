@@ -191,27 +191,181 @@ function placeHorses(){
   }
 }
 // Funcionários autônomos: tratadores, agricultores e administradores.
+// Navegação rural: A* local com grade de 4 m, margens e bloqueio de quinas.
+// Recalcula a grade apenas quando a distribuição física da propriedade muda.
+const NAV_STEP=4,NAV_N=54,navCache=new Map(),NAV_DIRS=[
+  [1,0,10],[-1,0,10],[0,1,10],[0,-1,10],
+  [1,1,14],[1,-1,14],[-1,1,14],[-1,-1,14]
+];
+function workerSafe(o,x,y,margin=2.1){
+  const dx=(x-o.x)/104,dy=(y-o.y)/101;
+  if(dx*dx+dy*dy>1)return false;
+  return !buildings.some(b=>b.o===o&&
+    Math.abs(x-b.x)<b.w/2+margin&&Math.abs(y-b.y)<b.h/2+margin);
+}
+function farmGrid(o){
+  const structures=buildings.filter(b=>b.o===o);
+  const key=structures.map(b=>[b.x.toFixed(1),b.y.toFixed(1),b.w,b.h].join(',')).join('|');
+  const old=navCache.get(o);
+  if(old&&old.key===key)return old;
+  const x0=o.x-106,y0=o.y-106,blocked=new Uint8Array(NAV_N*NAV_N);
+  for(let iy=0;iy<NAV_N;iy++)for(let ix=0;ix<NAV_N;ix++){
+    if(!workerSafe(o,x0+ix*NAV_STEP,y0+iy*NAV_STEP,2.6))blocked[iy*NAV_N+ix]=1;
+  }
+  const grid={o,x0,y0,key,blocked};navCache.set(o,grid);return grid;
+}
+function nearestWalkable(grid,x,y){
+  const gx=Math.round((x-grid.x0)/NAV_STEP),gy=Math.round((y-grid.y0)/NAV_STEP);
+  let best=-1,score=Infinity;
+  for(let r=0;r<=10;r++){
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
+      const ix=gx+dx,iy=gy+dy;
+      if(ix<0||iy<0||ix>=NAV_N||iy>=NAV_N)continue;
+      const idx=iy*NAV_N+ix;
+      if(grid.blocked[idx])continue;
+      const dist=(grid.x0+ix*NAV_STEP-x)**2+(grid.y0+iy*NAV_STEP-y)**2;
+      if(dist<score){score=dist;best=idx}
+    }
+    if(best>=0)return best;
+  }
+  return best;
+}
+function clearWalkSegment(o,ax,ay,bx,by){
+  const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)/1.75));
+  for(let j=0;j<=n;j++){
+    const k=j/n,x=ax+(bx-ax)*k,y=ay+(by-ay)*k;
+    if(!workerSafe(o,x,y,2.0))return false;
+  }
+  return true;
+}
+function farmRoute(o,sx,sy,tx,ty){
+  const grid=farmGrid(o),from=nearestWalkable(grid,sx,sy),dest=nearestWalkable(grid,tx,ty);
+  if(from<0||dest<0)return [];
+  const N=NAV_N* NAV_N,scores=new Float64Array(N).fill(Infinity);
+  const parent=new Int32Array(N).fill(-1),done=new Uint8Array(N),heap=[];
+  const push=(index,g,priority)=>{
+    const node={index,g,priority};heap.push(node);
+    let i=heap.length-1;
+    while(i>0){const p=(i-1)>>1;if(heap[p].priority<=node.priority)break;heap[i]=heap[p];i=p}
+    heap[i]=node;
+  };
+  const pop=()=>{
+    const first=heap[0],last=heap.pop();
+    if(heap.length){
+      let i=0;
+      while(i*2+1<heap.length){
+        let child=i*2+1;
+        if(child+1<heap.length&&heap[child+1].priority<heap[child].priority)child++;
+        if(heap[child].priority>=last.priority)break;
+        heap[i]=heap[child];i=child;
+      }
+      heap[i]=last;
+    }
+    return first;
+  };
+  const heuristic=(idx)=>{
+    const ax=idx%NAV_N,ay=(idx/NAV_N)|0,bx=dest%NAV_N,by=(dest/NAV_N)|0;
+    const dx=Math.abs(ax-bx),dy=Math.abs(ay-by);
+    return 14*Math.min(dx,dy)+10*Math.abs(dx-dy);
+  };
+  scores[from]=0;push(from,0,heuristic(from));let processed=0;
+  while(heap.length&&processed<3000){
+    const n=pop(),i=n.index;
+    if(done[i]||n.g>scores[i])continue;
+    done[i]=1;processed++;
+    if(i===dest)break;
+    const x=i%NAV_N,y=(i/NAV_N)|0;
+    for(const [dx,dy,cost] of NAV_DIRS){
+      const nx=x+dx,ny=y+dy;
+      if(nx<0||ny<0||nx>=NAV_N||ny>=NAV_N)continue;
+      if(dx&&dy&&(grid.blocked[y*NAV_N+nx]||grid.blocked[ny*NAV_N+x]))continue;
+      const next=ny*NAV_N+nx,g=n.g+cost;
+      if(grid.blocked[next]||done[next]||g>=scores[next])continue;
+      parent[next]=i;scores[next]=g;push(next,g,g+heuristic(next));
+    }
+  }
+  if(!Number.isFinite(scores[dest]))return [];
+  const nodes=[];let at=dest;
+  while(at>=0){nodes.push({x:grid.x0+(at%NAV_N)*NAV_STEP,y:grid.y0+((at/NAV_N)|0)*NAV_STEP});at=parent[at]}
+  nodes.reverse();
+  const start=workerSafe(o,sx,sy,2)?{x:sx,y:sy}:nodes[0];
+  const goal=workerSafe(o,tx,ty,2)?{x:tx,y:ty}:nodes[nodes.length-1];
+  const list=[start,...nodes,goal],route=[];
+  let i=0;
+  while(i<list.length-1){
+    let j=list.length-1;
+    while(j>i+1&&!clearWalkSegment(o,list[i].x,list[i].y,list[j].x,list[j].y))j--;
+    route.push({x:list[j].x,y:list[j].y});i=j;
+  }
+  return route.slice(0,55);
+}
+const workerJobs={tratador:'Tratando animais',agricultor:'Organizando produção',administrador:'Administrando a cabanha'};
 function chooseFarmerTarget(f){
-  const wanted={tratador:'stable',agricultor:'barn',administrador:'house'}[f.role];
-  let list=buildings.filter(b=>b.o===f.o&&b.type===wanted&&isBuilt(b));
+  const wanted={tratador:['stable','paddock'],agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
+  let list=buildings.filter(b=>b.o===f.o&&wanted.includes(b.type)&&isBuilt(b));
   if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
-  if(!list.length){f.tx=f.o.x-15;f.ty=f.o.y-22;return}
-  const b=list[Math.floor(rnd()*list.length)];
-  const spots=[
-    {x:b.x-b.w/2-4,y:b.y},{x:b.x+b.w/2+4,y:b.y},
-    {x:b.x,y:b.y+b.h/2+4},{x:b.x,y:b.y-b.h/2-4}
-  ].filter(p=>insideFarm(f.o,p.x,p.y,2,2)&&
-    !buildings.some(other=>other!==b&&Math.abs(p.x-other.x)<other.w/2+2&&Math.abs(p.y-other.y)<other.h/2+2));
-  if(spots.length){const p=spots[Math.floor(rnd()*spots.length)];f.tx=p.x;f.ty=p.y}
+  if(!list.length){f.route=[];f.activity='Aguardando instalações';return}
+  // Varia alvo e ponto de atendimento para não formar filas na mesma porta.
+  const offset=f.id%list.length;
+  for(let k=0;k<list.length;k++){
+    const b=list[(k+offset+Math.floor(rnd()*list.length))%list.length];
+    const gap=4.4;
+    const goals=[
+      {x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
+      {x:b.x,y:b.y+b.h/2+gap},{x:b.x,y:b.y-b.h/2-gap}
+    ].filter(p=>workerSafe(f.o,p.x,p.y,2.4));
+    goals.sort((a,b)=>Math.hypot(a.x-f.x,a.y-f.y)-Math.hypot(b.x-f.x,b.y-f.y));
+    for(const target of goals){
+      const route=farmRoute(f.o,f.x,f.y,target.x,target.y);
+      if(!route.length)continue;
+      f.route=route;f.routeIndex=0;f.tx=target.x;f.ty=target.y;
+      f.activity='Indo trabalhar';f.task=workerJobs[f.role];
+      f.targetType=b.type;f.moving=true;return;
+    }
+  }
+  f.route=[];f.wait=1.5;f.activity='Aguardando caminho livre';f.moving=false;
+}
+function completeWorkerJob(f){
+  if(!f.working)return;
+  if(!f.o.work)f.o.work={tratador:0,agricultor:0,administrador:0};
+  f.o.work[f.role]=Math.min(3,Number(f.o.work[f.role]||0)+.85);
+  f.tasksDone=(f.tasksDone||0)+1;
+  f.working=false;f.activity='Serviço concluído';f.route=[];
 }
 function animateFarmers(dt){
+  const maxDt=Math.max(0,Math.min(.65,dt));
   for(const f of farmers){
-    if(f.wait>0){f.wait-=dt;f.moving=false;continue}
-    const dx=f.tx-f.x,dy=f.ty-f.y,dist=Math.hypot(dx,dy);
-    if(dist<.75){f.wait=1+rnd()*2;chooseFarmerTarget(f);f.moving=false;continue}
-    const movement=Math.min(dist,Math.max(0,dt)*(3.1+(f.id%3)*.4));
-    f.heading=Math.atan2(dy,dx);f.x+=dx/dist*movement;f.y+=dy/dist*movement;
-    f.phase+=dt*7.5;f.moving=true;
+    if(f.wait>0){
+      f.wait-=maxDt;f.moving=false;
+      if(f.wait<=0){completeWorkerJob(f);chooseFarmerTarget(f)}
+      continue;
+    }
+    if(!f.route||f.routeIndex>=f.route.length){chooseFarmerTarget(f);continue}
+    let waypoint=f.route[f.routeIndex];
+    if(!waypoint){chooseFarmerTarget(f);continue}
+    if(!workerSafe(f.o,f.x,f.y,1.2)){
+      const grid=farmGrid(f.o),cell=nearestWalkable(grid,f.x,f.y);
+      if(cell>=0){f.x=grid.x0+(cell%NAV_N)*NAV_STEP;f.y=grid.y0+((cell/NAV_N)|0)*NAV_STEP}
+      chooseFarmerTarget(f);continue;
+    }
+    const dx=waypoint.x-f.x,dy=waypoint.y-f.y,d=Math.hypot(dx,dy);
+    if(d<.7){
+      f.routeIndex++;
+      if(f.routeIndex>=f.route.length){
+        f.working=true;f.wait=2.2+(f.id%3)*.7;
+        f.activity=f.task;f.moving=false;
+      }
+      continue;
+    }
+    const step=Math.min(d,maxDt*(3.3+(f.id%3)*.30));
+    const nx=f.x+dx/d*step,ny=f.y+dy/d*step;
+    // Se outra estrutura foi construída desde o cálculo da rota, planeja novamente.
+    if(!clearWalkSegment(f.o,f.x,f.y,nx,ny)){
+      chooseFarmerTarget(f);continue;
+    }
+    f.heading=Math.atan2(dy,dx);f.x=nx;f.y=ny;
+    f.phase+=maxDt*7;f.moving=true;f.activity='Indo trabalhar';
   }
 }
 function finances(o){let gross=0,cost=0;for(const b of buildings){if(b.o!==o||!isBuilt(b))continue;let tier=b.tier||1;gross+=({house:12,stable:30*market.horse,barn:110*market.grain,paddock:25*market.horse}[b.type]||0)*tier;cost+=({house:9,stable:32,barn:45,paddock:17}[b.type]||0)*tier}const herd=horses.filter(h=>h.o===o);gross+=herd.reduce((sum,h)=>sum+Math.round(h.quality*.95*market.horse),0);cost+=herd.length*22;return{gross:Math.round(gross),cost,net:Math.round(gross-cost)}}function refresh(){$('date').textContent='📅 Dia '+day;$('money').textContent='💰 R$ '+owners[0].cash.toLocaleString('pt-BR');const sites=buildings.filter(b=>b.status==='building'||b.status==='upgrading').length;$('buildings').textContent='🏡 '+(buildings.length-buildings.filter(b=>b.status==='building').length)+' · 👷 '+sites+' · 👨‍🌾 '+farmers.length;const e=finances(owners[0]);$('economy').textContent='🐎 '+horses.filter(h=>h.o===owners[0]).length+'/'+capacity(owners[0])+' cavalos · 📈 R$ '+e.gross+' receita · R$ '+e.cost+' custos · '+(e.net>=0?'+':'')+'R$ '+e.net}function zoneOf(o,type){
