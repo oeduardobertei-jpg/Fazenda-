@@ -81,6 +81,7 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - **Construir:** selecionar uma estrutura e tocar em terreno válido.
 - **Comprar cavalo:** precisa de recursos e capacidade nas cocheiras.
 - **Modo 2D:** trocar do WebGL para Canvas de compatibilidade.
+- **Construir → Ver trabalhadores:** aproxima a câmera dos funcionários da sua propriedade.
 - **Construir → Reiniciar do dia 1:** descarta a partida atual e recarrega um novo jogo (com confirmação).
 
 ## Estrutura
