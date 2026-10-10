@@ -1,4 +1,10 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+// Versão fixa, com espelho caso o CDN principal esteja indisponível.
+let THREE;
+try {
+  THREE=await import('https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js');
+} catch (err) {
+  THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
+}
 
 /* Fazenda Viva 0.8 — renderizador WebGL progressivo.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
@@ -164,15 +170,30 @@ function drawWorld(s){
     if(o.x!==lx)road(root,o.x,o.y,lx,o.y,8);
     road(root,lx,o.y,lx,140,8);
     ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779);
-    // cerca divisória da gleba — cerca com ~96 postes, uma só malha instanciada
-    const n=52, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(1,3,1),mat(0xe4ca98),n);
+    // Cercas físicas de dois trilhos; a entrada fica voltada para a estrada de acesso.
+    const n=60, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.9,3,.9),mat(0xe4ca98),n);
+    const rails=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.28,.42),mat(0xd3b583),n*2);
     const dummy=new THREE.Object3D();
+    const gate=o.x<-100?0:o.x>100?Math.PI:Math.PI/2;
+    const closeToGate=a=>Math.abs(Math.atan2(Math.sin(a-gate),Math.cos(a-gate)))<.13;
     for(let i=0;i<n;i++){
-      const ang=2*Math.PI*i/n;
-      dummy.position.set(o.x+121*Math.cos(ang),1.5,o.y+118*Math.sin(ang));
-      dummy.updateMatrix();posts.setMatrixAt(i,dummy.matrix);
+      const ang=2*Math.PI*i/n,next=2*Math.PI*(i+1)/n;
+      const x1=o.x+121*Math.cos(ang),z1=o.y+118*Math.sin(ang);
+      const x2=o.x+121*Math.cos(next),z2=o.y+118*Math.sin(next);
+      const gatePost=closeToGate(ang),gateRail=gatePost||closeToGate(next);
+      dummy.rotation.set(0,0,0);
+      dummy.scale.set(gatePost?0:1,gatePost?0:1,gatePost?0:1);
+      dummy.position.set(x1,1.5,z1);dummy.updateMatrix();posts.setMatrixAt(i,dummy.matrix);
+      const dx=x2-x1,dz=z2-z1,length=Math.hypot(dx,dz);
+      for(let level=0;level<2;level++){
+        dummy.position.set((x1+x2)/2,1.1+level*1.05,(z1+z2)/2);
+        dummy.rotation.y=-Math.atan2(dz,dx);
+        dummy.scale.set(gateRail?0:length,gateRail?0:1,gateRail?0:1);
+        dummy.updateMatrix();rails.setMatrixAt(i*2+level,dummy.matrix);
+      }
     }
-    posts.instanceMatrix.needsUpdate=true;root.add(posts);
+    posts.instanceMatrix.needsUpdate=true;rails.instanceMatrix.needsUpdate=true;
+    root.add(posts,rails);
   }
   for(const f of s.fields){
     flat(root,f.w,f.h,f.x,f.y,colors.crop,.15);
