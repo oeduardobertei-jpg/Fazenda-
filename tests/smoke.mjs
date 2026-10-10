@@ -89,7 +89,7 @@ try{
   assert.equal(get().lowGraphics,false,'modo normal');
   ui.get('speed').onclick();ui.get('speed').onclick(); // 8x
   let ms=performance.now(),overlap=0,outside=0,maxSite=0,minHorse=1e9;
-  let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0;
+  let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
   const horseStates=new Set(),workerStates=new Set();
   for(let i=0;i<1300;i++){
     ms+=50;step(ms);
@@ -131,6 +131,18 @@ try{
         horses=s.horses.filter(h=>h.o===o);
       for(const w of workers){
         if(w.pathMode==='rede')roadSamples++;
+        if(w.pathMode==='rede'&&w.motion==='walk'&&
+           w.routeIndex>0&&w.routeIndex<(w.route?.length||0)-1){
+          roadMiddle++;
+          const tr=s.trails.filter(t=>t.owner===o.name);
+          const nearest=Math.min(...tr.map(t=>{
+            const dx=t.x2-t.x1,dy=t.y2-t.y1,n=dx*dx+dy*dy||1;
+            const q=Math.max(0,Math.min(1,
+              ((w.x-t.x1)*dx+(w.y-t.y1)*dy)/n));
+            return Math.hypot(w.x-t.x1-q*dx,w.y-t.y1-q*dy);
+          }));
+          if(nearest>4.1)offRoad++;
+        }
         else if(w.pathMode==='terreno')landSamples++;
         if(s.buildings.some(b=>b.o===o&&
             Math.abs(w.x-b.x)<b.w/2+.3&&Math.abs(w.y-b.y)<b.h/2+.3))overlap++;
@@ -146,6 +158,8 @@ try{
     }
   }
   assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
+  assert.ok(roadMiddle>10,'trechos centrais de trilha devem ser utilizados');
+  assert.ok(offRoad<=roadMiddle*.1,'funcionários cortando trilhas em excesso');
   assert.ok(get().day>1,'dias devem avançar');
   assert.ok(get().trails.length>0,'caminhos existentes');
   assert.ok(get().farmers.some(f=>(f.tasksDone||0)>0),'tarefas em execução');
