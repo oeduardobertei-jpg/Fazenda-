@@ -554,7 +554,7 @@ const goalDefs=[
    progress:()=>ownBuildings().filter(isBuilt).length,rep:35,cash:1250}
 ];
 function managementLevel(){
-  const steps=[0,30,65,120,175,250,360];
+  const steps=[0,15,40,70,100,130,155];
   let level=1;
   for(let i=1;i<steps.length;i++)if(reputation>=steps[i])level=i+1;
   const names=['Iniciante','Produtor rural','Criador regional','Empreendedor rural',
