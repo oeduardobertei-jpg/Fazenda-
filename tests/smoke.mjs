@@ -91,6 +91,7 @@ try{
   let ms=performance.now(),overlap=0,outside=0,maxSite=0,minHorse=1e9;
   let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
   const horseStates=new Set(),workerStates=new Set();
+  let joinedRuralEvent=false;
   for(let i=0;i<1300;i++){
     ms+=50;step(ms);
     // Mesmo conjunto de estados usado por Canvas 2D e Three.js, independentemente
@@ -100,6 +101,21 @@ try{
     live.farmers.forEach(f=>workerStates.add(f.motion));
     if(i%40!==0)continue;
     const s=live;
+    if(!joinedRuralEvent&&s.ruralEvent?.id==='insumos'){
+      ui.get('manageOpen').onclick();
+      ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'mercado'}})}});
+      assert.ok(ui.get('manageBody').innerHTML.includes('Central de suprimentos'),
+        'evento deve ser exibido no Mercado');
+      const input={target:{closest:()=>({dataset:{mgaction:'joinEvent'}})}};
+      ui.get('manageBody').onclick(input);
+      assert.equal(get().ruralEvent.claimed,true,'participação confirmada');
+      const savedCash=get().owners[0].cash;
+      ui.get('manageBody').onclick(input);
+      assert.equal(get().owners[0].cash,savedCash,'participação não pode ser repetida');
+      assert.ok(get().owners[0].supplyCycles>0,'compras coletivas aliviam custos');
+      ui.get('manageClose').onclick();
+      joinedRuralEvent=true;
+    }
     if(i%160===0){
       for(const o of s.owners){
         const roads=s.trails.filter(t=>t.owner===o.name);
@@ -157,6 +173,7 @@ try{
         s.buildings.filter(b=>b.o===o&&b.status!=='complete').length);
     }
   }
+  assert.ok(joinedRuralEvent,'participação em evento rural não foi exercitada');
   assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
   assert.ok(roadMiddle>10,'trechos centrais de trilha devem ser utilizados');
   assert.ok(offRoad<=roadMiddle*.1,'funcionários cortando trilhas em excesso');
