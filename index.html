@@ -446,7 +446,7 @@ function farmGate(o){
 }
 function farmTrails(){
   const ready=buildings.filter(isBuilt);
-  const stamp=ready.map(b=>b.x.toFixed(1)+':'+b.y.toFixed(1)+':'+b.w+':'+b.h).join('|');
+  const stamp=buildings.map(b=>b.x.toFixed(1)+':'+b.y.toFixed(1)+':'+b.w+':'+b.h+':'+b.status).join('|');
   if(stamp===trailStamp)return trailData;
   const segments=[],dedup=new Set();
   const keyPoint=p=>Math.round(p.x*2)/2+','+Math.round(p.y*2)/2;
