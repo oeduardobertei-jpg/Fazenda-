@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.5
+# Fazenda Viva — versão 0.8.6
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=085
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=086
 
 ## Novidades da série 0.8
 
@@ -61,6 +61,15 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 **Limite conhecido:** salvamentos antigos com dezenas de piquetes continuam com eles, pois são construções já adquiridas; a atualização melhora sua representação e evita novas construções excessivas. Nenhum progresso do usuário é descartado silenciosamente.
 
+### 0.8.6 — criadores, cavalos separados e novas partidas
+- Os cavalos usam **posições espaciais individuais**. Cada piquete concluído recebe até dois animais; excedentes vão para áreas livres da propriedade, evitando que vários corpos 3D ocupem o mesmo lugar.
+- A regra vale tanto no modo **3D** quanto no **2D**, pois as posições são calculadas pela simulação, não independentemente por cada renderizador.
+- **15 NPCs rurais** (três por propriedade): tratador, agricultor e administrador. Movimentam-se autonomamente entre as instalações, com roupa de trabalho, chapéu e passos animados em 3D; também são visíveis em 2D.
+- A presença dos NPCs é uma primeira implementação visual/de movimentação. Ainda não há tarefas produtivas com efeitos econômicos específicos nem desvio completo de obstáculos; esses comportamentos serão evoluídos nas próximas versões.
+- **Reiniciar do dia 1:** botão no menu **Construir** com confirmação, para voltar ao início do jogo.
+- **Partida nova em cada abertura:** desativados `load()` e `save()`, assim o jogo não carrega nem grava progresso automaticamente. O armazenamento antigo só será excluído caso o usuário confirme o reset.
+- O HUD agora usa `🏡 estruturas · 👷 obras · 👨‍🌾 NPCs`, com texto mais curto para o Android.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -72,6 +81,7 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - **Construir:** selecionar uma estrutura e tocar em terreno válido.
 - **Comprar cavalo:** precisa de recursos e capacidade nas cocheiras.
 - **Modo 2D:** trocar do WebGL para Canvas de compatibilidade.
+- **Construir → Reiniciar do dia 1:** descarta a partida atual e recarrega um novo jogo (com confirmação).
 
 ## Estrutura
 
@@ -86,6 +96,6 @@ Executados testes automatizados com simulação de centenas de dias, conferindo 
 
 ## Próximas entregas
 
-0.8.6 — ambientação orgânica, trilhas internas, integração das construções e QA visual mobile;
+0.8.7 — caminhos de serviço, trabalhadores com tarefas, navegação sem atravessar estruturas e QA visual mobile;
 0.9 — HUD, usabilidade, progressão, economia e testes longos;
 1.0 — integração e critérios de estabilidade.
