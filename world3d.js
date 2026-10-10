@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.6 — cavalos separados, trabalhadores ativos e reinício limpo.
+/* Fazenda Viva 0.8.7 — caminhos internos, navegação de funcionários e trabalho rural.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -15,8 +15,8 @@ const api = window.FazendaVivaBridge;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer, workerLayer;
-let enabled = false, stamp = '',detailMode=null;
+let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer;
+let enabled = false, stamp = '',detailMode=null, trailStamp3D='';
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [];
@@ -404,8 +404,30 @@ function drawWorld(s){
   content=new THREE.Group();scene.add(content);
   horseLayer=new THREE.Group();scene.add(horseLayer);
   workerLayer=new THREE.Group();scene.add(workerLayer);
+  trailLayer=new THREE.Group();scene.add(trailLayer);
+}
+// Estradas internas são quads leves em uma única malha instanciada.
+function syncTrails(s){
+  const segments=s.trails||[];
+  const key=segments.map(t=>[t.x1.toFixed(1),t.y1.toFixed(1),t.x2.toFixed(1),t.y2.toFixed(1)].join(',')).join('|');
+  if(key===trailStamp3D)return;
+  for(const old of [...trailLayer.children]){trailLayer.remove(old);if(old.dispose)old.dispose()}
+  trailStamp3D=key;
+  if(!segments.length)return;
+  const mesh=new THREE.InstancedMesh(sharedBox(1,.045,1),mat(0xb29a75),segments.length);
+  const dummy=new THREE.Object3D();
+  segments.forEach((t,i)=>{
+    const dx=t.x2-t.x1,dz=t.y2-t.y1,len=Math.hypot(dx,dz);
+    dummy.position.set((t.x1+t.x2)/2,.355,(t.y1+t.y2)/2);
+    dummy.rotation.set(0,-Math.atan2(dx,dz),0);
+    dummy.scale.set(t.w||2.4,1,len);
+    dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+  });
+  mesh.instanceMatrix.needsUpdate=true;
+  trailLayer.add(mesh);
 }
 function sync(s){
+  syncTrails(s);
   // Somente estruturas próximas à câmera entram no grafo 3D detalhado.
   // No zoom regional o mesmo sistema usa modelos simplificados.
   // LOD com histerese impede reconstruções repetidas na fronteira do zoom.
