@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.9 — streaming incremental, WebGL mobile e labels contextuais.
+/* Fazenda Viva 0.9.0 — gestão rural integrada à simulação e visualização 3D otimizada.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
