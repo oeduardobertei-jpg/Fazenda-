@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.2 — locomoção viária dos NPCs, entradas rurais e animação equestre refinada.
+/* Fazenda Viva 0.9.3 — criação de potros, eventos rurais e economia integrada ao mundo 3D.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -687,6 +687,9 @@ function sync(s){
     const walking=h.motion==='walk',gait=h.gait||0;
     mesh.position.set(x,.12+(walking?Math.abs(Math.sin(gait))*.055:0),z);
     mesh.rotation.y=h.heading||0;
+    const age=(h.age||0)+Math.floor(Math.max(0,s.day-(h.bornDay||1))/365);
+    const animalScale=age<1?.65:age<2?.83:1;
+    mesh.scale.set(animalScale,animalScale,animalScale);
     const legs=mesh.userData.legs||[];
     for(let j=0;j<legs.length;j++){
       // Passada diagonal; pares opostos não patinam em sincronia.
