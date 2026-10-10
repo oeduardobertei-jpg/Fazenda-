@@ -181,15 +181,25 @@ function building(b,detail=true){
   const usedD=d-.55;
   const height=b.type==='barn'?6.7:b.type==='stable'?5.5:5.8;
   const facade=b.type==='house'?(variety%3===0?PALETTE.offwhite:b.o.color):
-               b.type==='stable'?(variety%2===0?0xcdb796:0xbda184):
-               (variety%2===0?0xb4beb4:0xa8a999);
-  const roofColor=b.type==='house'?(variety%2===0?PALETTE.tile:PALETTE.tile2):
-                  b.type==='stable'?0x79543e:PALETTE.metal;
+               b.type==='stable'?([0xcdb796,0xc0bca0,0xcebfa9,0xb8ac8a,0xc9c2ac][variety]):
+               ([0xb4beb4,0xb7b7a5,0xb4b5aa,0xa8b3a5,0xb9c0af][variety]);
+  const roofColor=b.type==='house'?([PALETTE.tile,PALETTE.tile2,0xa76347,0x9d614b,0x925342][variety]):
+                  b.type==='stable'?([0x79543e,0x785944,0x6d5444,0x866146,0x675441][variety]):
+                  ([PALETTE.metal,0x707d72,0x8a8877,0x687777,0x7b8079][variety]);
   const zFront=usedD*.50;
   flat(group,w-.1,d-.1,0,0,variety%2===0?0xbca17c:0xa8987f,.28);
   // Plataforma e edifício contidos integralmente no lote: nenhum telhado ultrapassa o footprint.
   box(group,usedW,height,usedD*.88,0,height*.5,-.2,facade);
-  roof(group,usedW+.25,usedD*.99,height,height+(b.type==='house'?2.9:2.0),roofColor);
+  const ridge=height+(b.type==='house'?2.9:2.0);
+  roof(group,usedW+.25,usedD*.99,height,ridge,roofColor);
+  if(detail){
+    // Bordas do telhado e cumeeira unem visualmente os telhados aos volumes.
+    const trim=b.type==='barn'?0x858783:PALETTE.lightWood;
+    box(group,usedW*.93,.17,.24,0,ridge+.06,0,roofColor);
+    for(const z of [-usedD*.485,usedD*.485]){
+      box(group,usedW+.18,.16,.22,0,height+.10,z,trim);
+    }
+  }
   if(!detail){group.userData.building=b;return group}
   const front=usedD*.44;
   if(b.type==='house'){
@@ -232,6 +242,13 @@ function building(b,detail=true){
       box(group,.42,.92,.17,x,4.25,front+.12,0x514539);
     }
     box(group,usedW,.28,.36,0,height*.91,front+.15,PALETTE.lightWood);
+    // Letreiro de propriedade, janelas laterais e pequenos acabamentos variam por cocheira.
+    box(group,Math.min(3.8,usedW*.32),.43,.19,0,height*.87,front+.35,b.o.color);
+    for(const sign of [-1,1]){
+      const x=sign*(usedW*.44);
+      box(group,.45,1.05,.20,x,height*.53,front+.27,0x627e79);
+      box(group,.49,.15,.24,x,height*.82,front+.30,PALETTE.lightWood);
+    }
   }else{
     // Galpão agrícola: portões duplos, ripas metálicas e pequenas janelas de ventilação.
     const doorWidth=Math.min(usedW*.67,7.8);
@@ -246,6 +263,11 @@ function building(b,detail=true){
       box(group,.9,.85,.24,x,height*.72,front+.23,0x424e4b);
     }
     box(group,usedW+.18,.4,.5,0,height*.91,front+.16,0x6e756d);
+    // Lanternim alto, importante na arquitetura de galpões ventilados.
+    for(let i=0;i<3;i++){
+      const x=-usedW*.24+i*usedW*.24;
+      box(group,.70,.38,.25,x,height*.92,front+.23,0x4b5f5c);
+    }
   }
   // Ampliações físicas ocorrem dentro da reserva original (níveis 2 e 3).
   if(t>1)for(let j=0;j<t-1;j++){
