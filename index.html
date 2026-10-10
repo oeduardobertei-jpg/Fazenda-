@@ -335,7 +335,7 @@ function farmTrails(){
     if(!home)continue;
     const entrances=trailEntry(o,home),hub=entrances.find(p=>p.y>home.y)||entrances[0];
     if(!hub)continue;
-    const gate=o.x<-100?{x:o.x+99,y:o.y}:o.x>100?{x:o.x-99,y:o.y}:{x:o.x,y:o.y+97};
+    const gate=o.x<-100?{x:o.x+121,y:o.y}:o.x>100?{x:o.x-121,y:o.y}:{x:o.x,y:o.y+118};
     collect(gate,farmRoute(o,gate.x,gate.y,hub.x,hub.y),3.2);
     const priority={stable:0,barn:1,house:2,paddock:3};
     const targets=own.filter(b=>b!==home).sort((a,b)=>priority[a.type]-priority[b.type]).slice(0,17);
