@@ -152,6 +152,11 @@ function building(b,detail=true){
   if(b.type==='paddock'){
     flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
     rails(group,w-.7,d-.7,PALETTE.lightWood);
+    if(!detail){
+      // Mesmo na visão regional, o piquete CONCLUÍDO não parece uma obra vazia.
+      box(group,2.2,.75,1.3,-w*.23,.56,d*.17,0xc1a068);
+      box(group,2.7,.55,1.1,w*.21,.58,-d*.23,0x5e929b);
+    }
     if(detail){
       // Um piquete CONCLUÍDO contém abrigo, bebedouro, cocho e capim — não é um canteiro de obras.
       flat(group,w*.78,d*.73,0,0,variety%2?0x84ac65:0x79a35c,.33);
