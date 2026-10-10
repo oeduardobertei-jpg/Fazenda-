@@ -300,6 +300,50 @@ function farmRoute(o,sx,sy,tx,ty){
   }
   return route.slice(0,55);
 }
+
+let trailStamp='',trailData=[];
+function trailEntry(o,b){
+  const pad=5;
+  return [{x:b.x-b.w/2-pad,y:b.y},{x:b.x+b.w/2+pad,y:b.y},
+    {x:b.x,y:b.y-b.h/2-pad},{x:b.x,y:b.y+b.h/2+pad}]
+    .filter(p=>workerSafe(o,p.x,p.y,2.4));
+}
+function farmTrails(){
+  const ready=buildings.filter(isBuilt);
+  const stamp=buildings.length+'-'+ready.length;
+  if(stamp===trailStamp)return trailData;
+  const list=[],dedup=new Set();
+  function collect(start,route,width){
+    let prev=start;
+    for(const p of route){
+      if(Math.hypot(prev.x-p.x,prev.y-p.y)<1.4){prev=p;continue}
+      const a=Math.round(prev.x/3)+','+Math.round(prev.y/3),b=Math.round(p.x/3)+','+Math.round(p.y/3);
+      const key=a<b?a+'|'+b:b+'|'+a;
+      if(!dedup.has(key)){list.push({x1:prev.x,y1:prev.y,x2:p.x,y2:p.y,w:width});dedup.add(key)}
+      prev=p;
+    }
+  }
+  for(const o of owners){
+    const own=ready.filter(b=>b.o===o);
+    const home=own.find(b=>b.type==='house')||own[0];
+    if(!home)continue;
+    const entrances=trailEntry(o,home),hub=entrances.find(p=>p.y>home.y)||entrances[0];
+    if(!hub)continue;
+    const gate=o.x<-100?{x:o.x+99,y:o.y}:o.x>100?{x:o.x-99,y:o.y}:{x:o.x,y:o.y+97};
+    collect(gate,farmRoute(o,gate.x,gate.y,hub.x,hub.y),3.2);
+    const priority={stable:0,barn:1,house:2,paddock:3};
+    const targets=own.filter(b=>b!==home).sort((a,b)=>priority[a.type]-priority[b.type]).slice(0,17);
+    for(const b of targets){
+      const pts=trailEntry(o,b);
+      pts.sort((a,b)=>Math.hypot(a.x-hub.x,a.y-hub.y)-Math.hypot(b.x-hub.x,b.y-hub.y));
+      for(const p of pts){
+        const route=farmRoute(o,hub.x,hub.y,p.x,p.y);
+        if(route.length){collect(hub,route,2.4);break}
+      }
+    }
+  }
+  trailStamp=stamp;trailData=list;return list;
+}
 const workerJobs={tratador:'Tratando animais',agricultor:'Organizando produção',administrador:'Administrando a cabanha'};
 function chooseFarmerTarget(f){
   const wanted={tratador:['stable','paddock'],agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
