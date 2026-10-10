@@ -448,6 +448,18 @@ function drawWorld(s){
     const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
     const entranceY=Math.abs(o.x)<100?o.y+112:o.y;
     ellipse(root,entranceX,entranceY,8,7,0xbaa17b,.34);
+    // Portão rural aberto: dois mourões marcam a transição da estrada externa
+    // para a rede interna. O vão preserva a circulação dos NPCs e cavalos.
+    const gateX=o.x<-100?o.x+121:o.x>100?o.x-121:o.x;
+    const gateZ=Math.abs(o.x)<100?o.y+118:o.y;
+    const lateralX=Math.abs(o.x)<100?1:0,lateralZ=lateralX?0:1;
+    for(const side of [-1,1]){
+      const gx=gateX+side*lateralX*5.8;
+      const gz=gateZ+side*lateralZ*5.8;
+      box(root,1.20,4.1,1.20,gx,2.1,gz,0xb18e61);
+      box(root,1.47,.36,1.47,gx,4.36,gz,0xdfbd83);
+      box(root,1.90,.28,1.90,gx,.28,gz,0x9c885e);
+    }
     // Cercas físicas de dois trilhos; a entrada fica voltada para a estrada de acesso.
     const n=60, posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.9,3,.9),mat(0xe4ca98),n);
     const rails=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.28,.42),mat(0xd3b583),n*2);
