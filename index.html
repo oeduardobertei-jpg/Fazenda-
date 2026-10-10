@@ -233,11 +233,14 @@ function render(){
       ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,width*s);
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     }
-    ctx.strokeStyle='#ab946b';ctx.lineWidth=Math.max(.55,.15*s);
-    for(const side of [-1,1]){
-      const d=side*t.w*s*.24;
-      ctx.beginPath();ctx.moveTo(a.x+nx*d,a.y+nz*d);
-      ctx.lineTo(b.x+nx*d,b.y+nz*d);ctx.stroke();
+    // Marcas de roda apenas no acesso principal; trilhas de serviço são discretas.
+    if(t.kind!=='servico'){
+      ctx.strokeStyle='#b49e7c';ctx.lineWidth=Math.max(.4,.12*s);
+      for(const side of [-1,1]){
+        const d=side*t.w*s*.21;
+        ctx.beginPath();ctx.moveTo(a.x+nx*d,a.y+nz*d);
+        ctx.lineTo(b.x+nx*d,b.y+nz*d);ctx.stroke();
+      }
     }
   }
   for(const o of owners){
