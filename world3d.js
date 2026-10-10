@@ -95,9 +95,11 @@ function roof(parent,w,d,h,ridgeY,color) {
     main.computeVertexNormals();
     const ends=[];
     for(const sign of [-1,1]){
-      const tri=new THREE.BufferGeometry();
+      // Cumeeira ao longo do eixo X: oitões ficam nas extremidades X, não nos beirais Z.
+      // O esquema anterior cruzava o próprio telhado e gerava triângulos em zoom alto.
+      const x=sign*w/2,tri=new THREE.BufferGeometry();
       tri.setAttribute('position',new THREE.Float32BufferAttribute([
-        -w/2,h,sign*d/2, w/2,h,sign*d/2,0,ridgeY,sign*d/2
+        x,h,-d/2, x,h,d/2, x,ridgeY,0
       ],3));
       tri.computeVertexNormals();
       ends.push(tri);
@@ -145,7 +147,6 @@ function building(b,detail=true){
     return group;
   }
   const variety=(Math.abs(Math.round(b.x*17+b.y*23))%5);
-  const pad=detail?0.65:.2;
   if(b.type==='paddock'){
     flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
     rails(group,w-.7,d-.7,PALETTE.lightWood);
@@ -374,8 +375,12 @@ function drawWorld(s){
 function sync(s){
   // Somente estruturas próximas à câmera entram no grafo 3D detalhado.
   // No zoom regional o mesmo sistema usa modelos simplificados.
-  const highDetail=s.zoom>=1.10;
-  const radius=s.zoom>=1.6?220:s.zoom>=.72?445:1380;
+  // LOD com histerese impede reconstruções repetidas na fronteira do zoom.
+  if(detailMode===null)detailMode=s.zoom>=1.05;
+  else if(detailMode&&s.zoom<.89)detailMode=false;
+  else if(!detailMode&&s.zoom>1.18)detailMode=true;
+  const highDetail=detailMode;
+  const radius=s.zoom>=1.6?285:s.zoom>=.72?540:1410;
   const near=s.buildings.filter(b=>Math.abs(b.x-s.panX)<radius&&Math.abs(b.y-s.panY)<radius);
   const newStamp=(highDetail?'H':'L')+'|'+near.map(b=>[b.type,b.x,b.y,b.tier||1,b.status||'complete',b.progress??100,b.plannedTier||0,s.owners.indexOf(b.o)].join(':')).join('|');
   if(newStamp!==stamp){
