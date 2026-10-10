@@ -287,15 +287,27 @@ function building(b,detail=true){
 }
 function makeHorse(h){
   const group=new THREE.Group();
-  const coat = mat(h.coat||0x81553d);
-  const part=(w,y,d,x,py,z)=>{let m=new THREE.Mesh(sharedBox(w,y,d),coat);m.position.set(x,py,z);group.add(m)};
+  const coat=mat(h.coat||0x81553d);
+  const part=(w,y,d,x,py,z)=>{
+    const mesh=new THREE.Mesh(sharedBox(w,y,d),coat);
+    mesh.position.set(x,py,z);group.add(mesh);return mesh;
+  };
   part(3.8,1.5,1.4,0,2.3,0);
-  part(1.1,2,1.0,1.45,2.9,-.05);
-  part(1.2,.9,1.1,1.85,3.75,0);
-  for(let x of [-1.25,1.25]) for(let z of [-.48,.48]) part(.35,1.7,.32,x,.9,z);
+  const neck=part(1.1,2,1.0,1.45,2.9,-.05);
+  const head=part(1.2,.9,1.1,1.85,3.75,0);
+  const legs=[];
+  for(const x of [-1.25,1.25])for(const z of [-.48,.48]){
+    const leg=part(.35,1.7,.32,x,.9,z);
+    legs.push(leg);
+    box(group,.43,.28,.40,x,.17,z,0x5d4c3e);
+  }
   const tail=box(group,.38,1.2,.4,-2.15,2.05,0,0x49382c);
-  tail.rotation.z=-.3;
-  group.userData.horse=h;
+  tail.rotation.z=-.30;
+  // Crina e orelhas em geometria simples: legíveis no zoom do celular.
+  box(group,.20,1.18,.72,1.35,3.45,-.07,0x48372e);
+  for(const z of [-.27,.27])box(group,.23,.55,.23,2.06,4.29,z,0x4f3b31);
+  group.userData.horse=h;group.userData.legs=legs;
+  group.userData.head=head;group.userData.tail=tail;group.userData.neck=neck;
   return group;
 }
 function makeWorker(f){
@@ -583,8 +595,15 @@ function sync(s){
     // LOD mobile: não renderizar dezenas de cavalos fora do enquadramento.
     mesh.visible=s.zoom>.42&&Math.abs(x-s.panX)<245&&Math.abs(z-s.panY)<245;
     if(!mesh.visible)return;
-    mesh.position.set(x,.12,z);
+    mesh.position.set(x,.12+Math.sin(h.phase*1.3+h.id)*.045,z);
     mesh.rotation.y=h.heading||0;
+    const legs=mesh.userData.legs||[];
+    for(let j=0;j<legs.length;j++)
+      legs[j].rotation.z=Math.sin(h.phase*.83+j*Math.PI*.75)*.095;
+    if(mesh.userData.head)
+      mesh.userData.head.rotation.z=Math.sin(h.phase*.37+h.id)*.045;
+    if(mesh.userData.tail)
+      mesh.userData.tail.rotation.z=-.28+Math.sin(h.phase*.65+h.id)*.19;
   });
   if(workerLayer.children.length!==s.farmers.length){
     for(const child of [...workerLayer.children])workerLayer.remove(child);
