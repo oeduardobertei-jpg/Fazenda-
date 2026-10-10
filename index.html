@@ -514,7 +514,257 @@ function finances(o){
   cost+=payroll;
   return {gross:Math.round(gross),cost:Math.round(cost),net:Math.round(gross-cost),bonus,payroll};
 }
+// 0.9 — Gestão da cabanha: números derivados exclusivamente da simulação.
+const brl=value=>'R$ '+Math.round(value).toLocaleString('pt-BR');
+const ledger=[],finishedGoals=new Set();
+let reputation=0,manageTab='resumo',lastManagementRender=0;
+const ownBuildings=()=>buildings.filter(b=>b.o===owners[0]);
+const ownHorses=()=>horses.filter(h=>h.o===owners[0]);
+const ownFarmers=()=>farmers.filter(f=>f.o===owners[0]);
+function cabanhaAssets(o=owners[0]){
+  const construction=buildings.filter(b=>b.o===o).reduce((n,b)=>{
+    const base=defs[b.type]?.cost||0;
+    return n+Math.round(base*(.70+.30*(b.tier||1))*
+      (b.status==='building'?Math.max(.25,b.progress/100):1));
+  },0);
+  const herd=horses.filter(h=>h.o===o).reduce((n,h)=>n+900+Math.round(h.quality*29),0);
+  return {construction,herd,total:Math.round(o.cash)+construction+herd};
+}
+function cabanhaScore(o=owners[0]){
+  const stat=finances(o),assets=cabanhaAssets(o);
+  const built=buildings.filter(b=>b.o===o&&isBuilt(b)).length;
+  const horsesCount=horses.filter(h=>h.o===o).length;
+  return Math.round(assets.total/1000+built*2+horsesCount*3+
+    Math.max(0,stat.net)*.08);
+}
+const goalDefs=[
+ {id:'investimento',icon:'🏡',title:'Primeira expansão',desc:'Concluir a quarta estrutura da sua propriedade.',target:4,
+   progress:()=>ownBuildings().filter(isBuilt).length,rep:18,cash:450},
+ {id:'equipe',icon:'👨‍🌾',title:'Equipe em atividade',desc:'Concluir 12 serviços com seus trabalhadores.',target:12,
+   progress:()=>ownFarmers().reduce((n,f)=>n+(f.tasksDone||0),0),rep:15,cash:250},
+ {id:'lucro',icon:'📈',title:'Produção rentável',desc:'Alcançar resultado líquido de R$ 120 por ciclo.',target:120,
+   progress:()=>Math.max(0,finances(owners[0]).net),rep:18,cash:400},
+ {id:'capacidade',icon:'🔨',title:'Ampliar as instalações',desc:'Ter espaço nas cocheiras para quatro cavalos.',target:4,
+   progress:()=>capacity(owners[0]),rep:20,cash:500},
+ {id:'plantel',icon:'🐎',title:'Plantel em crescimento',desc:'Criar pelo menos quatro cavalos.',target:4,
+   progress:()=>ownHorses().length,rep:25,cash:800},
+ {id:'patrimonio',icon:'💰',title:'Patrimônio regional',desc:'Atingir R$ 50.000 de patrimônio total.',target:50000,
+   progress:()=>cabanhaAssets().total,rep:28,cash:600},
+ {id:'referencia',icon:'🏆',title:'Cabanha de referência',desc:'Concluir oito estruturas próprias.',target:8,
+   progress:()=>ownBuildings().filter(isBuilt).length,rep:35,cash:1250}
+];
+function managementLevel(){
+  const steps=[0,30,65,120,175,250,360];
+  let level=1;
+  for(let i=1;i<steps.length;i++)if(reputation>=steps[i])level=i+1;
+  const names=['Iniciante','Produtor rural','Criador regional','Empreendedor rural',
+    'Cabanha reconhecida','Referência estadual','Referência nacional'];
+  return {level,name:names[Math.min(level-1,names.length-1)],next:steps[level]??null};
+}
+function evaluateGoals(){
+  for(const goal of goalDefs){
+    if(finishedGoals.has(goal.id)||goal.progress()<goal.target)continue;
+    finishedGoals.add(goal.id);
+    reputation+=goal.rep;
+    owners[0].cash+=goal.cash;
+    $('news').textContent='🏆 Meta concluída: '+goal.title+
+      '! +'+goal.rep+' reputação e '+brl(goal.cash)+'.';
+    $('status').textContent='🏆 '+goal.title+' concluída! Verifique Gestão → Metas.';
+  }
+}
+function recordLedger(){
+  const o=owners[0],e=finances(o);
+  ledger.push({day,cash:Math.round(o.cash),gross:e.gross,cost:e.cost,net:e.net,
+    assets:cabanhaAssets(o).total,animals:ownHorses().length,
+    buildings:ownBuildings().filter(isBuilt).length});
+  if(ledger.length>72)ledger.shift();
+}
+function statCard(icon,title,value,sub=''){
+  return '<div class="mgCard"><div class="mgSmall">'+icon+' '+title+'</div>'+
+    '<div class="mgValue">'+value+'</div>'+
+    (sub?'<div class="mgSmall">'+sub+'</div>':'')+'</div>';
+}
+function ratio(value,max){return Math.max(0,Math.min(100,Math.round(value/Math.max(1,max)*100)))}
+function progressBar(value,max){
+  return '<div class="mgTrack"><div class="mgFill" style="width:'+ratio(value,max)+'%"></div></div>';
+}
+function financePlot(){
+  const points=ledger.slice(-36);
+  if(points.length<2)return '<p class="mgSmall">O histórico aparecerá após os próximos ciclos econômicos.</p>';
+  const vals=points.map(p=>p.cash);
+  let min=Math.min(...vals),max=Math.max(...vals);
+  if(Math.abs(max-min)<10){min-=50;max+=50}
+  const lines=points.map((p,i)=>{
+    const x=10+i/(points.length-1)*300;
+    const y=105-(p.cash-min)/(max-min)*87;
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  return '<svg viewBox="0 0 320 130" role="img" aria-label="Gráfico da evolução do saldo em reais">'+
+    '<line x1="10" x2="310" y1="105" y2="105" stroke="#6f956e" stroke-width="1"/>'+
+    '<line x1="10" x2="310" y1="18" y2="18" stroke="#6f956e" stroke-dasharray="3 5" stroke-width="1"/>'+
+    '<polyline points="'+lines+'" stroke="#e0ca7f" stroke-width="2.5" fill="none" stroke-linejoin="round"/>'+
+    '<text x="13" y="122" fill="#e5dfc5" font-size="10">Dia '+points[0].day+'</text>'+
+    '<text x="308" y="122" fill="#e5dfc5" font-size="10" text-anchor="end">Dia '+points.at(-1).day+'</text>'+
+    '<text x="306" y="13" fill="#e5dfc5" font-size="9" text-anchor="end">'+brl(max)+'</text></svg>';
+}
+function financialBreakdown(o){
+  const e=finances(o),asset=cabanhaAssets(o);
+  return '<div class="mgGrid">'+
+    statCard('💵','Saldo disponível',brl(o.cash))+
+    statCard('📊','Resultado por ciclo',(e.net>=0?'+':'')+brl(e.net),'/ 5 dias simulados')+
+    statCard('📈','Receitas',brl(e.gross))+
+    statCard('📉','Despesas',brl(e.cost))+
+    '</div><h4>💰 Demonstração simplificada</h4>'+
+    '<div class="mgCard">'+
+    '<div class="mgLine"><span>Receitas operacionais</span><span class="mgGood">'+brl(e.gross)+'</span></div>'+
+    '<div class="mgLine"><span>Despesas totais</span><span class="mgBad">− '+brl(e.cost)+'</span></div>'+
+    '<div class="mgLine"><span>Folha salarial (incluída nas despesas)</span><span>'+brl(e.payroll)+'</span></div>'+
+    '<div class="mgLine"><span>Produção da equipe (incluída nas receitas)</span><span>'+brl(e.bonus)+'</span></div>'+
+    '<hr style="border:0;border-top:1px solid #537660">'+
+    '<div class="mgLine"><strong>Resultado líquido</strong><strong class="'+(e.net>=0?'mgGood':'mgBad')+'">'+brl(e.net)+'</strong></div></div>'+
+    '<h4>🏡 Composição do patrimônio</h4>'+
+    '<div class="mgCard">'+
+    '<div class="mgLine"><span>Saldo</span><strong>'+brl(o.cash)+'</strong></div>'+
+    '<div class="mgLine"><span>Imóveis e instalações (valor estimado)</span><strong>'+brl(asset.construction)+'</strong></div>'+
+    '<div class="mgLine"><span>Plantel (valor estimado)</span><strong>'+brl(asset.herd)+'</strong></div>'+
+    '<div class="mgLine"><strong>Patrimônio estimado</strong><strong>'+brl(asset.total)+'</strong></div></div>'+
+    '<h4>📈 Evolução do saldo</h4>'+financePlot()+
+    '<p class="mgNote">Valores simulados: não representam demonstrações contábeis reais. O resultado é apurado a cada 5 dias no jogo.</p>';
+}
+function managementContent(tab){
+  const o=owners[0],e=finances(o),asset=cabanhaAssets(o);
+  const built=ownBuildings().filter(isBuilt).length,hs=ownHorses(),team=ownFarmers();
+  if(tab==='resumo'){
+    const standings=owners.map(f=>({f,score:cabanhaScore(f)})).sort((a,b)=>b.score-a.score);
+    const place=standings.findIndex(x=>x.f===o)+1;
+    const level=managementLevel(),done=finishedGoals.size;
+    const site=activeSite(o);
+    return '<div class="mgGrid">'+
+      statCard('💰','Patrimônio',brl(asset.total))+
+      statCard('📈','Lucro por ciclo',(e.net>=0?'+':'')+brl(e.net))+
+      statCard('🐎','Cavalos',hs.length+'/'+capacity(o))+
+      statCard('🏅','Classificação',place+'º de '+owners.length)+
+      '</div><h4>🏆 '+level.name+' · Nível '+level.level+'</h4>'+
+      '<div class="mgCard"><div class="mgLine"><span>Reputação rural</span><strong>'+reputation+' pontos</strong></div>'+
+      progressBar(reputation,level.next??reputation)+
+      '<p class="mgSmall">'+done+' de '+goalDefs.length+' metas concluídas'+
+      (level.next?' · próximo nível: '+level.next+' pontos':' · nível máximo atingido')+'</p></div>'+
+      '<h4>🏗️ Desenvolvimento da propriedade</h4>'+
+      '<div class="mgCard"><div class="mgLine"><span>Estruturas prontas</span><strong>'+built+'</strong></div>'+
+      '<div class="mgLine"><span>Obra ativa</span><strong>'+(site?({building:'Nova estrutura',upgrading:'Ampliação'}[site.status]||'Em execução'):'Nenhuma')+'</strong></div>'+
+      (site?progressBar(site.progress,100)+'<p class="mgSmall">'+(site.progress||0)+'% concluído</p>':'')+
+      '<div class="mgLine"><span>Trabalhadores</span><strong>'+team.length+'</strong></div></div>'+
+      '<h4>🧭 Propriedades da região</h4>'+
+      standings.map((x,i)=>'<div class="mgLine"><span>'+(i+1)+'º · '+x.f.name+'</span><strong>'+x.score+' pts</strong></div>').join('')+
+      '<p class="mgNote">A classificação considera patrimônio, construções, cavalos e resultado operacional.</p>';
+  }
+  if(tab==='financas')return financialBreakdown(o);
+  if(tab==='cavalos'){
+    return '<div class="mgGrid">'+
+      statCard('🐎','Seu plantel',hs.length+' animais')+
+      statCard('🏠','Capacidade',capacity(o)+' vagas')+
+      '</div><h4>🐴 Animais da sua cabanha</h4>'+
+      hs.map((h,i)=>'<div class="mgRow"><strong>🐴 '+h.name+'</strong>'+
+        '<div class="mgSmall">'+h.breed+' · Pelagem '+(['castanha','baia','escura','tordilha'][coats.indexOf(h.coat)]||'variada')+
+        ' · '+h.age+' anos</div>'+
+        '<div class="mgLine"><span>Qualidade do plantel</span><strong>'+h.quality+'/100</strong></div>'+
+        progressBar(h.quality,100)+
+        '<button type="button" data-mgaction="findHorse" data-index="'+i+'">📍 Localizar cavalo no mapa</button></div>').join('')+
+      '<button type="button" class="mgAction" data-mgaction="buyHorse">➕ Comprar cavalo · R$ 2.500</button>'+
+      '<p class="mgNote">Para aumentar o plantel, amplie suas cocheiras ou construa mais instalações equestres.</p>';
+  }
+  if(tab==='equipe'){
+    const roles={tratador:'🐎',agricultor:'🌾',administrador:'📋'};
+    return '<div class="mgGrid">'+
+      statCard('👨‍🌾','Trabalhadores',team.length)+
+      statCard('🧾','Salários por ciclo',brl(e.payroll))+
+      '</div><h4>👨‍🌾 Equipe da cabanha</h4>'+
+      team.map((f,i)=>'<div class="mgRow"><strong>'+roles[f.role]+' '+f.role+'</strong>'+
+        '<div class="mgSmall">'+(f.activity||'Preparando serviço')+'</div>'+
+        '<div class="mgLine"><span>Trabalhos concluídos</span><strong>'+(f.tasksDone||0)+'</strong></div>'+
+        '<button type="button" data-mgaction="findWorker" data-index="'+i+'">📍 Acompanhar trabalhador no mapa</button></div>').join('')+
+      '<div class="mgCard"><div class="mgLine"><span>Bônus temporário de produtividade</span><strong>'+brl(e.bonus)+'</strong></div>'+
+      '<div class="mgLine"><span>Folha salarial por ciclo</span><strong>'+brl(e.payroll)+'</strong></div></div>'+
+      '<p class="mgNote">Os trabalhadores visitam instalações ligadas às suas funções. As tarefas geram produtividade simulada, sujeita a limites.</p>';
+  }
+  if(tab==='mercado'){
+    const comps=owners.filter(f=>f!==o).map(f=>({name:f.name,score:cabanhaScore(f),
+      animals:horses.filter(h=>h.o===f).length,structures:buildings.filter(b=>b.o===f&&isBuilt(b)).length}));
+    const price=(v)=>Math.round(v*100)+'%';
+    return '<div class="mgGrid">'+
+      statCard('🐎','Índice equestre',price(market.horse),market.horse>=1?'Acima da referência':'Abaixo da referência')+
+      statCard('🌾','Índice agrícola',price(market.grain),market.grain>=1?'Acima da referência':'Abaixo da referência')+
+      '</div><h4>🏘️ Competidores autônomos</h4>'+
+      comps.map(c=>'<div class="mgRow"><strong>'+c.name+'</strong>'+
+        '<div class="mgLine"><span>Estruturas / cavalos</span><span>'+c.structures+' / '+c.animals+'</span></div>'+
+        '<div class="mgLine"><span>Índice econômico</span><strong>'+c.score+' pontos</strong></div></div>').join('')+
+      '<p class="mgNote">Os índices variam de 75% a 140% na simulação e afetam receitas. O mercado ainda não possui negociações entre propriedades.</p>';
+  }
+  if(tab==='metas'){
+    const level=managementLevel();
+    return '<div class="mgGrid">'+
+      statCard('🏅','Reputação',reputation+' pontos')+
+      statCard('🏆','Progresso',finishedGoals.size+'/'+goalDefs.length)+
+      '</div><p class="mgSmall">Nível '+level.level+' · '+level.name+'</p>'+
+      goalDefs.map(g=>{
+        const progress=Math.min(g.target,g.progress()),done=finishedGoals.has(g.id);
+        return '<div class="mgRow"><strong>'+g.icon+' '+g.title+(done?' · ✅':'')+'</strong>'+
+          '<p class="mgSmall">'+g.desc+'</p>'+
+          '<div class="mgLine"><span>'+Math.round(progress).toLocaleString('pt-BR')+' / '+g.target.toLocaleString('pt-BR')+'</span>'+
+          '<strong>'+(done?'Concluída':'Em andamento')+'</strong></div>'+
+          progressBar(progress,g.target)+
+          '<div class="mgSmall">Recompensa: +'+g.rep+' reputação · '+brl(g.cash)+'</div></div>';
+      }).join('')+
+      '<p class="mgNote">As recompensas são concedidas automaticamente, uma vez por partida. O progresso será reiniciado ao fechar o jogo.</p>';
+  }
+  return '<p>Escolha uma seção.</p>';
+}
+function renderManagement(force=false){
+  if($('management').hidden)return;
+  const now=Date.now();
+  if(!force&&now-lastManagementRender<1200)return;
+  lastManagementRender=now;
+  const body=$('manageBody'),scroll=body.scrollTop;
+  body.innerHTML=managementContent(manageTab);
+  body.scrollTop=force?0:scroll;
+  for(const tab of $('manageTabs').querySelectorAll('[data-mgtab]')){
+    tab.setAttribute('aria-selected',String(tab.dataset.mgtab===manageTab));
+  }
+}
+function closeManagement(){
+  $('management').hidden=true;
+}
+$('manageOpen').onclick=()=>{
+  $('panel').hidden=true;
+  manageTab='resumo';
+  $('management').hidden=false;renderManagement(true);
+};
+$('manageClose').onclick=closeManagement;
+$('manageTabs').onclick=e=>{
+  const button=e.target.closest('[data-mgtab]');
+  if(!button)return;
+  manageTab=button.dataset.mgtab;renderManagement(true);
+};
+$('manageBody').onclick=e=>{
+  const button=e.target.closest('[data-mgaction]');
+  if(!button)return;
+  const index=Number(button.dataset.index||0),action=button.dataset.mgaction;
+  if(action==='buyHorse'){
+    $('buyhorse').onclick();renderManagement(true);return;
+  }
+  const obj=action==='findHorse'?ownHorses()[index]:action==='findWorker'?ownFarmers()[index]:null;
+  if(!obj)return;
+  panX=obj.x;panY=obj.y;zoom=3.45;overview=false;
+  $('map').textContent='🗺️ Mapa';
+  $('status').textContent=action==='findHorse'?'🐎 Acompanhando '+obj.name:'👨‍🌾 Acompanhando '+obj.role;
+  closeManagement();
+};
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('management').hidden)closeManagement();
+});
 function refresh(){
+  evaluateGoals();
+  renderManagement();
   $('date').textContent='📅 Dia '+day;
   $('money').textContent='💰 R$ '+owners[0].cash.toLocaleString('pt-BR');
   const sites=buildings.filter(b=>b.status==='building'||b.status==='upgrading').length;
@@ -611,6 +861,7 @@ function tick(){
       }
     }
   }
+  recordLedger();
   refresh();
 }
 // Partida nova a cada abertura. Nenhum salvamento automático ou carregamento local.
@@ -789,6 +1040,6 @@ function noticeChanged(){
 }
 new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:true,characterData:true});
 noticeChanged();
-placeHorses();refresh();requestAnimationFrame(frame);
+placeHorses();recordLedger();refresh();requestAnimationFrame(frame);
 })();
 </script><script type="module" src="./world3d.js?v=090"></script></body></html>
