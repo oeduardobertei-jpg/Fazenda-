@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.8.4
+# Fazenda Viva — versão 0.8.5
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=084
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=085
 
 ## Novidades da série 0.8
 
@@ -47,6 +47,20 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 - Vegetação mais variada, combinando árvores de copas arredondadas e coníferas, mantendo instancing para desempenho mobile.
 - A área total do terreno continua ampliada; o progresso da versão anterior permanece salvo.
 
+### 0.8.5 — obras sequenciais e redução dos "lotes vazios"
+- **Diagnóstico visual:** muitos retângulos das capturas eram piquetes completos, mas simples demais, não canteiros inacabados. O modelo agora inclui abrigo, cocho, bebedouro, capim e fardos.
+- **Construção por etapas:** obras começam com canteiro/fundação e avançam de 25% em 25% a cada ciclo de 5 dias simulados, concluindo em cerca de 20 dias simulados.
+- **Uma obra de cada vez, por propriedade:** uma IA não pode abrir outra construção ou ampliação enquanto a anterior estiver em progresso. O jogador segue a mesma regra.
+- **Ampliação em etapas:** cocheiras, casas, galpões e piquetes recebem estado `upgrading`, com estrutura existente preservada e obra temporária visível.
+- **Novo planejamento das IAs:** limites totais e por tipo de construção; piquetes novos são limitados conforme o plantel. Há preferência por melhorar estruturas existentes antes de acrescentar novos cercados.
+- **Economia coerente:** novas obras só passam a gerar receitas e capacidade depois da conclusão. Edifícios em ampliação continuam funcionando no nível anterior até o término.
+- **Salvamento compatível:** preserva o arquivo local de versões anteriores, incluindo construções completas, e agora salva estado e andamento das obras. Estruturas antigas não são apagadas nem convertidas.
+- **Renderização de zoom:** corrigida a orientação dos oitões dos telhados, que antes cruzavam o plano das águas; LOD com histerese para reduzir cintilação e reconstruções repetidas perto do limite de zoom.
+- **Estradas:** encontros têm alturas ligeiramente distintas e áreas de junção para evitar conflitos de profundidade (z-fighting). Árvores não nascem dentro dos acessos às fazendas nem das lavouras.
+- **Compatibilidade:** modo 2D também diferencia obra em andamento de piquete concluído.
+
+**Limite conhecido:** salvamentos antigos com dezenas de piquetes continuam com eles, pois são construções já adquiridas; a atualização melhora sua representação e evita novas construções excessivas. Nenhum progresso do usuário é descartado silenciosamente.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -72,6 +86,6 @@ Executados testes automatizados com simulação de centenas de dias, conferindo 
 
 ## Próximas entregas
 
-0.8.5 — QA da câmera, naturalização de caminhos, melhor integração das construções;
+0.8.6 — ambientação orgânica, trilhas internas, integração das construções e QA visual mobile;
 0.9 — HUD, usabilidade, progressão, economia e testes longos;
 1.0 — integração e critérios de estabilidade.
