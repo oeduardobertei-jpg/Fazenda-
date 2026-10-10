@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.8.3</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.8.4</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#17271c;color:#fff;font:14px system-ui;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#hud{position:fixed;top:10px;left:10px;right:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;pointer-events:none}.pill{background:#152d25e8;border:1px solid #7a9877;border-radius:12px;padding:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#bottom{position:fixed;bottom:12px;left:8px;right:8px;display:flex;gap:5px}button{background:#254d38;color:white;border:1px solid #93b58c;border-radius:9px;padding:12px 6px;flex:1;font:inherit}#panel{position:fixed;bottom:76px;left:8px;right:8px;background:#183628f2;border:1px solid #7a9877;border-radius:14px;padding:12px;max-height:50dvh;overflow:auto}#panel[hidden]{display:none}#actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}#status{position:fixed;top:102px;left:8px;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none;transition:opacity .4s}#error{position:fixed;top:35%;left:12px;right:12px;background:#4a2828;border:2px solid orange;border-radius:12px;padding:15px}#error[hidden]{display:none}@media(max-width:450px){button{font-size:12px;padding:11px 3px}.pill{font-size:11px}}#game{position:fixed;inset:0;z-index:0}
 #hud,#status,#economy{z-index:5}
 #bottom{z-index:6}
 #panel{z-index:8}
 #renderMode{position:fixed;z-index:6;top:176px;left:8px;max-width:160px;width:auto;padding:8px 12px;background:#1c4a41eb;border-color:#bbe1ad}
 #renderStatus{position:fixed;z-index:6;top:215px;left:8px;background:#143e2fd9;font-size:11px;padding:5px 7px;border-radius:6px;max-width:230px;pointer-events:none}
-@media(max-width:450px){#hud{gap:4px;top:6px;left:6px;right:6px}.pill{padding:6px 7px}#status{top:84px;left:6px;max-width:calc(100vw - 12px);font-size:11px}#economy{top:115px!important;left:6px!important;max-width:calc(100vw - 12px)!important;font-size:10px!important}#renderMode{top:149px;left:6px;font-size:11px}#renderStatus{top:190px;left:6px}}</style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.8.3</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Construir na sua cabanha</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Construir</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><div id="error" hidden></div>
+@media(max-width:450px){#hud{gap:4px;top:6px;left:6px;right:6px}.pill{padding:6px 7px}#status{top:84px;left:6px;max-width:calc(100vw - 12px);font-size:11px}#economy{top:115px!important;left:6px!important;max-width:calc(100vw - 12px)!important;font-size:10px!important}#renderMode{top:149px;left:6px;font-size:11px}#renderStatus{top:190px;left:6px}}#zoomTools{position:fixed;z-index:6;right:9px;top:165px;display:flex;flex-direction:column;gap:7px}#zoomTools button{width:48px;height:47px;flex:initial;border-radius:13px;padding:4px;font-size:24px;font-weight:700;background:#1d4938ed;border:1px solid #b1cf9f;touch-action:manipulation;box-shadow:0 2px 7px #0a251d5e}@media(max-width:450px){#zoomTools{top:158px;right:7px}} </style></head><body>
+<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.8.4</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Construir na sua cabanha</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Construir</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><div id="error" hidden></div>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
 let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,paused=false,speed=1,day=1,acc=0,build=null,selected=null,seed=314159,overview=false,mode3D=false,visitIndex=0;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const owners=[{name:'Sua cabanha',x:-315,y:-280,cash:19000,ai:false,color:'#b78355'},{name:'Estância Horizonte',x:305,y:-275,cash:18000,ai:true,color:'#6f9eb1'},{name:'Cabanha Santa Fé',x:-315,y:285,cash:14000,ai:true,color:'#c98c81'},{name:'Agro Vale',x:315,y:280,cash:16000,ai:true,color:'#d4bb76'},{name:'Rincão Verde',x:0,y:0,cash:12000,ai:true,color:'#91ad72'}];const defs={house:{w:12,h:10,cost:4000},stable:{w:17,h:10,cost:3200},barn:{w:16,h:13,cost:2400},paddock:{w:20,h:16,cost:1300}};const market={grain:1,horse:1,timber:1};const profiles=['Cabanha equestre','Criação de cavalos','Seleção genética','Produção agrícola','Agropecuária mista'];let horseSerial=0;const breeds=['Crioulo','Quarto de Milha','Mangalarga'];const coats=['#78513b','#c69a64','#54433b','#b0a08c'];const horseNames=['Ventania','Tropeiro','Aurora','Farrapo','Estrela','Trovão','Pampa','Lua','Sereno','Canela'];const buildings=[],trees=[],horses=[],ponds=[{x:-15,y:-278,rx:35,ry:23},{x:15,y:310,rx:29,ry:22},{x:505,y:-70,rx:26,ry:19}],fields=[{x:-485,y:30,w:60,h:48},{x:478,y:-48,w:72,h:50},{x:475,y:473,w:66,h:54},{x:-495,y:470,w:74,h:54},{x:30,y:-485,w:88,h:40}];function makeHorse(o){let id=++horseSerial;return{o,id,name:horseNames[(id-1)%horseNames.length],breed:breeds[Math.floor(rnd()*breeds.length)],coat:coats[Math.floor(rnd()*coats.length)],age:2+Math.floor(rnd()*5),quality:45+Math.floor(rnd()*45),phase:rnd()*7,offset:rnd()*6}}function capacity(o){return buildings.filter(b=>b.o===o&&b.type==='stable').reduce((n,b)=>n+2*(b.tier||1),0)}function insideFarm(o,x,y,w,h){
@@ -151,7 +151,109 @@ function load(){
   }
 }
 let prev=performance.now();function frame(now){try{let dt=Math.min(.05,(now-prev)/1000);prev=now;if(!paused){acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);if(acc>3){acc=0;tick();save()}}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
-let pointers=new Map(),moved=0,start=null;canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.22,Math.min(6.5,zoom*(e.deltaY>0?.9:1.1)))},{passive:false});canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=0;start={x:e.clientX,y:e.clientY}});canvas.addEventListener('pointermove',e=>{let old=pointers.get(e.pointerId);if(!old)return;let dx=e.clientX-old.x,dy=e.clientY-old.y;moved+=Math.abs(dx)+Math.abs(dy);if(pointers.size===1){let s=Math.min(W/300,H/260)*zoom;panX=Math.max(-600,Math.min(600,panX-dx/s));panY=Math.max(-550,Math.min(550,panY-dy/(s*.67)))}else if(pointers.size===2){let other=[...pointers].find(([id])=>id!==e.pointerId)?.[1];if(other){let before=Math.hypot(old.x-other.x,old.y-other.y),after=Math.hypot(e.clientX-other.x,e.clientY-other.y);if(before>10)zoom=Math.max(.22,Math.min(6.5,zoom*after/before))}}pointers.set(e.pointerId,{x:e.clientX,y:e.clientY})});canvas.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(moved>10)return;let s=Math.min(W/300,H/260)*zoom,x=(e.clientX-W/2)/s+panX,y=(e.clientY-H/2)/(s*.67)+panY,o=owners[0];const picked=mode3D&&window.FazendaVivaBridge?.groundAt?.(e.clientX,e.clientY);if(picked){x=picked.x;y=picked.y}if(!build){let b=buildings.find(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+2&&Math.abs(y-b.y)<b.h/2+(mode3D?8:2)&&b.type!=='paddock');if(b){selected=b;$('upgrade').hidden=false;$('upgrade').textContent='🔨 Ampliar '+({house:'casa',stable:'cocheira',barn:'galpão'}[b.type]||'estrutura')+' (nível '+(b.tier||1)+'/3) · R$ '+(1800*(b.tier||1)).toLocaleString('pt-BR');$('panel').hidden=false;$('status').textContent='🏗️ Estrutura selecionada';}return}if(!insideFarm(o,x,y,defs[build].w,defs[build].h)){$('status').textContent='⚠️ Área fora dos limites da sua cabanha';return}if(owners.slice(1).some(other=>Math.hypot(x-other.x,y-other.y)<32)){$('status').textContent='⚠️ Terreno pertence a outra fazenda';return}if(owners[0].cash<defs[build].cost){$('status').textContent='💰 Saldo insuficiente';return}if(add(o,build,x,y)){$('status').textContent='✅ Construção concluída';build=null;refresh();save()}else $('status').textContent='⚠️ Local ocupado: escolha outro espaço'});$('buyhorse').onclick=()=>{let o=owners[0],herd=horses.filter(h=>h.o===o);if(herd.length>=capacity(o)){$('status').textContent='🏠 Amplie suas cocheiras para aumentar a capacidade';return}if(o.cash<2500){$('status').textContent='💰 Saldo insuficiente para comprar cavalo';return}o.cash-=2500;let h=makeHorse(o);horses.push(h);$('status').textContent='🐎 '+h.name+' ('+h.breed+') chegou à cabanha!';$('news').textContent='Novo cavalo: '+h.name+' · '+h.breed+' · qualidade '+h.quality+'/100';refresh();save()};$('upgrade').onclick=()=>{if(!selected)return;let b=selected,t=b.tier||1,cost=1800*t;if(t>=3){$('status').textContent='⭐ Estrutura no nível máximo';return}if(owners[0].cash<cost){$('status').textContent='💰 Saldo insuficiente para ampliar';return}owners[0].cash-=cost;b.tier=t+1;refresh();save();$('upgrade').textContent='🔨 Ampliar nível '+b.tier+'/3 · R$ '+(1800*b.tier).toLocaleString('pt-BR');$('status').textContent='✅ Ampliação concluída — nível '+b.tier};$('toggle').onclick=()=>{$('panel').hidden=!$('panel').hidden};$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'▶ Retomar':'⏸ Pausar'};$('speed').onclick=()=>{speed=speed===1?3:speed===3?8:1;$('speed').textContent='⏩ '+speed+'×'};$('map').onclick=()=>{
+// Gestos robustos: uma máquina de estados para um e dois dedos.
+// Nunca reaproveita distância anterior após levantar ou cancelar um ponteiro.
+const pointers=new Map();
+const gesture={lastMid:null,lastDist:0,travel:0,hadMulti:false,active:false};
+const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+const minZoom=.24,maxZoom=6.8;
+function changeZoom(next,x=W/2,y=H/2){
+  if(!Number.isFinite(next))return;
+  const before=zoom;zoom=clamp(next,minZoom,maxZoom);
+  if(Math.abs(zoom-before)<.0001)return;
+  // Mantém aproximadamente o ponto entre os dedos fixo na tela.
+  const base=Math.min(W/300,H/260);
+  const correction=1/(base*before)-1/(base*zoom);
+  panX=clamp(panX+(x-W/2)*correction,-610,610);
+  panY=clamp(panY+(y-H/2)*correction/.67,-560,560);
+  if(overview){overview=false;$('map').textContent='🗺️ Mapa'}
+}
+function touchGeometry(){
+  const values=[...pointers.values()];
+  if(!values.length)return null;
+  if(values.length===1)return{x:values[0].x,y:values[0].y,dist:0};
+  const a=values[0],b=values[1];
+  return{x:(a.x+b.x)/2,y:(a.y+b.y)/2,dist:Math.hypot(a.x-b.x,a.y-b.y)};
+}
+function resetMotion(){
+  const v=touchGeometry();
+  gesture.lastMid=v?{x:v.x,y:v.y}:null;
+  gesture.lastDist=v?.dist||0;
+}
+function translateCamera(x1,y1,x2,y2){
+  let dx=x2-x1,dy=y2-y1;
+  if(mode3D&&window.FazendaVivaBridge?.groundAt){
+    const old=window.FazendaVivaBridge.groundAt(x1,y1);
+    const fresh=window.FazendaVivaBridge.groundAt(x2,y2);
+    if(old&&fresh&&Number.isFinite(old.x)&&Number.isFinite(fresh.x)){
+      panX=clamp(panX+old.x-fresh.x,-610,610);
+      panY=clamp(panY+old.y-fresh.y,-560,560);
+      return;
+    }
+  }
+  const scale=Math.min(W/300,H/260)*zoom;
+  panX=clamp(panX-dx/scale,-610,610);
+  panY=clamp(panY-dy/(scale*.67),-560,560);
+}
+function finishPointer(e){
+  const known=pointers.has(e.pointerId);
+  pointers.delete(e.pointerId);
+  if(known&&canvas.hasPointerCapture?.(e.pointerId)){
+    try{canvas.releasePointerCapture(e.pointerId)}catch(_){}
+  }
+  resetMotion();
+  if(!pointers.size)gesture.active=false;
+  return known;
+}
+canvas.addEventListener('wheel',e=>{
+  if(e.cancelable)e.preventDefault();
+  changeZoom(zoom*Math.exp(-e.deltaY*.001),e.clientX,e.clientY);
+},{passive:false});
+canvas.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  if(e.cancelable)e.preventDefault();
+  if(pointers.size>=2)return;
+  if(!pointers.size){gesture.hadMulti=false;gesture.travel=0;gesture.active=true}
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  try{canvas.setPointerCapture(e.pointerId)}catch(_){}
+  if(pointers.size>=2)gesture.hadMulti=true;
+  resetMotion();
+});
+canvas.addEventListener('pointermove',e=>{
+  const point=pointers.get(e.pointerId);
+  if(!point)return;
+  if(e.cancelable)e.preventDefault();
+  const before=gesture.lastMid;
+  point.x=e.clientX;point.y=e.clientY;
+  const now=touchGeometry();
+  if(!now)return;
+  if(before){
+    const distance=Math.hypot(now.x-before.x,now.y-before.y);
+    gesture.travel+=distance;
+    if(distance>.01)translateCamera(before.x,before.y,now.x,now.y);
+    if(pointers.size===2&&gesture.lastDist>8&&now.dist>8){
+      const factor=clamp(now.dist/gesture.lastDist,.8,1.25);
+      changeZoom(zoom*factor,now.x,now.y);
+    }
+  }
+  resetMotion();
+});
+canvas.addEventListener('pointercancel',finishPointer);
+canvas.addEventListener('lostpointercapture',finishPointer);
+canvas.addEventListener('pointerup',e=>{
+  const wasMulti=gesture.hadMulti;
+  const moved=gesture.travel;
+  if(!finishPointer(e)||wasMulti||moved>9||pointers.size)return;
+  const s=Math.min(W/300,H/260)*zoom;
+  let x=(e.clientX-W/2)/s+panX,y=(e.clientY-H/2)/(s*.67)+panY;
+  const o=owners[0];
+  const picked=mode3D&&window.FazendaVivaBridge?.groundAt?.(e.clientX,e.clientY);
+  if(picked){x=picked.x;y=picked.y}
+  if(!build){let b=buildings.find(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+2&&Math.abs(y-b.y)<b.h/2+(mode3D?8:2)&&b.type!=='paddock');if(b){selected=b;$('upgrade').hidden=false;$('upgrade').textContent='🔨 Ampliar '+({house:'casa',stable:'cocheira',barn:'galpão'}[b.type]||'estrutura')+' (nível '+(b.tier||1)+'/3) · R$ '+(1800*(b.tier||1)).toLocaleString('pt-BR');$('panel').hidden=false;$('status').textContent='🏗️ Estrutura selecionada';}return}if(!insideFarm(o,x,y,defs[build].w,defs[build].h)){$('status').textContent='⚠️ Área fora dos limites da sua cabanha';return}if(owners.slice(1).some(other=>Math.hypot(x-other.x,y-other.y)<32)){$('status').textContent='⚠️ Terreno pertence a outra fazenda';return}if(owners[0].cash<defs[build].cost){$('status').textContent='💰 Saldo insuficiente';return}if(add(o,build,x,y)){$('status').textContent='✅ Construção concluída';build=null;refresh();save()}else $('status').textContent='⚠️ Local ocupado: escolha outro espaço'
+});
+$('zoomIn').onclick=()=>changeZoom(zoom*1.35);
+$('zoomOut').onclick=()=>changeZoom(zoom/1.35);
+$('buyhorse').onclick=()=>{let o=owners[0],herd=horses.filter(h=>h.o===o);if(herd.length>=capacity(o)){$('status').textContent='🏠 Amplie suas cocheiras para aumentar a capacidade';return}if(o.cash<2500){$('status').textContent='💰 Saldo insuficiente para comprar cavalo';return}o.cash-=2500;let h=makeHorse(o);horses.push(h);$('status').textContent='🐎 '+h.name+' ('+h.breed+') chegou à cabanha!';$('news').textContent='Novo cavalo: '+h.name+' · '+h.breed+' · qualidade '+h.quality+'/100';refresh();save()};$('upgrade').onclick=()=>{if(!selected)return;let b=selected,t=b.tier||1,cost=1800*t;if(t>=3){$('status').textContent='⭐ Estrutura no nível máximo';return}if(owners[0].cash<cost){$('status').textContent='💰 Saldo insuficiente para ampliar';return}owners[0].cash-=cost;b.tier=t+1;refresh();save();$('upgrade').textContent='🔨 Ampliar nível '+b.tier+'/3 · R$ '+(1800*b.tier).toLocaleString('pt-BR');$('status').textContent='✅ Ampliação concluída — nível '+b.tier};$('toggle').onclick=()=>{$('panel').hidden=!$('panel').hidden};$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'▶ Retomar':'⏸ Pausar'};$('speed').onclick=()=>{speed=speed===1?3:speed===3?8:1;$('speed').textContent='⏩ '+speed+'×'};$('map').onclick=()=>{
   overview=!overview;
   if(overview){
     panX=0;panY=0;
@@ -196,4 +298,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=083"></script></body></html>
+</script><script type="module" src="./world3d.js?v=084"></script></body></html>
