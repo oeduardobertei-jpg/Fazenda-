@@ -56,6 +56,21 @@ try{
   }
   assert.ok(ui.get('manageBody').innerHTML.includes('Primeira expansão'),
     'metas de progressão visíveis');
+  // Cliques do painel usam a mesma câmera da simulação, não reiniciam a partida.
+  const startCash=get().owners[0].cash;
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
+  const sampleHorse=get().horses.find(h=>h.o===get().owners[0]);
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'findHorse',index:'0'}})}});
+  assert.equal(ui.get('management').hidden,true,'localizar cavalo fecha o painel');
+  assert.ok(Math.abs(get().panX-sampleHorse.x)<.01,'localizar cavalo ajusta câmera');
+  ui.get('manageOpen').onclick();
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'equipe'}})}});
+  const sampleWorker=get().farmers.filter(w=>w.o===get().owners[0])[1];
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'findWorker',index:'1'}})}});
+  assert.equal(ui.get('management').hidden,true,'localizar trabalhador fecha o painel');
+  assert.ok(Math.abs(get().panX-sampleWorker.x)<.01,'localizar NPC ajusta câmera');
+  assert.equal(get().owners[0].cash,startCash,'gestão não altera dinheiro ao navegar');
+  ui.get('manageOpen').onclick();
   ui.get('manageClose').onclick();
   assert.equal(ui.get('management').hidden,true,'painel de gestão fecha');
   const initialZoom=get().zoom;
