@@ -671,14 +671,35 @@ function sync(s){
 }
 function updateLabels(s){
   for(let i=0;i<s.owners.length;i++){
-    const o=s.owners[i];
-    // Em zoom de detalhe as etiquetas não devem esconder telhados nem cavalos.
-    if(s.zoom>1.13){labelNodes[i].style.display='none';continue}
+    const o=s.owners[i],label=labelNodes[i];
+    // Em detalhes, liberar a paisagem das etiquetas das cabanhas.
+    if(s.zoom>1.13){label.style.display='none';continue}
     const p=new THREE.Vector3(o.x,14,o.y-40).project(camera);
-    const x=(p.x*.5+.5)*innerWidth, y=(-p.y*.5+.5)*innerHeight;
-    const label=labelNodes[i];
+    const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;
     label.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';
     label.style.display=x<0||x>innerWidth||y<95||y>innerHeight-55?'none':'block';
+  }
+  if(!workerLabels.length)return;
+  // Duas identificações próximas no máximo: não cobrir os personagens no celular.
+  const ordered=workerLabels.map(item=>({
+    item,dist:Math.hypot(item.f.x-s.panX,item.f.y-s.panY)
+  })).sort((a,b)=>a.dist-b.dist);
+  const chosen=new Set(
+    s.zoom>=2.55?ordered.filter(x=>x.dist<42).slice(0,2).map(x=>x.item):[]
+  );
+  for(const item of workerLabels){
+    const el=item.el,f=item.f;
+    if(!chosen.has(item)){el.style.display='none';continue}
+    const v=new THREE.Vector3(f.x,6.3,f.y).project(camera);
+    const px=(v.x*.5+.5)*innerWidth,py=(-v.y*.5+.5)*innerHeight;
+    if(px<65||px>innerWidth-65||py<160||py>innerHeight-100){
+      el.style.display='none';continue;
+    }
+    el.style.display='block';
+    el.style.transform='translate(-50%,-100%) translate('+px+'px,'+py+'px)';
+    const icon=f.role==='tratador'?'🐎':f.role==='agricultor'?'🌾':'📋';
+    const text=icon+' '+f.role+' · '+(f.working?'Em serviço':f.moving?'Caminhando':'Aguardando');
+    if(el.textContent!==text)el.textContent=text;
   }
 }
 function animate(now=0){
@@ -761,9 +782,14 @@ function init(){
   labelLayer=document.createElement('div');
   labelLayer.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1';
   for(const o of s.owners){
-    let el=document.createElement('div');el.textContent=o.name;
+    const el=document.createElement('div');el.textContent=o.name;
     el.style.cssText='position:absolute;top:0;left:0;white-space:nowrap;color:#fff7df;background:#1f3b28b9;border:1px solid #f7e5b04f;border-radius:8px;padding:3px 7px;font:600 11px system-ui;box-shadow:0 2px 6px #0004';
     labelLayer.appendChild(el);labelNodes.push(el);
+  }
+  for(const f of s.farmers){
+    const el=document.createElement('div');
+    el.style.cssText='position:absolute;left:0;top:0;white-space:nowrap;color:#fff4d1;background:#254635ee;border:1px solid #f1ddad9a;border-radius:10px;padding:3px 5px;font:600 10px system-ui;box-shadow:0 2px 6px #0004;display:none';
+    labelLayer.appendChild(el);workerLabels.push({f,el});
   }
   document.body.insertBefore(labelLayer,document.getElementById('hud'));
   start();
