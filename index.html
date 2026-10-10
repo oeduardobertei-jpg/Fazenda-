@@ -526,42 +526,60 @@ function completeWorkerJob(f){
 function animateFarmers(dt){
   const maxDt=Math.max(0,Math.min(.65,dt));
   for(const f of farmers){
+    // A fase visual nunca congela em tarefas: as duas renderizações recebem
+    // os mesmos estados e distância percorrida (não o número de frames).
+    f.animTime=(f.animTime||0)+maxDt;
     if(f.wait>0){
       f.wait-=maxDt;f.moving=false;
+      f.motion=f.working?'work':'idle';
       if(f.wait<=0){completeWorkerJob(f);chooseFarmerTarget(f)}
       continue;
     }
-    if(!f.route||f.routeIndex>=f.route.length){chooseFarmerTarget(f);continue}
-    let waypoint=f.route[f.routeIndex];
-    if(!waypoint){chooseFarmerTarget(f);continue}
+    if(!f.route||f.routeIndex>=f.route.length){
+      f.motion='idle';chooseFarmerTarget(f);continue;
+    }
+    const waypoint=f.route[f.routeIndex];
+    if(!waypoint){f.motion='idle';chooseFarmerTarget(f);continue}
     if(!workerSafe(f.o,f.x,f.y,1.2)){
       const grid=farmGrid(f.o),cell=nearestWalkable(grid,f.x,f.y);
-      if(cell>=0){f.x=grid.x0+(cell%NAV_N)*NAV_STEP;f.y=grid.y0+((cell/NAV_N)|0)*NAV_STEP}
-      chooseFarmerTarget(f);continue;
+      if(cell>=0){
+        f.x=grid.x0+(cell%NAV_N)*NAV_STEP;
+        f.y=grid.y0+((cell/NAV_N)|0)*NAV_STEP;
+      }
+      f.motion='idle';chooseFarmerTarget(f);continue;
     }
     const dx=waypoint.x-f.x,dy=waypoint.y-f.y,d=Math.hypot(dx,dy);
     if(d<.7){
       f.routeIndex++;
       if(f.routeIndex>=f.route.length){
         f.working=true;f.wait=2.2+(f.id%3)*.7;
-        f.activity=f.task;f.moving=false;
+        f.activity=f.task;f.moving=false;f.motion='work';
       }
       continue;
     }
     const step=Math.min(d,maxDt*(3.3+(f.id%3)*.30));
     const nx=f.x+dx/d*step,ny=f.y+dy/d*step;
-    // Dois funcionários não ocupam o mesmo espaço. Pausas curtas dão preferência a quem passa.
     if(farmers.some(other=>other!==f&&other.o===f.o&&
         Math.hypot(nx-other.x,ny-other.y)<2.15)){
-      f.moving=false;f.wait=.24+(f.id%3)*.12;f.activity='Aguardando passagem';
+      f.moving=false;f.wait=.24+(f.id%3)*.12;
+      f.motion='idle';f.activity='Aguardando passagem';
       continue;
     }
-    // Se outra estrutura foi construída desde o cálculo da rota, planeja novamente.
     if(!clearWalkSegment(f.o,f.x,f.y,nx,ny)){
-      chooseFarmerTarget(f);continue;
+      f.motion='idle';chooseFarmerTarget(f);continue;
     }
-    f.heading=Math.atan2(dy,dx);f.x=nx;f.y=ny;
-    f.phase+=maxDt*7;f.moving=true;f.activity='Indo trabalhar';
+    const heading=Math.atan2(dy,dx);
+    if(!Number.isFinite(f.visualHeading))f.visualHeading=heading;
+    else{
+      const turn=Math.atan2(Math.sin(heading-f.visualHeading),
+        Math.cos(heading-f.visualHeading));
+      f.visualHeading+=turn*Math.min(1,maxDt*8);
+    }
+    f.heading=heading;
+    f.x=nx;f.y=ny;
+    f.gait=(f.gait||0)+step*2.0;
+    f.moving=true;f.motion='walk';
+    f.activity='Indo trabalhar';
   }
 }
 function finances(o){
