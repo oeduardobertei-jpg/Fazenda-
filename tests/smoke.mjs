@@ -14,12 +14,14 @@ const pageVersion=html.match(/FAZENDA VIVA · ([\d.]+)/)?.[1];
 const cacheVersion=html.match(/world3d\.js\?v=(\d+)/)?.[1];
 assert.ok(pageVersion&&cacheVersion&&
   cacheVersion===pageVersion.replaceAll('.',''),'versão/cache incompatíveis');
-const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode renderMode renderStatus error zoomIn zoomOut resetGame'.split(' ');
+const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody'.split(' ');
 const noop=()=>{},ctx=new Proxy({setTransform:noop},{
   get:(o,key)=>o[key]??noop,set:(o,key,v)=>{o[key]=v;return true}
 });
 const ui=new Map(ids.map(id=>[id,{
-  id,textContent:'',hidden:true,style:{},callbacks:{},getContext:()=>ctx,
+  id,textContent:'',innerHTML:'',scrollTop:0,hidden:true,style:{},callbacks:{},getContext:()=>ctx,
+  querySelectorAll:()=>['resumo','financas','cavalos','equipe','mercado','metas']
+    .map(mgtab=>({dataset:{mgtab},setAttribute:noop})),
   addEventListener(name,fn){this.callbacks[name]=fn},
   setPointerCapture:noop,releasePointerCapture:noop,hasPointerCapture:()=>false,
   setAttribute:noop
@@ -28,7 +30,7 @@ let step=()=>{},saved=0,reset=false;
 const values={
   window:{},document:{getElementById:id=>{
     assert.ok(ui.has(id),'HTML control ausente: '+id);return ui.get(id);
-  }},innerWidth:390,innerHeight:844,devicePixelRatio:2,
+  },addEventListener:noop},innerWidth:390,innerHeight:844,devicePixelRatio:2,
   addEventListener:noop,requestAnimationFrame:fn=>step=fn,
   localStorage:{getItem:()=>null,setItem:()=>saved++,removeItem:noop},
   confirm:()=>true,location:{reload:()=>reset=true},
@@ -44,6 +46,18 @@ try{
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  // A 0.9 adiciona uma interface de gestão sem comprometer o mundo 3D.
+  ui.get('manageOpen').onclick();
+  assert.equal(ui.get('management').hidden,false,'painel de gestão abre');
+  assert.ok(ui.get('manageBody').innerHTML.includes('Patrimônio'),'resumo econômico visível');
+  for(const section of ['resumo','financas','cavalos','equipe','mercado','metas']){
+    ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:section}})}});
+    assert.ok(ui.get('manageBody').innerHTML.length>100,'aba de gestão vazia: '+section);
+  }
+  assert.ok(ui.get('manageBody').innerHTML.includes('Primeira expansão'),
+    'metas de progressão visíveis');
+  ui.get('manageClose').onclick();
+  assert.equal(ui.get('management').hidden,true,'painel de gestão fecha');
   const initialZoom=get().zoom;
   ui.get('zoomIn').onclick();assert.ok(get().zoom>initialZoom,'zoom +');
   ui.get('zoomOut').onclick();
@@ -82,6 +96,14 @@ try{
   assert.ok(minHorse>5.5,'cavalos com distanciamento');
   assert.ok(maxSite<=1,'no máximo uma obra por fazenda');
   assert.equal(saved,0,'sem salvamento automático');
+  ui.get('manageOpen').onclick();
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'financas'}})}});
+  assert.ok(ui.get('manageBody').innerHTML.includes('Evolução do saldo'),
+    'relatório financeiro após simulação');
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'metas'}})}});
+  assert.ok(ui.get('manageBody').innerHTML.includes('Concluída'),
+    'recompensas por metas concluídas');
+  ui.get('manageClose').onclick();
   assert.equal(ui.get('error').textContent,'','sem erros fatais');
   ui.get('resetGame').onclick();
   assert.ok(reset,'reset deve recarregar após confirmação');
