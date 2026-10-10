@@ -14,6 +14,13 @@ const pageVersion=html.match(/FAZENDA VIVA · ([\d.]+)/)?.[1];
 const cacheVersion=html.match(/world3d\.js\?v=(\d+)/)?.[1];
 assert.ok(pageVersion&&cacheVersion&&
   cacheVersion===pageVersion.replaceAll('.',''),'versão/cache incompatíveis');
+// Toda recompensa precisa contribuir para uma progressão alcançável.
+const repRewards=[...inline.matchAll(/rep:(\d+),cash:/g)].map(m=>Number(m[1]));
+const thresholds=inline.match(/const steps=\[([^\]]+)\]/)?.[1]?.split(',').map(Number);
+assert.ok(repRewards.length>=7&&thresholds?.length>=7,
+  'progressão/recompensas incompletas');
+assert.ok(repRewards.reduce((a,b)=>a+b,0)>=thresholds.at(-1),
+  'nível máximo de reputação inalcançável');
 const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody'.split(' ');
 const noop=()=>{},ctx=new Proxy({setTransform:noop},{
   get:(o,key)=>o[key]??noop,set:(o,key,v)=>{o[key]=v;return true}
