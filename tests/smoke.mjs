@@ -89,10 +89,43 @@ try{
   assert.equal(get().lowGraphics,false,'modo normal');
   ui.get('speed').onclick();ui.get('speed').onclick(); // 8x
   let ms=performance.now(),overlap=0,outside=0,maxSite=0,minHorse=1e9;
+  let trailIntersections=0,unconnectedStructures=0;
+  const horseStates=new Set(),workerStates=new Set();
   for(let i=0;i<1300;i++){
     ms+=50;step(ms);
+    // Mesmo conjunto de estados usado por Canvas 2D e Three.js, independentemente
+    // de qual renderizador esteja ativo no Android.
+    const live=get();
+    live.horses.forEach(h=>horseStates.add(h.motion));
+    live.farmers.forEach(f=>workerStates.add(f.motion));
     if(i%40!==0)continue;
-    const s=get();
+    const s=live;
+    if(i%160===0){
+      for(const o of s.owners){
+        const roads=s.trails.filter(t=>t.owner===o.name);
+        const ready=s.buildings.filter(b=>b.o===o&&b.status!=='building');
+        assert.ok(roads.some(t=>t.kind==='entrada'),
+          'fazenda sem caminho conectado ao portão: '+o.name);
+        for(const b of ready){
+          const closest=Math.min(...roads.flatMap(t=>[
+            Math.hypot(b.x-t.x1,b.y-t.y1),
+            Math.hypot(b.x-t.x2,b.y-t.y2)
+          ]));
+          if(closest>Math.max(b.w,b.h)*.75+8)unconnectedStructures++;
+        }
+        for(const t of roads){
+          const checks=Math.max(2,Math.ceil(Math.hypot(t.x2-t.x1,t.y2-t.y1)/2.4));
+          for(let j=0;j<=checks;j++){
+            const r=j/checks,x=t.x1+(t.x2-t.x1)*r,
+              y=t.y1+(t.y2-t.y1)*r;
+            if(s.buildings.some(b=>b.o===o&&
+              Math.abs(x-b.x)<b.w/2+.9&&Math.abs(y-b.y)<b.h/2+.9)){
+              trailIntersections++;break;
+            }
+          }
+        }
+      }
+    }
     for(const o of s.owners){
       const workers=s.farmers.filter(w=>w.o===o),
         horses=s.horses.filter(h=>h.o===o);
@@ -116,6 +149,12 @@ try{
   assert.equal(overlap,0,'NPC não pode atravessar construções');
   assert.equal(outside,0,'NPC não pode sair da gleba');
   assert.ok(minHorse>5.5,'cavalos com distanciamento');
+  assert.equal(trailIntersections,0,'caminhos atravessando edifícios');
+  assert.equal(unconnectedStructures,0,'estrutura sem conexão à malha de circulação');
+  assert.ok(['idle','walk','graze'].every(s=>horseStates.has(s)),
+    'estados do cavalo não alternaram entre descanso, passo e pasto');
+  assert.ok(['walk','work'].every(s=>workerStates.has(s)),
+    'trabalhadores não alternaram entre caminhar e executar tarefas');
   assert.ok(maxSite<=1,'no máximo uma obra por fazenda');
   assert.equal(saved,0,'sem salvamento automático');
   ui.get('manageOpen').onclick();
@@ -133,7 +172,9 @@ try{
     dia:get().day,estruturas:get().buildings.length,
     trabalhadores:get().farmers.length,
     tarefas:get().farmers.reduce((sum,f)=>sum+(f.tasksDone||0),0),
-    caminhos:get().trails.length,distanciaMinimaCavalos:+minHorse.toFixed(2)
+    caminhos:get().trails.length,distanciaMinimaCavalos:+minHorse.toFixed(2),
+    intersecoesDeCaminhos:trailIntersections,
+    estadosCavalos:[...horseStates],estadosTrabalhadores:[...workerStates]
   }));
 }finally{
   for(const [k,v]of old)if(v===undefined)delete globalThis[k];else globalThis[k]=v;
