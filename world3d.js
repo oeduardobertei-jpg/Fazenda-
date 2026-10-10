@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.5 — construção sequencial, piquetes completos e estabilidade de LOD.
+/* Fazenda Viva 0.8.6 — cavalos separados, trabalhadores ativos e reinício limpo.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -15,7 +15,7 @@ const api = window.FazendaVivaBridge;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer;
+let renderer, scene, camera, content, horseLayer, workerLayer;
 let enabled = false, stamp = '',detailMode=null;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
@@ -276,6 +276,29 @@ function makeHorse(h){
   group.userData.horse=h;
   return group;
 }
+function makeWorker(f){
+  const group=new THREE.Group();
+  const skin=0xd6a17d;
+  const shirt=f.color||'#759389';
+  const legs=[];
+  for(const sign of [-1,1]){
+    const leg=box(group,.36,1.04,.39,sign*.29,.62,0,0x4e5045);
+    legs.push(leg);
+    box(group,.54,.19,.7,sign*.29,.17,.17,0x514237);
+    box(group,.29,1.1,.32,sign*.74,1.83,0,shirt);
+    box(group,.27,.30,.30,sign*.75,1.13,0,skin);
+  }
+  box(group,1.35,1.45,.80,0,1.92,0,shirt);
+  box(group,.50,.44,.45,0,2.73,0,skin);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.56,8,6),mat(skin));
+  head.position.set(0,3.10,0);group.add(head);
+  // Chapéu de palha usado pelos trabalhadores rurais.
+  const brim=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.12,10),mat(0xd4b477));
+  brim.position.set(0,3.50,0);group.add(brim);
+  cylinder(group,.44,.55,.51,0,3.75,0,0xbc995c,9);
+  group.userData.legs=legs;group.userData.farmer=f;
+  return group;
+}
 function makeTrees(parent,trees){
   // Duas silhuetas: copas arredondadas de mata brasileira e coníferas de campos altos.
   // Instancing: poucas chamadas de desenho mesmo com mais de mil árvores.
@@ -380,6 +403,7 @@ function drawWorld(s){
   makeTrees(root,s.trees);
   content=new THREE.Group();scene.add(content);
   horseLayer=new THREE.Group();scene.add(horseLayer);
+  workerLayer=new THREE.Group();scene.add(workerLayer);
 }
 function sync(s){
   // Somente estruturas próximas à câmera entram no grafo 3D detalhado.
