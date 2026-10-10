@@ -43,7 +43,7 @@ function placement(o,type,x,y){
     }
   }
   return null;
-}owners.forEach(o=>{add(o,'house',o.x,o.y,false);add(o,'stable',o.x+22,o.y,false);add(o,'paddock',o.x,o.y+23,false);for(let i=0;i<2;i++)horses.push(makeHorse(o))});for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;if(ponds.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1.5))continue;trees.push({x,y,s:.6+rnd()*.95})}function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+}owners.forEach(o=>{add(o,'house',o.x,o.y,false);add(o,'stable',o.x+22,o.y,false);add(o,'paddock',o.x,o.y+23,false);for(let i=0;i<2;i++)horses.push(makeHorse(o))});for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;if(Math.abs(x-140)<18||Math.abs(x+140)<18||Math.abs(y-140)<17)continue;if(ponds.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1.5))continue;trees.push({x,y,s:.6+rnd()*.95})}function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
 function screen(x,y){const s=Math.min(W/300,H/260)*zoom;return{x:W/2+(x-panX)*s,y:H/2+(y-panY)*s*.67}}function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}function poly(points,c){ctx.fillStyle=c;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()}function drawBuilding(b){const p=screen(b.x,b.y),s=Math.min(W/300,H/260)*zoom,w=b.w*s,h=b.h*s*.67;let x=p.x-w/2,y=p.y-h/2;const roof=b.type==='house'?'#9a5643':b.type==='stable'?'#6b4538':'#83705d';if(b.type==='paddock'){rect(x,y,w,h,'#a3b875');ctx.strokeStyle='#e4d4a5';ctx.lineWidth=Math.max(2,s*.65);ctx.strokeRect(x,y,w,h);for(let k=1;k<5;k++){let xx=x+w*k/5;rect(xx,y-2,2,6,'#e4d4a5');rect(xx,y+h-3,2,6,'#e4d4a5')}return}rect(x+3,y+5,w,h,'#806c51');rect(x,y,w,h,b.o.color);poly([[x-3,y+2],[x+w/2,y-h*.48],[x+w+3,y+2],[x+w,y+h*.18],[x,y+h*.18]],roof);rect(x+w*.12,y+h*.4,w*.18,h*.28,'#4d716e');rect(x+w*.67,y+h*.36,w*.22,h*.64,'#5c4533');ctx.strokeStyle='#e2c69d';ctx.lineWidth=1.5;ctx.strokeRect(x+w*.12,y+h*.4,w*.18,h*.28);if((b.tier||1)>1){const n=b.tier-1;for(let i=0;i<n;i++){let ax=x+w*(.08+i*.25),ay=y+h*.82;rect(ax,ay,w*.2,h*.15,'#d8b98a');rect(ax+w*.04,ay+h*.025,w*.12,h*.09,'#6c5239')}ctx.fillStyle='#ffe6a0';ctx.font='bold '+Math.max(9,s*5)+'px system-ui';ctx.textAlign='center';ctx.fillText('★'.repeat(n),x+w/2,y-h*.25)}}
 function drawLandscape(){const s=Math.min(W/300,H/260)*zoom;for(const field of fields){let p=screen(field.x,field.y),w=field.w*s,h=field.h*s*.67;rect(p.x-w/2,p.y-h/2,w,h,'#b4a36c');for(let i=1;i<8;i++){ctx.strokeStyle=i%2?'#68884a':'#d4bf7a';ctx.lineWidth=Math.max(1,s*.9);ctx.beginPath();ctx.moveTo(p.x-w/2+i*w/8,p.y-h/2);ctx.lineTo(p.x-w/2+i*w/8,p.y+h/2);ctx.stroke()}}for(const lake of ponds){let p=screen(lake.x,lake.y);ctx.fillStyle='#5d9ba0';ctx.beginPath();ctx.ellipse(p.x,p.y,lake.rx*s,lake.ry*s*.67,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#c1c792';ctx.lineWidth=2;ctx.stroke()}}function drawTree(t){let p=screen(t.x,t.y),s=Math.min(W/300,H/260)*zoom*t.s;rect(p.x-1*s,p.y,2*s,5*s,'#755338');ctx.fillStyle='#467a41';ctx.beginPath();ctx.arc(p.x,p.y-2*s,4*s,0,Math.PI*2);ctx.fill();ctx.fillStyle='#689951';ctx.beginPath();ctx.arc(p.x-1*s,p.y-3*s,2.5*s,0,Math.PI*2);ctx.fill()}
 function drawRoad(x1,y1,x2,y2,width=9){
@@ -60,10 +60,10 @@ function render(){
   for(let i=0;i<30;i++){let x=((i*317.21)%1160)-580,y=((i*193.39)%1060)-530,p=screen(x,y);
     if(p.x>-100&&p.x<W+100&&p.y>-100&&p.y<H+100)rect(p.x,p.y,50*s,35*s,i%2?'#8cad71':'#83a367');
   }
-  drawRoad(-110,-580,-110,580,14);drawRoad(-580,110,580,110,14);
+  drawRoad(-140,-580,-140,580,14);drawRoad(140,-580,140,580,14);drawRoad(-580,140,580,140,14);
   for(const o of owners){
-    if(Math.abs(o.x)<100){drawRoad(o.x,o.y,o.x,110,7)}
-    else{let x=o.x<0?-110:110;drawRoad(o.x,o.y,x,o.y,7);drawRoad(x,o.y,x,110,7)}
+    if(Math.abs(o.x)<100){drawRoad(o.x,o.y,o.x,140,7)}
+    else{let x=o.x<0?-140:140;drawRoad(o.x,o.y,x,o.y,7);drawRoad(x,o.y,x,140,7)}
   }
   drawLandscape();
   for(const o of owners){
