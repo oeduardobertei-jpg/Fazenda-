@@ -278,25 +278,44 @@ function makeHorse(h){
 }
 function makeWorker(f){
   const group=new THREE.Group();
-  const skin=0xd6a17d;
-  const shirt=f.color||'#759389';
-  const legs=[];
+  const skin=0xd6a17d,shirt=f.color||'#759389';
+  const legs=[],arms=[];
   for(const sign of [-1,1]){
     const leg=box(group,.36,1.04,.39,sign*.29,.62,0,0x4e5045);
     legs.push(leg);
     box(group,.54,.19,.7,sign*.29,.17,.17,0x514237);
-    box(group,.29,1.1,.32,sign*.74,1.83,0,shirt);
+    const sleeve=box(group,.29,1.1,.32,sign*.74,1.83,0,shirt);
+    arms.push(sleeve);
     box(group,.27,.30,.30,sign*.75,1.13,0,skin);
   }
   box(group,1.35,1.45,.80,0,1.92,0,shirt);
   box(group,.50,.44,.45,0,2.73,0,skin);
   const head=new THREE.Mesh(new THREE.SphereGeometry(.56,8,6),mat(skin));
   head.position.set(0,3.10,0);group.add(head);
-  // Chapéu de palha usado pelos trabalhadores rurais.
+  // Chapéu de palha, brim e cor são discretos no estilo low-poly rural.
   const brim=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.12,10),mat(0xd4b477));
   brim.position.set(0,3.50,0);group.add(brim);
   cylinder(group,.44,.55,.51,0,3.75,0,0xbc995c,9);
-  group.userData.legs=legs;group.userData.farmer=f;
+  const tool=new THREE.Group();group.add(tool);
+  if(f.role==='tratador'){
+    // Balde de água/ração de manejo e alça de metal.
+    cylinder(tool,.43,.32,.68,1.15,.84,.30,0x668b92,9);
+    box(tool,.11,.55,.11,1.15,1.37,.30,0xbdc4ba);
+    box(tool,.42,.12,.13,1.15,1.58,.30,0xbdc4ba);
+  }else if(f.role==='agricultor'){
+    // Enxada de cabo longo, com lâmina visível na base.
+    box(tool,.15,2.2,.15,1.12,1.28,.30,0xa77f4e);
+    box(tool,.62,.11,.38,1.12,.28,.32,0x758481);
+    box(tool,.25,.15,.15,1.12,2.42,.30,0x68523d);
+  }else{
+    // Prancheta/registro de inspeção da fazenda.
+    box(tool,.98,1.18,.12,1.08,1.52,.38,0x8e683e);
+    box(tool,.80,.91,.14,1.08,1.53,.48,0xe4d8ba);
+    for(let i=0;i<3;i++)
+      box(tool,.48,.06,.03,1.03,1.75-i*.24,.57,0x9f9d87);
+  }
+  group.userData.legs=legs;group.userData.arms=arms;
+  group.userData.tool=tool;group.userData.farmer=f;
   return group;
 }
 function makeTrees(parent,trees){
@@ -557,8 +576,18 @@ function sync(s){
     character.position.set(f.x,.14,f.y);
     character.rotation.y=-f.heading||0;
     const legs=character.userData.legs||[];
+    const arms=character.userData.arms||[];
     for(let k=0;k<legs.length;k++){
       legs[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.24:0;
+    }
+    for(let k=0;k<arms.length;k++){
+      arms[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.11:
+        f.working?Math.sin(f.phase*.55+k)*.10:0;
+    }
+    const tool=character.userData.tool;
+    if(tool){
+      tool.rotation.z=f.working?Math.sin(f.phase*.65)*.13:0;
+      tool.position.y=f.working?Math.sin(f.phase*.65)*.08:0;
     }
   });
 }
