@@ -252,13 +252,33 @@ function placeHorses(){
   }
   for(const h of horses){
     const p=horseSlots.get(h.id);if(!p)continue;
-    // Pequena caminhada contínua dentro da área individual do animal.
-    // A amplitude mantém folga entre vizinhos e em relação à cerca.
-    const ax=h.phase*.26+h.id*.7,az=h.phase*.21+h.id*1.2;
-    h.x=p.x+Math.cos(ax)*.78;
-    h.y=p.y+Math.sin(az)*.56;
-    const vx=-Math.sin(ax)*.26*.78,vy=Math.cos(az)*.21*.56;
-    h.heading=-Math.atan2(vy,vx);
+    // Posição e estados são únicos: Canvas e Three.js só interpretam a mesma pose.
+    if(h._slot!==p){
+      h._slot=p;h._orbit=h.id*2.39996;
+      h.x=p.x+Math.cos(h._orbit)*.90;
+      h.y=p.y+Math.sin(h._orbit)*.68;
+      h._lastPhase=h.phase;
+      h.gait=0;h.motion='idle';h.heading=0;
+    }
+    const delta=Math.max(0,Math.min(.22,h.phase-(h._lastPhase??h.phase)));
+    h._lastPhase=h.phase;
+    const cycle=(h.phase+h.id*.97)%15;
+    const walking=(cycle>=2.4&&cycle<6.5)||(cycle>=10.5&&cycle<12.9);
+    h.motion=walking?'walk':cycle>=6.5&&cycle<10.5?'graze':'idle';
+    if(walking&&delta>0){
+      h._orbit+=delta*1.42;
+      const nx=p.x+Math.cos(h._orbit)*.90;
+      const ny=p.y+Math.sin(h._orbit)*.68;
+      const dx=nx-h.x,dy=ny-h.y,distance=Math.hypot(dx,dy);
+      h.x=nx;h.y=ny;
+      if(distance>.001){
+        const goal=-Math.atan2(dy,dx);
+        // Rotação em Y no Three.js: a cabeça +X gira para (cos(yaw), -sin(yaw)).
+        const turn=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading));
+        h.heading+=turn*Math.min(1,.4+delta*3);
+        h.gait+=distance*2.8;
+      }
+    }
   }
 }
 // Funcionários autônomos: tratadores, agricultores e administradores.
