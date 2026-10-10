@@ -432,6 +432,22 @@ function sync(s){
     mesh.position.set(h.x??h.o.x,.12,h.y??h.o.y);
     mesh.rotation.y=h.heading||0;
   });
+  if(workerLayer.children.length!==s.farmers.length){
+    for(const child of [...workerLayer.children])workerLayer.remove(child);
+    for(const f of s.farmers)workerLayer.add(makeWorker(f));
+  }
+  workerLayer.visible=s.zoom>.47;
+  if(workerLayer.visible)s.farmers.forEach((f,i)=>{
+    const character=workerLayer.children[i];if(!character)return;
+    character.visible=Math.abs(f.x-s.panX)<235&&Math.abs(f.y-s.panY)<235;
+    if(!character.visible)return;
+    character.position.set(f.x,.14,f.y);
+    character.rotation.y=-f.heading||0;
+    const legs=character.userData.legs||[];
+    for(let k=0;k<legs.length;k++){
+      legs[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.24:0;
+    }
+  });
 }
 function updateLabels(s){
   for(let i=0;i<s.owners.length;i++){
