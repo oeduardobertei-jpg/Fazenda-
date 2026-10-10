@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.1 — renderizador WebGL progressivo.
+/* Fazenda Viva 0.8.2 — arquitetura rural detalhada e LOD.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -16,7 +16,7 @@ if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
 let renderer, scene, camera, content, horseLayer;
-let enabled = false, stamp = '';
+let enabled = false, stamp = '',detailMode=null;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false;
 let labelLayer, labelNodes = [];
 const colors = {
@@ -24,14 +24,37 @@ const colors = {
   fence: 0xc9a775, timber: 0x806042, path: 0xc5aa86,
   water: 0x629ba1, crop: 0xb0a76c, tree: 0x487c40
 };
-const materials = new Map();
+const materials = new Map(),geoBoxes=new Map(),geoRoofs=new Map();
+function sharedBox(w,h,d){
+  const key=[w,h,d].map(n=>Number(n).toFixed(3)).join('/');
+  if(!geoBoxes.has(key))geoBoxes.set(key,new THREE.BoxGeometry(w,h,d));
+  return geoBoxes.get(key);
+}
+const PALETTE={
+  plaster:0xe0c9a7,offwhite:0xe8dfc5,teal:0x598e88,
+  wood:0x856341,dark:0x634b36,lightWood:0xc69e71,
+  tile:0xa44f39,tile2:0x975e46,metal:0x727d7c,
+  straw:0xc4ac68,window:0x7ba9a5,frame:0xf1dfb8
+};
+function truss(g,x,y,z,w,h){
+  box(g,w,.24,.24,x,y,z,PALETTE.dark);
+  box(g,.22,h,.24,x-w*.5+.13,y-h*.5,z,PALETTE.dark);
+  box(g,.22,h,.24,x+w*.5-.13,y-h*.5,z,PALETTE.dark);
+}
+function stableCross(g,x,y,z,width,height){
+  const len=Math.hypot(width,height);
+  for(const k of [-1,1]){
+    const beam=box(g,.22,len,.22,x,y,z,PALETTE.lightWood);
+    beam.rotation.z=k*Math.atan2(width,height);
+  }
+}
 function mat(color, roughness=1) {
   const key = String(color)+':'+roughness;
   if (!materials.has(key)) materials.set(key,new THREE.MeshLambertMaterial({color,side:THREE.DoubleSide}));
   return materials.get(key);
 }
 function box(parent,w,h,d,x,y,z,color) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+  const m = new THREE.Mesh(sharedBox(w,h,d),mat(color));
   m.position.set(x,y,z);parent.add(m);return m;
 }
 function flat(parent,w,d,x,z,color,y=.08) {
@@ -80,51 +103,101 @@ function rails(parent,w,d,color=colors.fence,y=1.4) {
     box(parent,.35,.3,d,x,y*.48,0,color);
   }
 }
-function building(b){
-  const g=new THREE.Group();g.position.set(b.x,0,b.y);
+function building(b,detail=true){
+  const group=new THREE.Group();group.position.set(b.x,0,b.y);
   const w=b.w,d=b.h,t=Math.max(1,Math.min(3,b.tier||1));
+  const variety=(Math.abs(Math.round(b.x*17+b.y*23))%5);
+  const pad=detail?0.65:.2;
   if(b.type==='paddock'){
-    flat(g,w-1,d-1,0,0,0x7ba45b,.09);
-    rails(g,w,d,0xdbbd85);
-    for(let i=0;i<2;i++){
-      cylinder(g,1.05,1.2,1.1,-w*.2+i*5,.6,d*.15,0xbf9a58,8);
-    }
-  } else {
-    flat(g,w+1,d+1,0,0,0xaf9774,.10);
-    // O terreno reservado é a dimensão total da estrutura. Os módulos ampliados ocupam
-    // espaços já reservados, sem invadir outra construção.
-    const activeW=w*(.56+.22*(t-1));
-    const sideColor=b.type==='house'?b.o.color:b.type==='stable'?0xd1b28b:0xb8aca0;
-    const high=b.type==='barn'?6.8:b.type==='stable'?5.2:5.8;
-    box(g,activeW,high,d*.82,0,high/2,0,sideColor);
-    roof(g,activeW+1.8,d*.95,high,high+(b.type==='house'?3:2.1),
-         b.type==='house'?0x984f39:b.type==='stable'?0x76523b:0x666c69);
-    box(g,activeW*.2,high*.62,.22,-activeW*.27,high*.31,d*.42,0x604332);
-    if(b.type==='stable'){
-      const stalls=t+1;
-      for(let j=0;j<stalls;j++) {
-        const xx=-activeW*.32+j*(activeW*.64/Math.max(1,stalls-1));
-        box(g,activeW/(stalls+2),high*.55,.25,xx,high*.28,d*.43,0x69482c);
-        box(g,activeW/(stalls+3),.32,.32,xx,high*.56,d*.45,0xd7b17f);
-      }
-    }else if(b.type==='house'){
-      for(let k of [-1,1]) {
-        box(g,2.2,2,.24,k*activeW*.3,high*.63,d*.43,0x90b7af);
-        box(g,.22,2,.28,k*activeW*.3,high*.63,d*.46,0xe8d6b1);
-      }
-      box(g,activeW*.58,.26,d*.2,0,.35,d*.53,0xc5a37c);
-    }else{
-      for(let k=-1;k<=1;k++)
-        box(g,activeW*.15,high*.52,.25,k*activeW*.25,high*.28,d*.43,0x6e777b);
-    }
-    if(t>1) {
-      for(let k=0;k<t-1;k++){
-        const x=activeW*.5-.7-k*1.5;
-        box(g,1.1,2.5,.3,x,1.6,d*.45,0xe0b77c);
+    flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.09);
+    rails(group,w-.7,d-.7,PALETTE.lightWood);
+    if(detail){
+      // Cochos discretos, bebedouro e capim no interior do piquete.
+      box(group,2.2,.72,.95,-w*.27,.5,d*.24,0x98734f);
+      box(group,2.6,.45,1,w*.25,.48,-d*.29,0x638f9c);
+      for(let i=0;i<3;i++){
+        const x=-w*.16+i*1.7,z=d*.10+Math.sin(i)*2;
+        cylinder(group,.38,.54,.7,x,.45,z,0x719852,5);
       }
     }
+    group.userData.building=b;return group;
   }
-  g.userData.building=b;return g;
+  const usedW=Math.min(w-.45,w*(.54+.22*(t-1)));
+  const usedD=d-.55;
+  const height=b.type==='barn'?6.7:b.type==='stable'?5.5:5.8;
+  const facade=b.type==='house'?(variety%3===0?PALETTE.offwhite:b.o.color):
+               b.type==='stable'?(variety%2===0?0xcdb796:0xbda184):
+               (variety%2===0?0xb4beb4:0xa8a999);
+  const roofColor=b.type==='house'?(variety%2===0?PALETTE.tile:PALETTE.tile2):
+                  b.type==='stable'?0x79543e:PALETTE.metal;
+  const zFront=usedD*.50;
+  flat(group,w-.1,d-.1,0,0,variety%2===0?0xbca17c:0xa8987f,.11);
+  // Plataforma e edifício contidos integralmente no lote: nenhum telhado ultrapassa o footprint.
+  box(group,usedW,height,usedD*.88,0,height*.5,-.2,facade);
+  roof(group,usedW+.25,usedD*.99,height,height+(b.type==='house'?2.9:2.0),roofColor);
+  if(!detail){group.userData.building=b;return group}
+  const front=usedD*.44;
+  if(b.type==='house'){
+    // Porta principal, janelas com molduras e varanda coberta típica de sede rural.
+    box(group,1.7,3.35,.27,0,1.68,front+.02,PALETTE.dark);
+    box(group,.27,3.35,.30,-.85,1.68,front+.1,PALETTE.frame);
+    box(group,.27,3.35,.30,.85,1.68,front+.1,PALETTE.frame);
+    box(group,usedW*.63,.18,1.3,0,.21,front+.6,PALETTE.lightWood);
+    for(const side of [-1,1]){
+      const windowX=side*usedW*.31;
+      box(group,1.75,1.65,.16,windowX,height*.60,front+.11,PALETTE.window);
+      box(group,.18,2.02,.28,windowX,height*.60,front+.24,PALETTE.frame);
+      box(group,2.1,.18,.28,windowX,height*.60,front+.24,PALETTE.frame);
+      box(group,2.1,.18,.28,windowX,height*.60+.95,front+.24,PALETTE.frame);
+      box(group,2.1,.18,.28,windowX,height*.60-.95,front+.24,PALETTE.frame);
+    }
+    // Pergolado frontal dentro do próprio lote, com pilares e floreiras.
+    for(const side of [-1,1]){
+      const x=side*(usedW*.43);
+      box(group,.30,2.5,.3,x,1.28,front+.82,PALETTE.lightWood);
+      cylinder(group,.55,.62,.64,x,.42,front+.81,0x967e5e,7);
+    }
+    box(group,usedW*.95,.35,.35,0,2.50,front+.83,PALETTE.lightWood);
+  }else if(b.type==='stable'){
+    // Aberturas reais de baias com portões de madeira e separação física.
+    const count=Math.min(t+2,4);
+    const step=usedW/count;
+    for(let i=0;i<count;i++){
+      const x=-usedW/2+step*(i+.5);
+      box(group,step*.78,2.55,.17,x,1.30,front+.09,0x594c3c);
+      box(group,step*.73,1.36,.19,x,.70,front+.2,PALETTE.wood);
+      box(group,step*.72,.18,.24,x,1.45,front+.24,PALETTE.lightWood);
+      box(group,.17,2.65,.23,x-step*.42,1.32,front+.22,PALETTE.lightWood);
+      box(group,.17,2.65,.23,x+step*.42,1.32,front+.22,PALETTE.lightWood);
+      stableCross(group,x,.68,front+.35,step*.45,.89);
+    }
+    // Ripado superior para ventilação permanente.
+    for(let i=0;i<Math.max(4,Math.floor(usedW/2));i++){
+      const x=-usedW/2+1+i*(usedW-2)/Math.max(3,Math.floor(usedW/2)-1);
+      box(group,.42,.92,.17,x,4.25,front+.12,0x514539);
+    }
+    box(group,usedW,.28,.36,0,height*.91,front+.15,PALETTE.lightWood);
+  }else{
+    // Galpão agrícola: portões duplos, ripas metálicas e pequenas janelas de ventilação.
+    const doorWidth=Math.min(usedW*.67,7.8);
+    box(group,doorWidth*.49,height*.69,.27,-doorWidth*.255,height*.35,front+.08,0x747d78);
+    box(group,doorWidth*.49,height*.69,.27,doorWidth*.255,height*.35,front+.08,0x69756f);
+    for(let k=-2;k<=2;k++){
+      const x=k*doorWidth*.12;
+      box(group,.09,height*.65,.3,x,height*.35,front+.20,0x929c94);
+    }
+    for(const x of [-usedW*.43,usedW*.43]){
+      box(group,.34,height*.95,.3,x,height*.49,front+.18,PALETTE.dark);
+      box(group,.9,.85,.24,x,height*.72,front+.23,0x424e4b);
+    }
+    box(group,usedW+.18,.4,.5,0,height*.91,front+.16,0x6e756d);
+  }
+  // Ampliações físicas ocorrem dentro da reserva original (níveis 2 e 3).
+  if(t>1)for(let j=0;j<t-1;j++){
+    const x=usedW*.5-1.1-j*1.4;
+    box(group,.30,2.5,.32,x,1.25,front+.19,PALETTE.lightWood);
+  }
+  group.userData.building=b;return group;
 }
 function makeHorse(h){
   const group=new THREE.Group();
@@ -222,10 +295,12 @@ function drawWorld(s){
   horseLayer=new THREE.Group();scene.add(horseLayer);
 }
 function sync(s){
-  const newStamp=s.buildings.map(b=>[b.type,b.x,b.y,b.tier||1,s.owners.indexOf(b.o)].join(':')).join('|');
+  const highDetail=s.zoom>=.72;
+  const newStamp=(highDetail?'H':'L')+'|'+s.buildings.map(b=>[b.type,b.x,b.y,b.tier||1,s.owners.indexOf(b.o)].join(':')).join('|');
   if(newStamp!==stamp){
-    for(const child of [...content.children])content.remove(child);
-    for(const b of s.buildings)content.add(building(b));
+    content.clear();
+    // Geometrias básicas e materiais são reutilizados: evita perdas de VRAM nas expansões da IA.
+    for(const b of s.buildings)content.add(building(b,highDetail));
     stamp=newStamp;
   }
   if(horseLayer.children.length!==s.horses.length){
