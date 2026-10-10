@@ -522,7 +522,10 @@ function syncTrails(s){
     for(let j=0;j<2;j++){
       const offset=(j?1:-1)*width*.21;
       dummy.position.set(mx+perpX*offset,.381,mz+perpZ*offset);
-      dummy.scale.set(1,1,len+.10);dummy.updateMatrix();
+      // Estradas principais possuem sulcos; nos acessos pedonais os sulcos
+      // eram interpretados como tábuas soltas quando a câmera aproximava.
+      dummy.scale.set(t.kind==='servico'?0:1,1,t.kind==='servico'?0:len+.10);
+      dummy.updateMatrix();
       tracks.setMatrixAt(i*2+j,dummy.matrix);
     }
     dummy.rotation.set(0,0,0);
