@@ -10,7 +10,7 @@
 <canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.8.6</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Construir na sua cabanha</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Construir</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><div id="error" hidden></div>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
-let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,paused=false,speed=1,day=1,acc=0,build=null,selected=null,seed=314159,overview=false,mode3D=false,visitIndex=0;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const owners=[{name:'Sua cabanha',x:-315,y:-280,cash:19000,ai:false,color:'#b78355'},{name:'Estância Horizonte',x:305,y:-275,cash:18000,ai:true,color:'#6f9eb1'},{name:'Cabanha Santa Fé',x:-315,y:285,cash:14000,ai:true,color:'#c98c81'},{name:'Agro Vale',x:315,y:280,cash:16000,ai:true,color:'#d4bb76'},{name:'Rincão Verde',x:0,y:0,cash:12000,ai:true,color:'#91ad72'}];const defs={house:{w:12,h:10,cost:4000},stable:{w:17,h:10,cost:3200},barn:{w:16,h:13,cost:2400},paddock:{w:20,h:16,cost:1300}};const market={grain:1,horse:1,timber:1};const profiles=['Cabanha equestre','Criação de cavalos','Seleção genética','Produção agrícola','Agropecuária mista'];let horseSerial=0;const breeds=['Crioulo','Quarto de Milha','Mangalarga'];const coats=['#78513b','#c69a64','#54433b','#b0a08c'];const horseNames=['Ventania','Tropeiro','Aurora','Farrapo','Estrela','Trovão','Pampa','Lua','Sereno','Canela'];const buildings=[],trees=[],horses=[],ponds=[{x:-15,y:-278,rx:35,ry:23},{x:15,y:310,rx:29,ry:22},{x:505,y:-70,rx:26,ry:19}],fields=[{x:-485,y:30,w:60,h:48},{x:478,y:-48,w:72,h:50},{x:475,y:473,w:66,h:54},{x:-495,y:470,w:74,h:54},{x:30,y:-485,w:88,h:40}];function makeHorse(o){let id=++horseSerial;return{o,id,name:horseNames[(id-1)%horseNames.length],breed:breeds[Math.floor(rnd()*breeds.length)],coat:coats[Math.floor(rnd()*coats.length)],age:2+Math.floor(rnd()*5),quality:45+Math.floor(rnd()*45),phase:rnd()*7,offset:rnd()*6,x:o.x,y:o.y,heading:0}}function isBuilt(b){return b.status!=='building'}
+let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,paused=false,speed=1,day=1,acc=0,build=null,selected=null,seed=314159,overview=false,mode3D=false,visitIndex=0;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const owners=[{name:'Sua cabanha',x:-315,y:-280,cash:19000,ai:false,color:'#b78355'},{name:'Estância Horizonte',x:305,y:-275,cash:18000,ai:true,color:'#6f9eb1'},{name:'Cabanha Santa Fé',x:-315,y:285,cash:14000,ai:true,color:'#c98c81'},{name:'Agro Vale',x:315,y:280,cash:16000,ai:true,color:'#d4bb76'},{name:'Rincão Verde',x:0,y:0,cash:12000,ai:true,color:'#91ad72'}];const defs={house:{w:12,h:10,cost:4000},stable:{w:17,h:10,cost:3200},barn:{w:16,h:13,cost:2400},paddock:{w:20,h:16,cost:1300}};const market={grain:1,horse:1,timber:1};const profiles=['Cabanha equestre','Criação de cavalos','Seleção genética','Produção agrícola','Agropecuária mista'];let horseSerial=0;const breeds=['Crioulo','Quarto de Milha','Mangalarga'];const coats=['#78513b','#c69a64','#54433b','#b0a08c'];const horseNames=['Ventania','Tropeiro','Aurora','Farrapo','Estrela','Trovão','Pampa','Lua','Sereno','Canela'];const buildings=[],trees=[],horses=[],farmers=[],ponds=[{x:-15,y:-278,rx:35,ry:23},{x:15,y:310,rx:29,ry:22},{x:505,y:-70,rx:26,ry:19}],fields=[{x:-485,y:30,w:60,h:48},{x:478,y:-48,w:72,h:50},{x:475,y:473,w:66,h:54},{x:-495,y:470,w:74,h:54},{x:30,y:-485,w:88,h:40}];function makeHorse(o){let id=++horseSerial;return{o,id,name:horseNames[(id-1)%horseNames.length],breed:breeds[Math.floor(rnd()*breeds.length)],coat:coats[Math.floor(rnd()*coats.length)],age:2+Math.floor(rnd()*5),quality:45+Math.floor(rnd()*45),phase:rnd()*7,offset:rnd()*6,x:o.x,y:o.y,heading:0}}function isBuilt(b){return b.status!=='building'}
 function activeSite(o){return buildings.find(b=>b.o===o&&(b.status==='building'||b.status==='upgrading'))}
 function capacity(o){return buildings.filter(b=>b.o===o&&b.type==='stable'&&isBuilt(b)).reduce((n,b)=>n+2*(b.tier||1),0)}function insideFarm(o,x,y,w,h){
   if(!o)return false;
@@ -46,7 +46,14 @@ function placement(o,type,x,y){
     }
   }
   return null;
-}owners.forEach(o=>{add(o,'house',o.x,o.y,false);add(o,'stable',o.x+22,o.y,false);add(o,'paddock',o.x,o.y+23,false);for(let i=0;i<2;i++)horses.push(makeHorse(o))});for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;
+}owners.forEach(o=>{add(o,'house',o.x,o.y,false);add(o,'stable',o.x+22,o.y,false);add(o,'paddock',o.x,o.y+23,false);for(let i=0;i<2;i++)horses.push(makeHorse(o))});owners.forEach((o,k)=>{for(let i=0;i<3;i++){
+  farmers.push({o,id:k*3+i+1,role:['tratador','agricultor','administrador'][i],
+    x:o.x-26+i*6,y:o.y-27-i*3,
+    tx:o.x-26+i*6,ty:o.y-27-i*3,
+    phase:i*2,heading:0,wait:0,moving:false,
+    color:['#4d8182','#9e774d','#c5a25a'][i]});
+}});
+for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;
   if(Math.abs(x-140)<18||Math.abs(x+140)<18||Math.abs(y-140)<17)continue;
   // Corredores de acesso às fazendas, açudes e lavouras não podem nascer dentro das árvores.
   if(owners.some(o=>o.x<-100?x>o.x+115&&x<-130&&Math.abs(y-o.y)<11:
@@ -176,6 +183,30 @@ function placeHorses(){
     h.heading=Math.sin(h.phase*.14+h.id)*.07;
   }
 }
+// Funcionários autônomos: tratadores, agricultores e administradores.
+function chooseFarmerTarget(f){
+  const wanted={tratador:'stable',agricultor:'barn',administrador:'house'}[f.role];
+  let list=buildings.filter(b=>b.o===f.o&&b.type===wanted&&isBuilt(b));
+  if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
+  if(!list.length){f.tx=f.o.x-15;f.ty=f.o.y-22;return}
+  const b=list[Math.floor(rnd()*list.length)];
+  const spots=[
+    {x:b.x-b.w/2-4,y:b.y},{x:b.x+b.w/2+4,y:b.y},
+    {x:b.x,y:b.y+b.h/2+4},{x:b.x,y:b.y-b.h/2-4}
+  ].filter(p=>insideFarm(f.o,p.x,p.y,2,2)&&
+    !buildings.some(other=>other!==b&&Math.abs(p.x-other.x)<other.w/2+2&&Math.abs(p.y-other.y)<other.h/2+2));
+  if(spots.length){const p=spots[Math.floor(rnd()*spots.length)];f.tx=p.x;f.ty=p.y}
+}
+function animateFarmers(dt){
+  for(const f of farmers){
+    if(f.wait>0){f.wait-=dt;f.moving=false;continue}
+    const dx=f.tx-f.x,dy=f.ty-f.y,dist=Math.hypot(dx,dy);
+    if(dist<.75){f.wait=1+rnd()*2;chooseFarmerTarget(f);f.moving=false;continue}
+    const movement=Math.min(dist,Math.max(0,dt)*(3.1+(f.id%3)*.4));
+    f.heading=Math.atan2(dy,dx);f.x+=dx/dist*movement;f.y+=dy/dist*movement;
+    f.phase+=dt*7.5;f.moving=true;
+  }
+}
 function finances(o){let gross=0,cost=0;for(const b of buildings){if(b.o!==o||!isBuilt(b))continue;let tier=b.tier||1;gross+=({house:12,stable:30*market.horse,barn:110*market.grain,paddock:25*market.horse}[b.type]||0)*tier;cost+=({house:9,stable:32,barn:45,paddock:17}[b.type]||0)*tier}const herd=horses.filter(h=>h.o===o);gross+=herd.reduce((sum,h)=>sum+Math.round(h.quality*.95*market.horse),0);cost+=herd.length*22;return{gross:Math.round(gross),cost,net:Math.round(gross-cost)}}function refresh(){$('date').textContent='📅 Dia '+day;$('money').textContent='💰 R$ '+owners[0].cash.toLocaleString('pt-BR');const sites=buildings.filter(b=>b.status==='building'||b.status==='upgrading').length;$('buildings').textContent='🏡 '+(buildings.length-buildings.filter(b=>b.status==='building').length)+' prontas'+(sites?' · '+sites+' em obras':'')+' · 4 IAs';const e=finances(owners[0]);$('economy').textContent='🐎 '+horses.filter(h=>h.o===owners[0]).length+'/'+capacity(owners[0])+' cavalos · 📈 R$ '+e.gross+' receita · R$ '+e.cost+' custos · '+(e.net>=0?'+':'')+'R$ '+e.net}function zoneOf(o,type){
   // Zonas funcionais evitam edifícios distribuídos sem relação com sua finalidade.
   const zones={house:[-25,-25],stable:[27,-18],barn:[-27,30],paddock:[26,30]};
@@ -257,7 +288,7 @@ function tick(){
   refresh();
 }
 // Partida nova a cada abertura. Nenhum salvamento automático ou carregamento local.
-let prev=performance.now();function frame(now){try{let dt=Math.min(.05,(now-prev)/1000);prev=now;if(!paused){acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);placeHorses();if(acc>3){acc=0;tick();save()}}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
+let prev=performance.now();function frame(now){try{let dt=Math.min(.05,(now-prev)/1000);prev=now;if(!paused){acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);placeHorses();animateFarmers(dt*speed);if(acc>3){acc=0;tick();save()}}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
 // Gestos robustos: uma máquina de estados para um e dois dedos.
 // Nunca reaproveita distância anterior após levantar ou cancelar um ponteiro.
 const pointers=new Map();
