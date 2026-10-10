@@ -1080,18 +1080,32 @@ function managementContent(tab){
   }
   if(tab==='financas')return financialBreakdown(o);
   if(tab==='cavalos'){
+    const awaiting=pregnancies.filter(p=>p.o===o);
+    const pending=awaiting.length;
+    const available=Math.max(0,capacity(o)-hs.length-pending);
     return '<div class="mgGrid">'+
-      statCard('🐎','Seu plantel',hs.length+' animais')+
-      statCard('🏠','Capacidade',capacity(o)+' vagas')+
-      '</div><h4>🐴 Animais da sua cabanha</h4>'+
+      statCard('🐎','Plantel',hs.length+' animais')+
+      statCard('🏠','Vagas livres',available+' de '+capacity(o))+
+      '</div><h4>🐴 Criação e linhagens</h4>'+
+      (awaiting.length?awaiting.map(p=>{
+        const mother=hs.find(h=>h.id===p.motherId);
+        return '<div class="mgCard"><strong>🐣 Nascimento previsto</strong>'+
+          '<p class="mgSmall">'+(mother?.name||'Égua')+' · dia '+p.dueDay+
+          ' ('+Math.max(0,p.dueDay-day)+' dias restantes)</p></div>';
+      }).join(''):'')+
       hs.map((h,i)=>'<div class="mgRow"><strong>🐴 '+h.name+'</strong>'+
-        '<div class="mgSmall">'+h.breed+' · Pelagem '+(['castanha','baia','escura','tordilha'][coats.indexOf(h.coat)]||'variada')+
-        ' · '+h.age+' anos</div>'+
-        '<div class="mgLine"><span>Qualidade do plantel</span><strong>'+h.quality+'/100</strong></div>'+
+        '<div class="mgSmall">'+h.breed+' · '+(h.sex==='femea'?'Fêmea':'Macho')+
+        ' · '+horseAge(h)+' anos'+(horseAge(h)<1?' (potro)':'')+
+        ' · Pelagem '+(['castanha','baia','escura','tordilha'][coats.indexOf(h.coat)]||'variada')+'</div>'+
+        (h.motherId?'<div class="mgSmall">Linhagem: mãe #'+h.motherId+' · pai #'+h.fatherId+'</div>':'')+
+        '<div class="mgLine"><span>Qualidade</span><strong>'+h.quality+'/100</strong></div>'+
         progressBar(h.quality,100)+
-        '<button type="button" data-mgaction="findHorse" data-index="'+i+'">📍 Localizar cavalo no mapa</button></div>').join('')+
+        '<div class="mgLine"><span>Valor de negociação</span><strong>'+brl(horseSalePrice(h))+'</strong></div>'+
+        '<button type="button" data-mgaction="findHorse" data-index="'+i+'">📍 Localizar no mapa</button>'+
+        '<button type="button" data-mgaction="sellHorse" data-index="'+i+'">💰 Vender animal</button></div>').join('')+
       '<button type="button" class="mgAction" data-mgaction="buyHorse">➕ Comprar cavalo · R$ 2.500</button>'+
-      '<p class="mgNote">Para aumentar o plantel, amplie suas cocheiras ou construa mais instalações equestres.</p>';
+      '<button type="button" class="mgAction" data-mgaction="breedHorse">🐣 Iniciar reprodução · R$ 850</button>'+
+      '<p class="mgNote">Reprodução exige animais adultos de sexos diferentes, genealogia compatível e vaga reservada na cocheira. Gestação simulada: 330 dias. A qualidade do potro herda características dos pais com variação.</p>';
   }
   if(tab==='equipe'){
     const roles={tratador:'🐎',agricultor:'🌾',administrador:'📋'};
