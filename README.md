@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.0
+# Fazenda Viva — versão 0.9.1
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=090
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=091
 
 ## Novidades da série 0.8
 
@@ -119,6 +119,20 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 **Nota sobre valores financeiros:** são preços, índices e patrimônio *simulados para gameplay*, não cotações oficiais, demonstrações contábeis reais ou avaliações de mercado verificadas. O gráfico de saldo e as metas não utilizam servidores externos nem persistência local.
 
+### 0.9.1 — Reconstrução da circulação e das animações 2D/3D
+**Motivo:** as capturas da 0.9.0 mostraram caminhos cruzando o mapa de forma absurda no 3D e animais/trabalhadores que pareciam deslizar. A causa principal identificada para os caminhos era um erro de sinal no ângulo de rotação de segmentos diagonais, agravado pelo desenho radial ligando cada estrutura diretamente à sede.
+
+- **Correção geométrica direta:** os segmentos 3D usavam `-atan2(dx,dz)`, espelhando trajetos diagonais. Passam a usar **`+atan2(dx,dz)`**, consistente com o eixo +Z do Three.js. Corrigida também a orientação dos trechos de estrada tradicionais.
+- **Rede interna conectada:** deixou de existir um feixe de trilhas diretas partindo da casa. O sistema constrói primeiro o acesso da estrada regional ao portão e à sede e conecta novas instalações ao ponto mais próximo da malha já existente, com desvio de obstáculos via A*.
+- **Dois renderizadores, um layout:** o Canvas 2D e o Three.js recebem exatamente o mesmo array de caminhos, sem decisões independentes sobre conexões. O desenho 3D ganhou extremidades arredondadas; trilhas de serviço não são mais cobertas de falsas marcas de rodas.
+- **Animais com estados:** `idle / walk / graze`, caminhada discreta dentro da posição reservada, atualização do rumo suavizada e frequência da passada conforme a distância real percorrida. Cavalos podem baixar o pescoço para pastar no modo 3D.
+- **Fazendeiros com estados:** `idle / walk / work`, fase de passo por distância e rotação suave. Braços e pernas usam pivôs nas articulações no 3D, em vez de girar caixas inteiras pelo centro; suas ações também são retratadas no 2D.
+- **Direção compartilhada:** a pose lógica `motion / gait / heading` da simulação alimenta ambos os modos. Trocar de 2D para 3D não recria estados de animação inconsistentes.
+- **Legibilidade mobile:** rótulos de trabalhadores próximos possuem verificação de colisão com outros rótulos e não aparecem sobre o HUD.
+- **QA:** `tests/smoke.mjs` agora verifica caminhos que atravessam edifícios, estruturas sem acesso, distância entre cavalos, os três estados de animais e estados de trabalhadores. Criado `tests/render3d.mjs` para simular o ciclo Three.js e testar a orientação da trilha diagonal, câmeras e mudança de qualidade. Ambos configurados no GitHub Actions.
+
+**Limites:** os personagens continuam sendo modelos low-poly simples. A nova animação é procedural e mais coerente, mas não equivale a animações complexas de esqueleto feitas em Blender/GLB. Falta a conferência visual das posições e dos caminhos no **Android/WebGL real**.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -140,12 +154,13 @@ Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de c
 
 - `index.html`: economia, mercado, rankings, metas, painel de gestão, expansão das IAs, interação, HUD, Canvas 2D, reinício e qualidade gráfica.
 - `world3d.js`: Three.js, modelos 3D com atualização incremental, paisagem, trabalhadores, câmera oblíqua e qualidade adaptável.
-- `tests/smoke.mjs`: teste de regressão em Node 22, sem dependências externas.
+- `tests/smoke.mjs`: teste de regressão da simulação e integridade dos caminhos em Node 22.
+- `tests/render3d.mjs`: validação simulada do Three.js, orientação das trilhas diagonais, modelos e câmera.
 - `.github/workflows/qa.yml`: verifica o teste em push e pull requests.
 
 ## Validação
 
-Execute localmente `node tests/smoke.mjs` para verificar simulação, controles, qualidade, obras e integridade do código. O mesmo teste foi configurado no GitHub Actions para detectar regressões a cada atualização. Também foram feitos testes simulados do renderizador 3D e da conversão dos toques para coordenadas do terreno.
+Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verificar a simulação, a rede viária, a orientação dos modelos, os controles e a integridade do código. Ambos foram configurados no GitHub Actions para detectar regressões a cada atualização. Também foram feitos testes simulados do renderizador 3D e da conversão dos toques para coordenadas do terreno.
 
 **Atenção:** não houve nova validação visual dessa versão em um aparelho Android real. É necessário conferir o resultado pelo GitHub Pages e enviar capturas para continuar o QA. O Three.js usa CDN externo na primeira abertura; se falhar, o modo 2D permanece disponível.
 
@@ -153,5 +168,7 @@ Execute localmente `node tests/smoke.mjs` para verificar simulação, controles,
 
 0.8.9 — concluída em código, pendente de inspeção visual Android;
 0.9.0 — gestão e progressão funcional, implementadas e testadas na simulação; falta inspeção visual no Android;
-0.9.1 — equilíbrio econômico, objetivos avançados, eventos de fazenda e testes visuais mobile;
+0.9.1 — correção arquitetural das trilhas e locomoção procedural 2D/3D; pendente inspeção visual Android;
+0.9.2 — refinamento visual dos animais, deslocamento dos NPCs pelas trilhas e testes mobile;
+0.9.3 — equilíbrio econômico, objetivos avançados e eventos rurais;
 1.0 — integração e critérios de estabilidade.
