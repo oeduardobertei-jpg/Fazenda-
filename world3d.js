@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.2 — arquitetura rural detalhada e LOD.
+/* Fazenda Viva 0.8.3 — qualidade adaptativa e renderização seletiva.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Todos os controles, economia e salvamento seguem no index.html.
  */
@@ -17,7 +17,7 @@ const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
 let renderer, scene, camera, content, horseLayer;
 let enabled = false, stamp = '',detailMode=null;
-let smoothCenter=new THREE.Vector3(), cameraInitialized=false;
+let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [];
 const colors = {
@@ -75,22 +75,31 @@ function road(parent,x1,z1,x2,z2,width=9) {
   m.rotation.y=Math.atan2(-dx,dz);
 }
 function roof(parent,w,d,h,ridgeY,color) {
-  const verts = new Float32Array([
-    -w/2,h,-d/2, w/2,h,-d/2, -w/2,ridgeY,0,
-    w/2,h,-d/2, w/2,ridgeY,0, -w/2,ridgeY,0,
-    -w/2,ridgeY,0, w/2,ridgeY,0, -w/2,h,d/2,
-    w/2,ridgeY,0, w/2,h,d/2, -w/2,h,d/2
-  ]);
-  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(verts,3));geo.computeVertexNormals();
-  const m=new THREE.Mesh(geo,mat(color));parent.add(m);
-  // front and back triangular gables
-  for(let sign of [-1,1]){
-    const triangle=new THREE.BufferGeometry();
-    triangle.setAttribute('position',new THREE.Float32BufferAttribute([
-      -w/2,h,sign*d/2, w/2,h,sign*d/2, 0,ridgeY,sign*d/2
-    ],3));triangle.computeVertexNormals();
-    parent.add(new THREE.Mesh(triangle,mat(color)));
+  const key=[w,d,h,ridgeY].map(x=>Number(x).toFixed(3)).join(':');
+  let item=geoRoofs.get(key);
+  if(!item){
+    const verts = new Float32Array([
+      -w/2,h,-d/2, w/2,h,-d/2, -w/2,ridgeY,0,
+      w/2,h,-d/2, w/2,ridgeY,0, -w/2,ridgeY,0,
+      -w/2,ridgeY,0, w/2,ridgeY,0, -w/2,h,d/2,
+      w/2,ridgeY,0, w/2,h,d/2, -w/2,h,d/2
+    ]);
+    const main=new THREE.BufferGeometry();
+    main.setAttribute('position',new THREE.BufferAttribute(verts,3));
+    main.computeVertexNormals();
+    const ends=[];
+    for(const sign of [-1,1]){
+      const tri=new THREE.BufferGeometry();
+      tri.setAttribute('position',new THREE.Float32BufferAttribute([
+        -w/2,h,sign*d/2, w/2,h,sign*d/2,0,ridgeY,sign*d/2
+      ],3));
+      tri.computeVertexNormals();
+      ends.push(tri);
+    }
+    item={main,ends};geoRoofs.set(key,item);
   }
+  parent.add(new THREE.Mesh(item.main,mat(color)));
+  for(const geom of item.ends)parent.add(new THREE.Mesh(geom,mat(color)));
 }
 function rails(parent,w,d,color=colors.fence,y=1.4) {
   const sx=[-w/2,w/2],sz=[-d/2,d/2];
@@ -296,12 +305,15 @@ function drawWorld(s){
   horseLayer=new THREE.Group();scene.add(horseLayer);
 }
 function sync(s){
-  const highDetail=s.zoom>=.72;
-  const newStamp=(highDetail?'H':'L')+'|'+s.buildings.map(b=>[b.type,b.x,b.y,b.tier||1,s.owners.indexOf(b.o)].join(':')).join('|');
+  // Somente estruturas próximas à câmera entram no grafo 3D detalhado.
+  // No zoom regional o mesmo sistema usa modelos simplificados.
+  const highDetail=s.zoom>=1.10;
+  const radius=s.zoom>=1.6?220:s.zoom>=.72?445:1380;
+  const near=s.buildings.filter(b=>Math.abs(b.x-s.panX)<radius&&Math.abs(b.y-s.panY)<radius);
+  const newStamp=(highDetail?'H':'L')+'|'+near.map(b=>[b.type,b.x,b.y,b.tier||1,s.owners.indexOf(b.o)].join(':')).join('|');
   if(newStamp!==stamp){
-    // Reutilização das geometrias básicas reduz picos de alocação durante a simulação.
     for(const child of [...content.children])content.remove(child);
-    for(const b of s.buildings)content.add(building(b,highDetail));
+    for(const b of near)content.add(building(b,highDetail));
     stamp=newStamp;
   }
   if(horseLayer.children.length!==s.horses.length){
@@ -349,8 +361,11 @@ function updateLabels(s){
     label.style.display=x<0||x>innerWidth||y<95||y>innerHeight-55?'none':'block';
   }
 }
-function animate(){
+function animate(now=0){
   if(!enabled)return;
+  requestAnimationFrame(animate);
+  if(now>0&&now-lastFrameAt<(innerWidth<=620?32:16))return;
+  if(now>0)lastFrameAt=now;
   try{
     const s=api.state(),zoom=s.zoom;
     const scale=Math.min(innerWidth/300,innerHeight/260)*zoom;
@@ -370,7 +385,6 @@ function animate(){
     stop('3D indisponível: '+e.message);
     return;
   }
-  requestAnimationFrame(animate);
 }
 api.groundAt=(clientX,clientY)=>{
   if(!enabled||!camera)return null;
@@ -390,7 +404,7 @@ function stop(reason){
 function start(){
   if(!renderer||!scene||!labelLayer){fail.textContent='Three.js não inicializou; o modo 2D continua disponível.';return}
   if(enabled)return;
-  enabled=true;renderer.domElement.style.display='block';
+  enabled=true;lastFrameAt=0;renderer.domElement.style.display='block';
   labelLayer.style.display='block';
   api.mode(true);
   btn.textContent='🗺️ Modo 2D';
@@ -401,7 +415,7 @@ function start(){
 function init(){
   const fresh=document.createElement('canvas');
   renderer=new THREE.WebGLRenderer({canvas:fresh,antialias:false,powerPreference:'low-power',alpha:false});
-  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<=620?1.2:1.5));
   renderer.setSize(innerWidth,innerHeight);
   renderer.setClearColor(0x9ab8c9,1);
   renderer.outputColorSpace=THREE.SRGBColorSpace;
