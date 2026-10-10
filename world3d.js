@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.8.8 — vegetação de pastagem, trilhas naturais e trabalhos animados.
+/* Fazenda Viva 0.8.9 — streaming incremental, WebGL mobile e labels contextuais.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -16,7 +16,10 @@ if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
 let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer;
-let enabled = false, stamp = '',detailMode=null, trailStamp3D='', grassStamp3D='';
+let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
+const modelsByBuilding=new Map();
+let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
+let workerLabels=[],last3DWorkersShown=0;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [];
@@ -62,8 +65,16 @@ function flat(parent,w,d,x,z,color,y=.16) {
   return box(parent,w,.13,d,x,y,z,color);
 }
 function cylinder(parent,rTop,rBottom,h,x,y,z,color,segments=7) {
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(rTop,rBottom,h,segments),mat(color));
+  const geo=new THREE.CylinderGeometry(rTop,rBottom,h,segments);
+  geo.__fvTransient=true;
+  const m=new THREE.Mesh(geo,mat(color));
   m.position.set(x,y,z);parent.add(m);return m;
+}
+function disposeTransientGroup(obj){
+  const children=[...obj.children||[]];
+  for(const child of children)disposeTransientGroup(child);
+  if(obj.geometry?.__fvTransient)obj.geometry.dispose?.();
+  // Materiais, boxes e telhados pertencem aos caches compartilhados.
 }
 function ellipse(parent,x,z,rx,rz,color,elevation=.09) {
   // Paisagem em níveis físicos distintos: evita z-fighting (triângulos/radiais nos açudes).
@@ -463,12 +474,19 @@ function drawWorld(s){
 // Estradas internas são quads leves em uma única malha instanciada.
 function syncTrails(s){
   const segments=s.trails||[];
+  // A rede é imutável por versão de layout; evita serializar coordenadas em cada frame.
+  if(segments===lastTrailObject&&segments.length===lastTrailLength)return;
+  lastTrailObject=segments;lastTrailLength=segments.length;
   // Um número estável de segmentos não é suficiente: precisamos verificar as coordenadas.
   const key=segments.map(t=>[
     t.x1.toFixed(1),t.y1.toFixed(1),t.x2.toFixed(1),t.y2.toFixed(1)
   ].join(',')).join('|');
   if(key===trailStamp3D)return;
-  for(const old of [...trailLayer.children])trailLayer.remove(old);
+  for(const old of [...trailLayer.children]){
+    trailLayer.remove(old);
+    // InstancedMesh possui buffer GPU próprio, mesmo usando geometria compartilhada.
+    old.dispose?.();
+  }
   trailStamp3D=key;
   if(!segments.length)return;
   // Três faixas por trilha: barro compactado, superfície central e marcas de rodas.
@@ -503,12 +521,16 @@ function syncTrails(s){
   }
 }
 function scatterPasture(s){
-  // Revalidar o tapete vegetal também quando as rotas mudarem mantendo a contagem.
-  const signature=s.buildings.map(b=>b.x.toFixed(1)+','+b.y.toFixed(1)+','+b.type).join(';')
-    +'|'+trailStamp3D;
-  if(grassStamp3D===signature)return;
-  grassStamp3D=signature;
-  for(const m of [...grassLayer.children])grassLayer.remove(m);
+  // Construções e rotas mudam com baixa frequência; evitar cálculo geométrico por frame.
+  if(lastGrassBuildings===s.buildings.length&&lastGrassTrails===s.trails)return;
+  lastGrassBuildings=s.buildings.length;lastGrassTrails=s.trails;
+  grassStamp3D=String(s.buildings.length)+'|'+trailStamp3D;
+  for(const m of [...grassLayer.children]){
+    grassLayer.remove(m);
+    m.dispose?.();
+    // A vegetação usa geometrias próprias por lote, não as caixas reutilizadas.
+    m.geometry?.dispose?.();
+  }
   // Em áreas externas aos prédios, touceiras discretas quebram o 'tapete verde'.
   // O algoritmo é determinístico: elas não mudam de lugar quando a câmera se move.
   const patches=[],blooms=[],trails=s.trails||[];
@@ -565,34 +587,51 @@ function scatterPasture(s){
     flower.instanceMatrix.needsUpdate=true;grassLayer.add(flower);
   }
 }
+function modelVersion(b,highDetail){
+  return (highDetail?'H':'L')+'|'+b.type+'|'+b.x.toFixed(2)+'|'+b.y.toFixed(2)+
+    '|'+(b.tier||1)+'|'+(b.status||'complete')+'|'+(b.progress??100)+
+    '|'+(b.plannedTier||0);
+}
 function sync(s){
   syncTrails(s);
   scatterPasture(s);
-  // Somente estruturas próximas à câmera entram no grafo 3D detalhado.
-  // No zoom regional o mesmo sistema usa modelos simplificados.
-  // LOD com histerese impede reconstruções repetidas na fronteira do zoom.
+  // Histerese: mudanças pequenas no zoom não transformam todos os modelos.
   if(detailMode===null)detailMode=s.zoom>=1.05;
   else if(detailMode&&s.zoom<.89)detailMode=false;
   else if(!detailMode&&s.zoom>1.18)detailMode=true;
   const highDetail=detailMode;
-  const radius=s.zoom>=1.6?285:s.zoom>=.72?540:1410;
-  const near=s.buildings.filter(b=>Math.abs(b.x-s.panX)<radius&&Math.abs(b.y-s.panY)<radius);
-  const newStamp=(highDetail?'H':'L')+'|'+near.map(b=>[b.type,b.x,b.y,b.tier||1,b.status||'complete',b.progress??100,b.plannedTier||0,s.owners.indexOf(b.o)].join(':')).join('|');
-  if(newStamp!==stamp){
-    for(const child of [...content.children])content.remove(child);
-    for(const b of near)content.add(building(b,highDetail));
-    stamp=newStamp;
+  // Culling por área da câmera, com margem generosa para evitar pop-in mobile.
+  const radius=s.zoom>=3?190:s.zoom>=1.6?285:s.zoom>=.72?540:1410;
+  const nearby=s.buildings.filter(b=>
+    Math.abs(b.x-s.panX)<radius&&Math.abs(b.y-s.panY)<radius
+  );
+  const visible=new Set(nearby);
+  for(const [b,record] of [...modelsByBuilding.entries()]){
+    if(!visible.has(b)){
+      content.remove(record.model);
+      disposeTransientGroup(record.model);
+      modelsByBuilding.delete(b);
+    }
+  }
+  for(const b of nearby){
+    const version=modelVersion(b,highDetail);
+    const record=modelsByBuilding.get(b);
+    if(record&&record.version===version)continue;
+    if(record){
+      content.remove(record.model);
+      disposeTransientGroup(record.model);
+    }
+    const model=building(b,highDetail);
+    content.add(model);
+    modelsByBuilding.set(b,{model,version});
   }
   if(horseLayer.children.length!==s.horses.length){
     for(const child of [...horseLayer.children])horseLayer.remove(child);
     for(const h of s.horses)horseLayer.add(makeHorse(h));
   }
-  // A simulação define as posições de cada cavalo para evitar choques 2D/3D.
-  // Não recalcular slots em cada renderizador.
   s.horses.forEach((h,i)=>{
     const mesh=horseLayer.children[i];if(!mesh)return;
     const x=h.x??h.o.x,z=h.y??h.o.y;
-    // LOD mobile: não renderizar dezenas de cavalos fora do enquadramento.
     mesh.visible=s.zoom>.42&&Math.abs(x-s.panX)<245&&Math.abs(z-s.panY)<245;
     if(!mesh.visible)return;
     mesh.position.set(x,.12+Math.sin(h.phase*1.3+h.id)*.045,z);
@@ -618,13 +657,11 @@ function sync(s){
     character.rotation.y=-f.heading||0;
     const legs=character.userData.legs||[];
     const arms=character.userData.arms||[];
-    for(let k=0;k<legs.length;k++){
+    for(let k=0;k<legs.length;k++)
       legs[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.24:0;
-    }
-    for(let k=0;k<arms.length;k++){
+    for(let k=0;k<arms.length;k++)
       arms[k].rotation.x=f.moving?Math.sin(f.phase+k*Math.PI)*.11:
         f.working?Math.sin(f.phase*.55+k)*.10:0;
-    }
     const tool=character.userData.tool;
     if(tool){
       tool.rotation.z=f.working?Math.sin(f.phase*.65)*.13:0;
