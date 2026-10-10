@@ -111,7 +111,7 @@ const profiles=['Cabanha equestre','Criação de cavalos','Seleção genética',
 function horseAge(h){return (h.age||0)+Math.floor(Math.max(0,day-(h.bornDay||1))/365)}
 function horseSalePrice(h){
   const maturity=horseAge(h)<2?.64:horseAge(h)<3?.83:1;
-  return Math.min(2400,Math.round((650+h.quality*16)*Math.min(1.4,market.horse)*maturity));
+  return Math.min(2400,Math.round((650+h.quality*16)*Math.min(1.7,marketIndex('horse'))*maturity));
 }function isBuilt(b){return b.status!=='building'}
 function activeSite(o){return buildings.find(b=>b.o===o&&(b.status==='building'||b.status==='upgrading'))}
 function capacity(o){return buildings.filter(b=>b.o===o&&b.type==='stable'&&isBuilt(b)).reduce((n,b)=>n+2*(b.tier||1),0)}function insideFarm(o,x,y,w,h){
@@ -837,11 +837,11 @@ function finances(o){
   for(const b of buildings){
     if(b.o!==o||!isBuilt(b))continue;
     const tier=b.tier||1;
-    gross+=({house:12,stable:30*market.horse,barn:110*market.grain,paddock:25*market.horse}[b.type]||0)*tier;
+    gross+=({house:12,stable:30*marketIndex('horse'),barn:110*marketIndex('grain'),paddock:25*marketIndex('horse')}[b.type]||0)*tier;
     cost+=({house:9,stable:32,barn:45,paddock:17}[b.type]||0)*tier;
   }
   const herd=horses.filter(h=>h.o===o);
-  gross+=herd.reduce((sum,h)=>sum+Math.round(h.quality*.95*market.horse),0);
+  gross+=herd.reduce((sum,h)=>sum+Math.round(h.quality*.95*marketIndex('horse')*(horseAge(h)<2?.12:horseAge(h)<3?.60:1)),0);
   cost+=herd.length*22;
   // Trabalho feito no mapa melhora a operação real, não apenas a animação:
   // tratadores elevam a receita equestre; agricultores ajudam a produção;
@@ -855,7 +855,11 @@ function finances(o){
   gross+=bonus;
   const payroll=farmers.filter(f=>f.o===o).length*6;
   cost+=payroll;
-  return {gross:Math.round(gross),cost:Math.round(cost),net:Math.round(gross-cost),bonus,payroll};
+  const eventSurcharge=Math.round(cost*((ruralEvent?.costFactor||1)-1));
+  cost+=eventSurcharge;
+  const supplyDiscount=o.supplyCycles>0?Math.min(100,Math.round(cost*.24)):0;
+  cost=Math.max(payroll,cost-supplyDiscount);
+  return {gross:Math.round(gross),cost:Math.round(cost),net:Math.round(gross-cost),bonus,payroll,eventSurcharge,supplyDiscount};
 }
 // 0.9 — Gestão da cabanha: números derivados exclusivamente da simulação.
 const brl=value=>'R$ '+Math.round(value).toLocaleString('pt-BR');
