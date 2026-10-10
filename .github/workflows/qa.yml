@@ -18,4 +18,6 @@ jobs:
         with:
           node-version: '22'
       - name: Simular jogo, conferir controle e integridade JS
-        run: node tests/smoke.mjs
+        run: |
+          node tests/smoke.mjs
+          node tests/render3d.mjs
