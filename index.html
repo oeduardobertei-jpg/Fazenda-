@@ -88,7 +88,73 @@ function finances(o){let gross=0,cost=0;for(const b of buildings){if(b.o!==o||!i
     y:o.y+offset[0]*Math.sin(angle)+offset[1]*Math.cos(angle)
   };
 }
-function tick(){day+=5;market.grain=Math.max(.75,Math.min(1.35,market.grain+(rnd()-.5)*.12));market.horse=Math.max(.8,Math.min(1.4,market.horse+(rnd()-.5)*.1));for(let o of owners){let e=finances(o);o.cash+=e.net;if(!o.ai||rnd()>.62)continue;if(horses.filter(h=>h.o===o).length<capacity(o)&&o.cash>8000&&rnd()<.34){o.cash-=2500;horses.push(makeHorse(o));$('news').textContent=o.name+' adquiriu um cavalo.';continue}let types=o.name.includes('Agro')?['barn','paddock','barn']:o.name.includes('Cabanha')?['stable','paddock','stable']:o.name.includes('Rincão')?['paddock','house','stable']:['stable','barn','house','paddock'],type=types[Math.floor(rnd()*types.length)];if(o.cash<defs[type].cost+5000)continue;let candidates=buildings.filter(b=>b.o===o&&b.type===type&&(b.tier||1)<3);if(candidates.length&&rnd()<.42){let b=candidates[Math.floor(rnd()*candidates.length)],cost=1800*(b.tier||1);if(o.cash>cost+5000){o.cash-=cost;b.tier=(b.tier||1)+1;$('news').textContent=o.name+' ampliou '+({stable:'uma cocheira',paddock:'um piquete',barn:'um galpão',house:'uma casa'}[type])+' para nível '+b.tier+'.';continue}}if(buildings.filter(b=>b.o===o).length>=24)continue;const zone=zoneOf(o,type);for(let i=0;i<95;i++){let a=rnd()*Math.PI*2,r=Math.sqrt(rnd())*56,x=zone.x+Math.cos(a)*r,y=zone.y+Math.sin(a)*r;if(add(o,type,x,y)){ $('news').textContent=o.name+' construiu '+({stable:'uma cocheira',paddock:'um piquete',barn:'um galpão',house:'uma casa'}[type])+'.';break}}}refresh()}const SAVE_KEY='fazenda-viva-v080';
+const farmPolicy=[
+  {house:4,stable:6,barn:3,paddock:3},
+  {house:3,stable:5,barn:4,paddock:3},
+  {house:3,stable:7,barn:2,paddock:4},
+  {house:2,stable:3,barn:7,paddock:3},
+  {house:3,stable:4,barn:4,paddock:4}
+];
+const typeNames={house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'};
+function finishConstruction(b){
+  if(b.status==='upgrading')b.tier=Math.max(b.tier||1,Math.min(3,b.plannedTier||((b.tier||1)+1)));
+  b.status='complete';b.progress=100;b.plannedTier=null;
+  $('news').textContent='✅ '+b.o.name+' concluiu '+typeNames[b.type]+(b.tier>1?' (nível '+b.tier+')':'')+'.';
+}
+function tick(){
+  day+=5;
+  market.grain=Math.max(.75,Math.min(1.35,market.grain+(rnd()-.5)*.12));
+  market.horse=Math.max(.8,Math.min(1.4,market.horse+(rnd()-.5)*.1));
+  for(const o of owners){
+    o.cash+=finances(o).net;
+    const site=activeSite(o);
+    if(site){
+      site.progress=Math.min(100,Number(site.progress||0)+25);
+      if(site.progress>=100)finishConstruction(site);
+      continue; // não inicia outra obra nem no mesmo dia da entrega
+    }
+    if(!o.ai||rnd()>.60)continue;
+    const index=owners.indexOf(o),policy=farmPolicy[index];
+    const own=buildings.filter(b=>b.o===o);
+    const herd=horses.filter(h=>h.o===o).length;
+    if(herd<capacity(o)&&o.cash>8500&&rnd()<.29){
+      o.cash-=2500;horses.push(makeHorse(o));
+      $('news').textContent=o.name+' adquiriu um cavalo.';
+      continue;
+    }
+    const eligibleUpgrade=own.filter(b=>b.status!=='building'&&(b.tier||1)<3&&o.cash>1800*(b.tier||1)+5500);
+    // Reinvestimento vertical antes de multiplicar cercados e galpões.
+    if(eligibleUpgrade.length&&rnd()<.48){
+      const preferred=eligibleUpgrade.filter(b=>b.type==='stable'||b.type==='barn');
+      const pool=preferred.length?preferred:eligibleUpgrade;
+      const b=pool[Math.floor(rnd()*pool.length)];
+      const cost=1800*(b.tier||1);
+      o.cash-=cost;b.status='upgrading';b.progress=0;b.plannedTier=(b.tier||1)+1;
+      $('news').textContent='👷 '+o.name+' iniciou ampliação de '+typeNames[b.type]+'.';
+      continue;
+    }
+    const counts={house:0,stable:0,barn:0,paddock:0};
+    for(const b of own)counts[b.type]=(counts[b.type]||0)+1;
+    const maxPaddocks=Math.min(policy.paddock,Math.max(2,Math.ceil(herd/5)+1));
+    const options=(o.name.includes('Agro')?['barn','barn','house','stable','paddock']:
+      o.name.includes('Cabanha')?['stable','stable','paddock','house','barn']:
+      o.name.includes('Rincão')?['stable','house','paddock','barn']:
+      ['stable','barn','house','paddock'])
+      .filter(type=>counts[type]<(type==='paddock'?maxPaddocks:policy[type])&&o.cash>defs[type].cost+5500);
+    if(!options.length)continue;
+    const type=options[Math.floor(rnd()*options.length)],zone=zoneOf(o,type);
+    for(let i=0;i<85;i++){
+      const angle=rnd()*Math.PI*2,radius=Math.sqrt(rnd())*57;
+      const x=zone.x+Math.cos(angle)*radius,y=zone.y+Math.sin(angle)*radius;
+      if(add(o,type,x,y,true,true)){
+        $('news').textContent='👷 '+o.name+' iniciou '+typeNames[type]+'.';
+        break;
+      }
+    }
+  }
+  refresh();
+}
+const SAVE_KEY='fazenda-viva-v080';
 function save(){
   try {
     localStorage.setItem(SAVE_KEY,JSON.stringify({
