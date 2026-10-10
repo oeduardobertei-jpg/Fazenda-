@@ -334,13 +334,13 @@ function makeWorker(f){
   const legs=[],arms=[];
   for(const sign of [-1,1]){
     const leg=new THREE.Group();
-    leg.position.set(sign*.30,1.29,0);
+    leg.position.set(0,1.29,sign*.30);
     group.add(leg);
     box(leg,.37,1.08,.39,0,-.53,0,0x4e5045);
-    box(leg,.54,.2,.70,.10,-1.09,.13,0x514237);
+    box(leg,.70,.20,.42,.16,-1.09,0,0x514237);
     legs.push(leg);
     const arm=new THREE.Group();
-    arm.position.set(sign*.74,2.37,0);group.add(arm);
+    arm.position.set(0,2.37,sign*.74);group.add(arm);
     box(arm,.29,1.02,.32,0,-.50,0,shirt);
     box(arm,.27,.30,.30,0,-1.08,0,skin);
     arms.push(arm);
@@ -715,19 +715,24 @@ function updateLabels(s){
   const chosen=new Set(
     !s.lowGraphics&&s.zoom>=2.55?ordered.filter(x=>x.dist<42).slice(0,2).map(x=>x.item):[]
   );
-  for(const item of workerLabels){
+  const placed=[];
+  for(const item of ordered.map(x=>x.item)){
     const el=item.el,f=item.f;
     if(!chosen.has(item)){el.style.display='none';continue}
     const v=new THREE.Vector3(f.x,6.3,f.y).project(camera);
     const px=(v.x*.5+.5)*innerWidth,py=(-v.y*.5+.5)*innerHeight;
-    if(px<65||px>innerWidth-65||py<160||py>innerHeight-100){
+    // Um rótulo não pode cobrir outro nem invadir indicadores de interface.
+    if(px<75||px>innerWidth-75||py<170||py>innerHeight-105||
+       placed.some(p=>Math.abs(p.x-px)<154&&Math.abs(p.y-py)<31)){
       el.style.display='none';continue;
     }
+    placed.push({x:px,y:py});
     el.style.display='block';
     el.style.transform='translate(-50%,-100%) translate('+px+'px,'+py+'px)';
     const icon=f.role==='tratador'?'🐎':f.role==='agricultor'?'🌾':'📋';
-    const text=icon+' '+f.role+' · '+(f.working?'Em serviço':f.moving?'Caminhando':'Aguardando');
-    if(el.textContent!==text)el.textContent=text;
+    const status=f.motion==='work'?'Em serviço':f.motion==='walk'?'Caminhando':'Aguardando';
+    const label=icon+' '+f.role+' · '+status;
+    if(el.textContent!==label)el.textContent=label;
   }
 }
 function animate(now=0){
