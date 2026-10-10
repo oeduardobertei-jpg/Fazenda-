@@ -46,7 +46,15 @@ function placement(o,type,x,y){
     }
   }
   return null;
-}owners.forEach(o=>{add(o,'house',o.x,o.y,false);add(o,'stable',o.x+22,o.y,false);add(o,'paddock',o.x,o.y+23,false);for(let i=0;i<2;i++)horses.push(makeHorse(o))});for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;if(Math.abs(x-140)<18||Math.abs(x+140)<18||Math.abs(y-140)<17)continue;if(ponds.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1.5))continue;trees.push({x,y,s:.6+rnd()*.95})}function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+}owners.forEach(o=>{add(o,'house',o.x,o.y,false);add(o,'stable',o.x+22,o.y,false);add(o,'paddock',o.x,o.y+23,false);for(let i=0;i<2;i++)horses.push(makeHorse(o))});for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;
+  if(Math.abs(x-140)<18||Math.abs(x+140)<18||Math.abs(y-140)<17)continue;
+  // Corredores de acesso às fazendas, açudes e lavouras não podem nascer dentro das árvores.
+  if(owners.some(o=>o.x<-100?x>o.x+115&&x<-130&&Math.abs(y-o.y)<11:
+    o.x>100?x<o.x-115&&x>130&&Math.abs(y-o.y)<11:
+    Math.abs(x-o.x)<11&&y>o.y+110&&y<142))continue;
+  if(fields.some(f=>Math.abs(x-f.x)<f.w/2+8&&Math.abs(y-f.y)<f.h/2+8))continue;
+  if(ponds.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1.5))continue;
+  trees.push({x,y,s:.6+rnd()*.95})}function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
 function screen(x,y){const s=Math.min(W/300,H/260)*zoom;return{x:W/2+(x-panX)*s,y:H/2+(y-panY)*s*.67}}function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}function poly(points,c){ctx.fillStyle=c;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()}function drawBuilding(b){
   const p=screen(b.x,b.y),s=Math.min(W/300,H/260)*zoom,w=b.w*s,h=b.h*s*.67;
   const x=p.x-w/2,y=p.y-h/2;
