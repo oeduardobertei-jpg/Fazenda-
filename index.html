@@ -210,9 +210,13 @@ function placeHorses(){
   }
   for(const h of horses){
     const p=horseSlots.get(h.id);if(!p)continue;
-    h.x=p.x+Math.sin(h.phase*.13+h.id)*.16;
-    h.y=p.y+Math.cos(h.phase*.17+h.id)*.10;
-    h.heading=Math.sin(h.phase*.14+h.id)*.07;
+    // Pequena caminhada contínua dentro da área individual do animal.
+    // A amplitude mantém folga entre vizinhos e em relação à cerca.
+    const ax=h.phase*.26+h.id*.7,az=h.phase*.21+h.id*1.2;
+    h.x=p.x+Math.cos(ax)*.78;
+    h.y=p.y+Math.sin(az)*.56;
+    const vx=-Math.sin(ax)*.26*.78,vy=Math.cos(az)*.21*.56;
+    h.heading=-Math.atan2(vy,vx);
   }
 }
 // Funcionários autônomos: tratadores, agricultores e administradores.
@@ -429,6 +433,12 @@ function animateFarmers(dt){
     }
     const step=Math.min(d,maxDt*(3.3+(f.id%3)*.30));
     const nx=f.x+dx/d*step,ny=f.y+dy/d*step;
+    // Dois funcionários não ocupam o mesmo espaço. Pausas curtas dão preferência a quem passa.
+    if(farmers.some(other=>other!==f&&other.o===f.o&&
+        Math.hypot(nx-other.x,ny-other.y)<2.15)){
+      f.moving=false;f.wait=.24+(f.id%3)*.12;f.activity='Aguardando passagem';
+      continue;
+    }
     // Se outra estrutura foi construída desde o cálculo da rota, planeja novamente.
     if(!clearWalkSegment(f.o,f.x,f.y,nx,ny)){
       chooseFarmerTarget(f);continue;
