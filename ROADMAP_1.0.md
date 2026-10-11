@@ -50,6 +50,15 @@
 - A floresta antiga não invade mais a clareira nem as glebas das cinco fazendas.
 - A revisão da 0.9.6 foi validada por simulações, **não** por testes visuais/medição de FPS do Android real.
 
+**0.9.7 — vida no manejo**
+- Cuidado por indivíduo influenciando receita e valor de venda.
+- Atendimento com progresso na posição física do tratador e resposta do cavalo.
+- Diário de cuidados, dois objetivos novos e ração reforçada consumida por tarefa.
+- Câmera de acompanhamento; resposta visual do trabalho em Canvas e Three.js.
+- Desbloqueio de trânsito: desvios laterais, espera que preserva rota e replanejamento.
+- Regressões do 3D cobrem sinalização de trato, fim do efeito e identidade dos animais transferidos.
+- **Falta QA visual em Android real e validação do FPS sem usar a simulação de Three.js.**
+
 ## Portões de versão
 
 **0.9.4 — circuito de criadores e marco regional**  
@@ -64,7 +73,8 @@ Genética detalhada, trocas reais de cavalos, Centro Rural visível e primeiro b
 **Ainda aberto:** medir FPS e calor/consumo no telefone, conferir visual dos controles, inspecionar espaçamento de overlays nos formatos retrato/paisagem e validar estabilidade após múltiplas trocas WebGL reais.
 
 **0.9.7 — equilíbrio e tarefas de alto valor**  
-Criação seletiva mais significativa, escolhas econômicas, negociações e tarefas do manejo realmente visíveis.
+**Implementada no código e testes automatizados; revisão visual Android pendente.** Manejo animal integrado ao calendário, bem-estar e economia; tratadores com pacientes reais e acesso apropriado ao piquete/cocheira; alimentação e escovação visíveis nas duas câmeras; ração paga consumida em serviço, diário de manejo, câmera de acompanhamento e metas. Corrigidos bloqueios persistentes entre trabalhadores e o cache de identidade dos cavalos 3D.  
+**Pendente:** validar naturalidade das interações à distância, da animação da cabeça e dos indicadores de bem-estar em dispositivo real; avaliar necessidade de simplificar ainda mais o HUD.
 
 **0.9.8 — integração e interface final**  
 Padronização de rótulos, menus e informações; consistência dos modelos 2D/3D, onboarding em português.
