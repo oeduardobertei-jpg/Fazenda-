@@ -32,6 +32,19 @@ for(let i=0;i<64;i++){
   }
 }
 assert.equal(phases.size,4,'os quatro cascos devem executar apoio e balanço');
+// Em linha reta, o casco em apoio conserva sua posição no mundo enquanto
+// o corpo avança. Valida a cinemática, não apenas o desenho de uma pose.
+const planted=[];
+for(let i=1;i<30;i++){
+  const gait=i/30*Math.PI*2*motion.horseStride.stance;
+  const p=motion.horse({id:1,gait,phase:0,pose:{walk:1}}),leg=p.legs[0];
+  const footX=.73*Math.sin(leg.hip)+.75*Math.sin(leg.hip+leg.knee);
+  planted.push(gait/motion.horseGaitPerUnit+footX);
+  assert.equal(leg.lift,0,'apoio conserva o casco no chão');
+}
+assert.ok(Math.max(...planted)-Math.min(...planted)<1e-6,'casco não desliza durante apoio em linha reta');
+const turn=motion.turnToward(Math.PI-.01,-Math.PI+.5,.1);
+assert.ok(turn>Math.PI-.01&&turn-(Math.PI-.01)<=.28,'giro usa o arco curto e respeita limite angular');
 horse.motion='idle';
 for(let i=0;i<100;i++)motion.blend(horse,1/60);
 assert.ok(motion.horse(horse).walk<.0001,'repouso encerra a passada');
@@ -41,4 +54,10 @@ for(let i=0;i<80;i++)motion.blend(worker,1/60);
 const task=motion.worker(worker);
 assert.ok(task.work>.99&&Math.abs(task.tool)>.01,'trabalho movimenta o equipamento');
 assert.ok(task.legs.every(l=>l.lift===0),'trabalho não inventa passos');
+const handler={id:2,role:'tratador',motion:'work',animTime:1,gait:0,pose:{work:1},serviceKind:'alimentacao'};
+const feed=motion.worker(handler);handler.serviceKind='escovacao';const brush=motion.worker(handler);
+assert.equal(feed.action,'feed');assert.equal(brush.action,'brush');
+assert.ok(Math.abs(feed.arms[1]-brush.arms[1])>.1,'alimentação e escovação usam gestos distintos');
+handler.animTime+=.3;
+assert.ok(Math.abs(motion.worker(handler).arms[1]-brush.arms[1])>.04,'escovação possui movimento de ida e volta');
 console.log('PASS poses compartilhadas: transições, quatro apoios, articulações e trabalho');
