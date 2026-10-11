@@ -1,0 +1,4 @@
+node_modules/
+qa-artifacts/
+test-results/
+playwright-report/

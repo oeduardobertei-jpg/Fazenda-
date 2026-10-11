@@ -2,6 +2,8 @@
 // Executar com: node tests/smoke.mjs
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const motion=createRequire(import.meta.url)('../motion.js');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const inline=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];
@@ -21,7 +23,7 @@ assert.ok(repRewards.length>=7&&thresholds?.length>=7,
   'progressão/recompensas incompletas');
 assert.ok(repRewards.reduce((a,b)=>a+b,0)>=thresholds.at(-1),
   'nível máximo de reputação inalcançável');
-const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode perfMode perfHud renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody'.split(' ');
+const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode perfMode perfHud renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody manageQuick panelClose sceneContext contextText contextCancel welcome guideTitle guideText guideHint guideProgress guideNext guideSkip helpOpen'.split(' ');
 const noop=()=>{},ctx=new Proxy({setTransform:noop},{
   get:(o,key)=>o[key]??noop,set:(o,key,v)=>{o[key]=v;return true}
 });
@@ -35,13 +37,16 @@ const ui=new Map(ids.map(id=>[id,{
 }]));
 let step=()=>{},saved=0,reset=false;
 const values={
-  window:{},document:{getElementById:id=>{
+  window:{FazendaVivaMotion:motion},document:{getElementById:id=>{
     assert.ok(ui.has(id),'HTML control ausente: '+id);return ui.get(id);
   },addEventListener:noop},innerWidth:390,innerHeight:844,devicePixelRatio:2,
   addEventListener:noop,requestAnimationFrame:fn=>step=fn,
   localStorage:{getItem:()=>null,setItem:()=>saved++,removeItem:noop},
   confirm:()=>true,location:{reload:()=>reset=true},
   MutationObserver:class{observe(){}}
+  // Temporizadores da interface são isolados neste harness. Não podem
+  // sobreviver à restauração de window no bloco finally.
+  ,setTimeout:()=>0,clearTimeout:noop
 };
 const old=new Map();
 for(const [k,v]of Object.entries(values)){
@@ -53,6 +58,13 @@ try{
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  ui.get('helpOpen').onclick();
+  assert.equal(ui.get('welcome').hidden,false,'guia pode ser reaberto');
+  let guideTime=performance.now();
+  for(let i=0;i<100;i++)step(guideTime+=50);
+  assert.equal(get().day,1,'tempo fica pausado durante o guia');
+  ui.get('guideNext').onclick();ui.get('guideNext').onclick();ui.get('guideNext').onclick();
+  assert.equal(ui.get('welcome').hidden,true,'guia concluído libera a partida');
   for(const tree of get().trees){
     assert.ok(!get().owners.some(o=>
       Math.hypot(tree.x-o.x,tree.y-o.y)<139),
@@ -186,7 +198,7 @@ try{
   ui.get('graphicsMode').onclick();
   assert.equal(get().lowGraphics,false,'modo normal');
   ui.get('speed').onclick();ui.get('speed').onclick(); // 8x
-  let ms=performance.now(),overlap=0,outside=0,maxSite=0,minHorse=1e9;
+  let ms=Math.max(performance.now(),guideTime),overlap=0,outside=0,maxSite=0,minHorse=1e9;
   let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
   const horseStates=new Set(),workerStates=new Set();
   let joinedRuralEvent=false;

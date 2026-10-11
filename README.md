@@ -1,8 +1,10 @@
-# Fazenda Viva — versão 0.9.7
+# Fazenda Viva — versão 0.9.8 (para testes)
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=097
+**Testar a 0.9.8:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=098
+
+A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.8**. Os critérios de Android físico da 1.0 continuam pendentes.
 
 ## Novidades da série 0.8
 
@@ -143,7 +145,7 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 - **Gestão rural:** a aba Equipe indica para cada funcionário se ele está seguindo a rede de trilhas ou usando um desvio seguro pelo terreno.
 - **Cavalos mais legíveis:** novos volumes de peito e garupa, focinho, olhos, crina, orelhas e variações discretas de pelagem. A silhueta 2D também foi aprimorada para acompanhar o modelo tridimensional.
 - **Portões de fazenda:** pares de mourões físicos marcam cada entrada e foram alinhados às conexões viárias sem bloquear passagem.
-- **Regressões:** os testes automáticos verificam agora o uso predominante das trilhas pelos funcionários e a ausência de edifícios cortados pelas rotas. Um teste prolongado simulado alcançou o **dia 2.131**, com **64 instalações**, **1.383 tarefas realizadas**, **111 segmentos internos** e **zero colisões de trilhas com prédios** detectadas nas amostras.
+- **Regressões:** os testes automáticos verificam agora o uso predominante das trilhas pelos funcionários e a ausência de edifícios cortados pelas rotas. Um teste prolongado simulado alcançou o **dia 2.131**, com **63 instalações**, **1.383 tarefas realizadas**, **111 segmentos internos** e **zero colisões de trilhas com prédios** detectadas nas amostras.
 
 **Limite e próximo passo:** a animação continua procedural e low-poly. Falta conferir o resultado diretamente em um Android com WebGL real. Os testes não provam ausência total de artefatos de renderização; cobrem geometria lógica e renderizador Three.js simulado.
 
@@ -182,7 +184,7 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 #### Testes
 - Smoke de simulação valida todas as estruturas já existentes, as rotas dos NPCs, a reprodução, genética, transação real entre dois proprietários, crédito/débito de caixa, estoque de animais e proteção contra compra duplicada.
 - Teste 3D simulado valida a orientação das estradas, o aparecimento das tendas de evento, a regeneração quando o evento muda, o cache de objetos sem alteração e as lavouras instanciadas.
-- **Simulação prolongada aprovada:** dia **3.146**, **64 instalações**, **1.940 serviços de trabalhadores** e **zero travessias de trilhas por dentro dos edifícios detectadas nas amostras**.
+- **Simulação prolongada aprovada:** dia **3.146**, **63 instalações**, **1.940 serviços de trabalhadores** e **zero travessias de trilhas por dentro dos edifícios detectadas nas amostras**.
 
 **Ainda pendente antes da 1.0:** validar a aparência e o desempenho em WebGL no Android real, ampliar a coerência visual das outras estruturas, aprimorar as animações dos cavalos/NPCs, equilibrar o comércio autônomo de longo prazo e consolidar uma experiência estável e intuitiva. Os testes simulados não substituem revisão visual mobile.
 
@@ -237,6 +239,26 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 
 **Limites:** as animações ainda são procedurais e estilizadas, não foram validadas visualmente num Android/WebGL real. O indicador representa bem-estar de **gameplay**, não aconselhamento veterinário ou uma simulação clínica detalhada. A 1.0 continua condicionada a inspeção de imagens e medição real de desempenho mobile.
 
+### 0.9.8 — Integração visual, interface e poses compartilhadas
+
+- **Interface responsiva:** HUD compacto, acesso direto à Gestão, construção separada, controles de tempo/visualização agrupados e áreas seguras do celular. Painéis se adaptam a retrato e paisagem. Botões principais têm área mínima de 44 px.
+- **Guia inicial opcional em português:** explica exploração, manejo e primeira construção, incluindo a regra de partidas sem salvamento. Pode ser dispensado ou reaberto nas opções. O calendário fica pausado durante o guia.
+- **Acompanhamento real:** localizar animais/funcionários ou acompanhar manejo mantém a câmera sobre o personagem em movimento. Arrastar ou tocar em Encerrar libera a câmera. O modo de construção também mostra uma faixa persistente com Cancelar.
+- **Uma fonte de poses (`motion.js`):** transições progressivas entre repouso, caminhada, pasto e trabalho; quatro apoios no passo do cavalo; pernas com joelhos e alvo de casco calculado por cinemática; ferramentas acompanham o braço. Canvas e Three.js usam a mesma pose e orientação lógica.
+- **Silhueta animal:** tronco, peito e garupa facetados; pescoço e cabeça articulados para levar o focinho ao capim. Os modelos continuam procedurais e estilizados, sem rig profissional importado.
+- **Profundidade no Canvas:** o chão do piquete é desenhado antes dos cavalos; a cerca frontal conserva a profundidade. Corrigido o encobrimento de animais na visão 2D. Mensagens liberam a faixa de acompanhamento e nomes regionais evitam os botões de zoom.
+- **Contato com o chão:** corrigidas sombras de cavalos/funcionários que ficavam escondidas sob as camadas do terreno. Cascos e botas mantêm orientação de apoio ao longo da passada.
+- **Estradas públicas compartilhadas:** Canvas passa a usar os mesmos acessos do Three.js, da estrada até a porteira. O traçado 2D anterior atravessava a sede e a cocheira.
+- **Menos chamadas gráficas:** partes estáticas de estruturas, tendas e cenário são fundidas por material. Articulações e vegetação instanciada continuam separadas; geometrias transitórias são liberadas na substituição.
+- **Acessibilidade:** foco visível, teclas de navegação entre abas, fechamento por Escape e contenção do foco na gestão. A gestão continua pausando o mundo.
+- **QA corrigido e ampliado:** o smoke 0.9.7 imprimia PASS e depois falhava por um timer fora do ambiente simulado. O harness agora isola os timers; há testes de poses e matrizes/buffers com Three.js real, além do teste WebGL/Chromium e capturas em cinco viewports no CI.
+
+**Validação local:** simulação e renderizador simulado passaram; poses/articulações e geometria Three.js real passaram. Na simulação amostrada: dia 1.231, 63 instalações, 15 trabalhadores, 882 serviços, zero interseções de trilhas com edifícios e distância mínima entre cavalos de 6,02 unidades. Em geometria real: 15 malhas para a sede detalhada; casco apoiado em y=0,420 e focinho em pasto em y≈0,539.
+
+**Navegador real e inspeção visual:** Chromium/WebGL2 com SwiftShader aprovou cinco viewports, seis abas de gestão, pausa/guia, câmera, pinça por toque, cancelamento de gesto, normal/econômico, trocas 2D↔3D, pixels do cavalo no Canvas e recuperação real de contexto. Foram inspecionadas capturas da interface, visão local/regional e animais próximos. Comparação 390×844, DPR 1,2: 261→201 chamadas de desenho (−23%); 137.909→144.977 triângulos (+5%). Ver evidências e limites em `RELEASE_0.9.8.md`.
+
+**Transparência:** geometria Three.js em Node, navegador com GPU por software e inspeção visual de capturas são verificações distintas. Nenhuma equivale a Android físico. Naturalidade em movimento, temperatura/consumo e FPS no aparelho continuam pendentes.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -245,7 +267,9 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 - **Fazenda:** voltar à cabanha do jogador.
 - **Mapa:** visão de toda a região.
 - **Visitar outra fazenda:** navegar entre as propriedades pelo painel.
-- **☰ Menu:** acessar a construção, opções gráficas e o botão `📊 Gestão da cabanha`.
+- **🔨 Construir:** abrir instalações, ampliação e opções de exploração/gráficos.
+- **📊 Gestão:** acesso direto à cabanha; continua disponível também no painel de construção.
+- **❔ Guia da cabanha:** reabrir a introdução nas opções de construção.
 - **📉 Diagnóstico de FPS:** no menu, liga/desliga indicadores locais de desempenho e resolução; não afeta a simulação.
 - **Construir:** selecionar uma estrutura e tocar em terreno válido.
 - **Gestão da cabanha:** consultar balanço econômico simulado, cavalos, trabalhadores, mercado regional e objetivos; toque em `✕` para voltar ao mapa.
@@ -258,14 +282,19 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 ## Estrutura
 
 - `index.html`: economia, mercado, rankings, metas, painel de gestão, expansão das IAs, interação, HUD, Canvas 2D, reinício e qualidade gráfica.
+- `motion.js`: poses e transições compartilhadas por Canvas e Three.js, sem dependências.
 - `world3d.js`: Three.js, modelos 3D com atualização incremental, paisagem, trabalhadores, câmera oblíqua e qualidade adaptável.
 - `tests/smoke.mjs`: teste de regressão da simulação e integridade dos caminhos em Node 22.
 - `tests/render3d.mjs`: validação simulada do Three.js, orientação das trilhas diagonais, modelos e câmera.
-- `.github/workflows/qa.yml`: verifica o teste em push e pull requests.
+- `tests/motion.mjs`: fases, apoio e transições procedurais.
+- `tests/geometry3d.mjs`: matrizes e buffers oficiais do Three.js em Node (sem WebGL).
+- `tests/browser.mjs`: Chromium/WebGL real, cinco viewports, comparação de chamadas e capturas.
+- `.github/workflows/qa.yml`: simulação, geometria e navegador em push para main e pull requests.
+- `RELEASE_0.9.8.md`: avaliação, escopo, critérios de verificação e próximos passos.
 
 ## Validação
 
-Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verificar a simulação, a rede viária, a orientação dos modelos, os controles e a integridade do código. Ambos foram configurados no GitHub Actions para detectar regressões a cada atualização. Também foram feitos testes simulados do renderizador 3D e da conversão dos toques para coordenadas do terreno.
+Execute `npm ci` e `npm test` (simulação, renderizador simulado, poses e geometria real). Para o navegador: `npx playwright install --with-deps chromium` e `npm run test:browser`. Os comandos independentes `node tests/smoke.mjs` e `node tests/render3d.mjs` continuam disponíveis para verificar a simulação, a rede viária, a orientação dos modelos, os controles e a integridade do código. Ambos foram configurados no GitHub Actions para detectar regressões a cada atualização. Também foram feitos testes simulados do renderizador 3D e da conversão dos toques para coordenadas do terreno.
 
 **Atenção:** não houve nova validação visual dessa versão em um aparelho Android real. É necessário conferir o resultado pelo GitHub Pages e enviar capturas para continuar o QA. O Three.js usa CDN externo na primeira abertura; se falhar, o modo 2D permanece disponível.
 
@@ -280,5 +309,6 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.9.5 — identidades regionais, 180 props sem sobreposição, atividades visíveis e visita às fazendas; implementado em código, faltam QA visual Android e refinamento fino da câmera;
 0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
 0.9.7 — manejo animal real, histórico de cuidados, bem-estar econômico, metas e correção de bloqueios de trabalhadores; implementado e testado em simulação, pendente inspeção Android;
-0.9.8–0.9.9 — integração da interface, revisão de qualidade visual mobile e candidato à 1.0;
+0.9.8 — candidata para testes públicos: integração/interface, poses e contato implementados; testes Chromium/WebGL e inspeção de capturas executados, Android físico pendente;
+0.9.9 — candidato à 1.0, orçamento de performance e testes em celulares reais;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.

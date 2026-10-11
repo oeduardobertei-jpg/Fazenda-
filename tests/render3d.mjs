@@ -2,6 +2,8 @@
 // node tests/render3d.mjs
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const motion=createRequire(import.meta.url)('../motion.js');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const source=world.slice(world.indexOf('/* Fazenda Viva'));
 assert.ok(source.startsWith('/* Fazenda Viva'));
@@ -117,7 +119,7 @@ const state={
 };
 const previous=new Map();
 const mocks={
-  window:{FazendaVivaBridge:{state:()=>state,mode(){}},addEventListener(){}},
+  window:{FazendaVivaMotion:motion,FazendaVivaBridge:{state:()=>state,mode(){}},addEventListener(){}},
   document:{
     body:{insertBefore(){}},
     createElement:()=>({style:{},textContent:'',appendChild(){},addEventListener(){}}),

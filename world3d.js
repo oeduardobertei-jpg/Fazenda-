@@ -6,12 +6,13 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.7 — manejo animal visível, cuidado equino e integração 2D/3D.
+/* Fazenda Viva 0.9.8 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
 window.FazendaViva3DReady=true;
 const api = window.FazendaVivaBridge;
+const motion = window.FazendaVivaMotion;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
@@ -104,7 +105,40 @@ function disposeTransientGroup(obj){
   const children=[...obj.children||[]];
   for(const child of children)disposeTransientGroup(child);
   if(obj.geometry?.__fvTransient)obj.geometry.dispose?.();
+  if(obj.isInstancedMesh)obj.dispose?.();
   // Materiais, boxes e telhados pertencem aos caches compartilhados.
+}
+// Fundir apenas peças estáticas por material reduz chamadas sem perder detalhes.
+// Articulações, instancing e transparência permanecem independentes.
+function batchStaticMeshes(group){
+  if(!THREE.BufferGeometry.prototype.getAttribute)return group;
+  const batches=new Map();
+  for(const mesh of [...group.children]){
+    if(!mesh.isMesh||mesh.isInstancedMesh||mesh.material.transparent||mesh.children.length)continue;
+    const key=mesh.material;
+    if(!batches.has(key))batches.set(key,[]);
+    batches.get(key).push(mesh);
+  }
+  for(const [material,meshes] of batches){
+    if(meshes.length<2)continue;
+    const geometries=meshes.map(mesh=>{
+      mesh.updateMatrix();
+      const copy=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone();
+      return copy.applyMatrix4(mesh.matrix);
+    });
+    const merged=new THREE.BufferGeometry();
+    for(const name of ['position','normal']){
+      const arrays=geometries.map(geometry=>geometry.getAttribute(name).array);
+      const data=new Float32Array(arrays.reduce((n,a)=>n+a.length,0));
+      let offset=0;for(const array of arrays){data.set(array,offset);offset+=array.length}
+      merged.setAttribute(name,new THREE.BufferAttribute(data,3));
+    }
+    merged.__fvTransient=true;merged.computeBoundingSphere();
+    for(const geo of geometries)geo.dispose();
+    for(const mesh of meshes){group.remove(mesh);disposeTransientGroup(mesh)}
+    group.add(new THREE.Mesh(merged,material));
+  }
+  return group;
 }
 function ellipse(parent,x,z,rx,rz,color,elevation=.09) {
   // Paisagem em níveis físicos distintos: evita z-fighting (triângulos/radiais nos açudes).
@@ -380,7 +414,7 @@ function contactShadow(parent,rx,rz){
     opacity:.16,depthWrite:false});
   const mesh=new THREE.Mesh(contactGeo,contactMat);
   mesh.rotation.x=-Math.PI/2;
-  mesh.position.set(0,.025,0);
+  mesh.position.set(0,.006,0);
   mesh.scale.set(rx,rz,1);
   parent.add(mesh);
   return mesh;
@@ -394,32 +428,37 @@ function makeHorse(h){
     const mesh=new THREE.Mesh(sharedBox(w,y,d),coat);
     mesh.position.set(x,py,z);parent.add(mesh);return mesh;
   };
-  part(group,3.8,1.5,1.4,0,2.3,0);
-  // Peito e garupa dão uma silhueta equestre mais identificável sem esqueleto pesado.
-  part(group,.94,1.62,1.33,1.22,2.26,0);
-  part(group,1.22,1.61,1.43,-1.18,2.26,0);
-  box(group,2.25,.11,1.16,-.18,3.12,0,0x9e8060);
-  const neckPivot=new THREE.Group();
-  neckPivot.position.set(1.45,2.85,0);group.add(neckPivot);
-  part(neckPivot,1.12,1.84,1.0,0,.20,-.05);
-  part(neckPivot,1.19,.9,1.1,.40,.95,0);
-  box(neckPivot,.20,1.2,.72,-.10,.7,-.07,0x48372e);
-  // Olhos e focinho tornam o movimento do pescoço perceptível de lado.
-  box(neckPivot,.32,.31,.83,1.02,.79,0,0xa38c75);
-  for(const side of [-1,1]){
-    box(neckPivot,.13,.15,.10,.79,1.12,side*.58,0x2f251f);
-    box(neckPivot,.16,.11,.10,1.16,.70,side*.43,0x43352f);
-    box(neckPivot,.23,.55,.23,.60,1.50,side*.27,0x4f3b31);
+  const body=new THREE.Group();group.add(body);
+  // Volumes facetados reutilizados: dorso, garupa e peito com silhueta orgânica.
+  if(!horseBodyGeometry)horseBodyGeometry=new THREE.IcosahedronGeometry(1,1);
+  for(const [x,y,sx,sy,sz] of [[0,2.27,1.94,.79,.72],[-1.18,2.30,.90,.83,.76],[1.16,2.23,.68,.86,.68]]){
+    const mesh=new THREE.Mesh(horseBodyGeometry,coat);
+    mesh.position.set(x,y,0);mesh.scale.set(sx,sy,sz);body.add(mesh);
   }
-  for(let i=0;i<4;i++)
-    box(neckPivot,.27,.25,.52,-.52,.90-i*.31,-.03,0x493b31);
-  const legs=[];
+  group.userData.body=body;
+  const neckPivot=new THREE.Group();
+  neckPivot.position.set(1.45,2.62,0);group.add(neckPivot);
+  part(neckPivot,.84,1.70,.86,.51,.49,0).rotation.z=-.47;
+  box(neckPivot,.17,1.47,.61,.12,.67,0,0x48372e).rotation.z=-.47;
+  const headPivot=new THREE.Group();headPivot.position.set(1.30,1.20,0);
+  neckPivot.add(headPivot);
+  part(headPivot,1.16,.69,.72,.48,0,0);
+  const muzzle=box(headPivot,.52,.40,.67,1.15,-.08,0,0xa38c75);
+  group.userData.muzzle=muzzle;
+  for(const side of [-1,1]){
+    box(headPivot,.14,.13,.07,.49,.13,side*.38,0x2f251f);
+    box(headPivot,.13,.09,.07,1.22,-.05,side*.34,0x43352f);
+    box(headPivot,.20,.46,.17,.02,.50,side*.23,0x4f3b31).rotation.z=-.13;
+  }
+  const legs=[],knees=[],hooves=[];
   for(const x of [-1.25,1.25])for(const z of [-.48,.48]){
     const pivot=new THREE.Group();
-    pivot.position.set(x,1.68,z);group.add(pivot);
-    part(pivot,.35,1.55,.32,0,-.75,0);
-    box(pivot,.43,.28,.40,.08,-1.47,.06,0x5d4c3e);
-    legs.push(pivot);
+    pivot.position.set(x,1.55,z);group.add(pivot);
+    part(pivot,.33,.73,.30,0,-.365,0);
+    const knee=new THREE.Group();knee.position.set(0,-.73,0);pivot.add(knee);
+    part(knee,.23,.75,.24,0,-.375,0);
+    hooves.push(box(knee,.39,.24,.35,0,-.75,0,0x473c32));
+    legs.push(pivot);knees.push(knee);
   }
   const tailPivot=new THREE.Group();
   tailPivot.position.set(-2.0,2.58,0);group.add(tailPivot);
@@ -449,28 +488,34 @@ function makeHorse(h){
   group.userData.specialCareFx=special;
   group.userData.horse=h;
   group.userData.legs=legs;
+  group.userData.knees=knees;
+  group.userData.hooves=hooves;
   group.userData.neck=neckPivot;
+  group.userData.head=headPivot;
   group.userData.tail=tailPivot;
   return group;
 }
+let horseBodyGeometry=null;
 function makeWorker(f){
   const group=new THREE.Group(),skin=0xd6a17d,shirt=f.color||'#759389';
   contactShadow(group,.75,.48);
-  const legs=[],arms=[];
+  const legs=[],knees=[],boots=[],arms=[];
   for(const sign of [-1,1]){
     const leg=new THREE.Group();
-    leg.position.set(0,1.29,sign*.30);
+    leg.position.set(0,1.13,sign*.28);
     group.add(leg);
-    box(leg,.37,1.08,.39,0,-.53,0,0x4e5045);
-    box(leg,.70,.20,.42,.16,-1.09,0,0x514237);
-    legs.push(leg);
+    box(leg,.33,.51,.34,0,-.255,0,0x4e5045);
+    const knee=new THREE.Group();knee.position.set(0,-.51,0);leg.add(knee);
+    box(knee,.29,.52,.30,0,-.26,0,0x4e5045);
+    boots.push(box(knee,.57,.22,.38,0,-.52,0,0x514237));
+    legs.push(leg);knees.push(knee);
     const arm=new THREE.Group();
-    arm.position.set(0,2.37,sign*.74);group.add(arm);
+    arm.position.set(0,2.25,sign*.62);group.add(arm);
     box(arm,.29,1.02,.32,0,-.50,0,shirt);
     box(arm,.27,.30,.30,0,-1.08,0,skin);
     arms.push(arm);
   }
-  box(group,1.35,1.45,.80,0,1.92,0,shirt);
+  box(group,.74,1.26,1.02,0,1.79,0,shirt);
   box(group,.50,.44,.45,0,2.73,0,skin);
   const headGeometry=new THREE.SphereGeometry(.56,8,6);
   headGeometry.__fvTransient=true;
@@ -484,18 +529,19 @@ function makeWorker(f){
   brim.position.set(0,3.50,0);group.add(brim);
   cylinder(group,.44,.55,.51,0,3.75,0,hatColor,9);
   // Peito/frente na direção +X, para combinar com o rumo no Canvas.
-  box(group,.18,.36,.40,.72,2.22,0,0xe2d0a3);
-  const tool=new THREE.Group();group.add(tool);
+  box(group,.12,.36,.40,.42,2.05,0,0xe2d0a3);
+  box(group,.20,.15,.24,.52,3.07,0,skin);
+  const tool=new THREE.Group();tool.position.set(0,-.95,0);arms[1].add(tool);
   if(f.role==='tratador'){
-    cylinder(tool,.43,.32,.68,1.15,.84,.30,0x668b92,9);
-    box(tool,.11,.55,.11,1.15,1.37,.30,0xbdc4ba);
-    box(tool,.42,.12,.13,1.15,1.58,.30,0xbdc4ba);
+    cylinder(tool,.36,.28,.57,.10,-.48,.12,0x668b92,9);
+    box(tool,.09,.31,.09,.10,-.04,.12,0xbdc4ba);
+    box(tool,.42,.10,.10,.10,.11,.12,0xbdc4ba);
   }else if(f.role==='agricultor'){
-    box(tool,.15,2.2,.15,1.12,1.28,.30,0xa77f4e);
-    box(tool,.62,.11,.38,1.12,.28,.32,0x758481);
+    box(tool,.13,1.95,.13,.18,.12,.05,0xa77f4e);
+    box(tool,.59,.10,.34,.28,-.87,.05,0x758481);
   }else{
-    box(tool,.98,1.18,.12,1.08,1.52,.38,0x8e683e);
-    box(tool,.80,.91,.14,1.08,1.53,.48,0xe4d8ba);
+    box(tool,.72,.86,.10,.36,.19,.13,0x8e683e);
+    box(tool,.59,.67,.12,.36,.20,.20,0xe4d8ba);
   }
   // Ação localizada no equipamento que o trabalhador está operando.
   // Quando a tarefa termina, os elementos somem. Não há efeitos em idle.
@@ -510,6 +556,8 @@ function makeWorker(f){
   workFx.visible=false;group.add(workFx);
   group.userData.workFx=workFx;
   group.userData.legs=legs;
+  group.userData.knees=knees;
+  group.userData.boots=boots;
   group.userData.arms=arms;
   group.userData.tool=tool;
   return group;
@@ -603,7 +651,6 @@ function drawWorld(s){
   }
   // Centro Rural: referência espacial persistente, conectado à estrada horizontal.
   const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
-  road(root,fx,140,fx,185,6,.24);
   flat(root,81,58,fx,fz,0x9ba979,.12);
   flat(root,71,49,fx,fz,0xc9b18a,.20);
   flat(root,60,38,fx,fz,0xdcc69e,.29);
@@ -622,13 +669,19 @@ function drawWorld(s){
   }
   // Pátios e conexões internos são desenhados sem cruzar as baias.
 
-  road(root,-140,-580,-140,580,14,.16);
-  road(root,140,-580,140,580,14,.16);
-  road(root,-580,140,580,140,14,.205);
+  const publicRoads=s.regionalRoads||[
+    {x1:-140,y1:-580,x2:-140,y2:580,w:14,elevation:.16},
+    {x1:140,y1:-580,x2:140,y2:580,w:14,elevation:.16},
+    {x1:-580,y1:140,x2:580,y2:140,w:14,elevation:.205},
+    {x1:fx,y1:140,x2:fx,y2:185,w:6,elevation:.24}
+  ];
+  for(const r of publicRoads)road(root,r.x1,r.y1,r.x2,r.y2,r.w,r.elevation);
   for(const o of s.owners){
-    if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8,.235);
-    else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8,.235);
-    else road(root,o.x,140,o.x,o.y+120,8,.235);
+    if(!s.regionalRoads){
+      if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8,.235);
+      else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8,.235);
+      else road(root,o.x,140,o.x,o.y+120,8,.235);
+    }
     ellipse(root,o.x,o.y,121,118,o.style?.ground??(o.ai?0x91ae74:0xa0b779),.24);
     // Solo compactado junto à entrada, sem passar por baixo das estruturas.
     const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
@@ -698,6 +751,7 @@ function drawWorld(s){
     }
   }
   makeTrees(root,s.trees);
+  batchStaticMeshes(root);
   content=new THREE.Group();scene.add(content);
   horseLayer=new THREE.Group();scene.add(horseLayer);
   workerLayer=new THREE.Group();scene.add(workerLayer);
@@ -850,6 +904,7 @@ function syncFairground(s){
   for(const x of [-6.7,6.7])box(board,.5,4.5,.45,x,2.3,0,0xc9a575);
   for(let i=0;i<3;i++)
     box(board,3.0,.26,.45,(i-1)*4.1,3.1,.47,trim);
+  for(const booth of fairLayer.children)batchStaticMeshes(booth);
 }
 
 // Estradas internas são quads leves em uma única malha instanciada.
@@ -1024,7 +1079,7 @@ function sync(s){
       content.remove(record.model);
       disposeTransientGroup(record.model);
     }
-    const model=building(b,detailed);
+    const model=batchStaticMeshes(building(b,detailed));
     content.add(model);
     modelsByBuilding.set(b,{model,version});
   }
@@ -1042,27 +1097,28 @@ function sync(s){
     const x=h.x??h.o.x,z=h.y??h.o.y;
     mesh.visible=s.zoom>.42&&Math.abs(x-s.panX)<245&&Math.abs(z-s.panY)<245;
     if(!mesh.visible)return;
-    const walking=h.motion==='walk',gait=h.gait||0;
-    mesh.position.set(x,.12+(walking?Math.abs(Math.sin(gait))*.055:0),z);
+    const pose=motion.horse(h);
+    // O chão da gleba e do piquete está em ~0.24–0.40. Sombras abaixo
+    // dessas camadas desapareciam; os cascos agora apoiam-se acima delas.
+    mesh.position.set(x,.42,z);
     mesh.rotation.y=h.heading||0;
     const age=(h.age||0)+Math.floor(Math.max(0,s.day-(h.bornDay||1))/365);
     const animalScale=age<1?.65:age<2?.83:1;
     mesh.scale.set(animalScale,animalScale,animalScale);
-    const legs=mesh.userData.legs||[];
+    const legs=mesh.userData.legs||[],knees=mesh.userData.knees||[];
     for(let j=0;j<legs.length;j++){
-      // Passada diagonal; pares opostos não patinam em sincronia.
-      const pair=(j===0||j===3)?0:Math.PI;
-      legs[j].rotation.z=walking?Math.sin(gait+pair)*.27:0;
+      legs[j].rotation.z=pose.legs[j].hip;
+      if(knees[j])knees[j].rotation.z=pose.legs[j].knee;
+      if(mesh.userData.hooves?.[j])mesh.userData.hooves[j].rotation.z=-(pose.legs[j].hip+pose.legs[j].knee);
     }
-    if(mesh.userData.neck)
-      mesh.userData.neck.rotation.z=h.interacting?
-        -.12+Math.sin(h.phase*2.5+h.id)*.09:
-        h.motion==='graze'?-.60+Math.sin(h.phase*.32)*.06:
-        walking?Math.sin(gait*.5)*.08:-.05;
+    if(mesh.userData.body)mesh.userData.body.position.y=pose.bodyBob;
+    if(mesh.userData.neck){
+      mesh.userData.neck.rotation.z=pose.neck;
+      mesh.userData.neck.position.y=2.62+pose.bodyBob;
+    }
+    if(mesh.userData.head)mesh.userData.head.rotation.z=pose.head;
     if(mesh.userData.tail)
-      mesh.userData.tail.rotation.z=h.interacting?
-        -.14+Math.sin(h.phase*3.2+h.id)*.22:
-        -.18+Math.sin(h.phase*.48+h.id)*.14;
+      mesh.userData.tail.rotation.z=pose.tail;
     const careFx=mesh.userData.careFx;
     if(careFx){
       const rationActive=(h.careSpecialUntil??-1)>h.phase;
@@ -1089,21 +1145,21 @@ function sync(s){
     const character=workerLayer.children[i];if(!character)return;
     character.visible=Math.abs(f.x-s.panX)<235&&Math.abs(f.y-s.panY)<235;
     if(!character.visible)return;
-    const walking=f.motion==='walk',working=f.motion==='work';
-    character.position.set(f.x,.14+(walking?Math.abs(Math.sin(f.gait||0))*.055:0),f.y);
+    const working=f.motion==='work',pose=motion.worker(f);
+    character.position.set(f.x,.42,f.y);
     character.rotation.y=-(f.visualHeading??f.heading??0);
-    const legs=character.userData.legs||[];
+    const legs=character.userData.legs||[],knees=character.userData.knees||[];
     const arms=character.userData.arms||[];
-    for(let k=0;k<legs.length;k++)
-      legs[k].rotation.z=walking?Math.sin((f.gait||0)+k*Math.PI)*.34:0;
+    for(let k=0;k<legs.length;k++){
+      legs[k].rotation.z=pose.legs[k].hip;
+      if(knees[k])knees[k].rotation.z=pose.legs[k].knee;
+      if(character.userData.boots?.[k])character.userData.boots[k].rotation.z=-(pose.legs[k].hip+pose.legs[k].knee);
+    }
     for(let k=0;k<arms.length;k++)
-      arms[k].rotation.z=walking?
-        Math.sin((f.gait||0)+k*Math.PI)*.24:
-        working?Math.sin((f.animTime||0)*3.0+k)*.12:0;
+      arms[k].rotation.z=pose.arms[k]+(k===1?pose.tool:0);
     const tool=character.userData.tool;
     if(tool){
-      tool.rotation.z=working?Math.sin((f.animTime||0)*3.2)*.12:0;
-      tool.position.y=working?Math.sin((f.animTime||0)*3.2)*.07:0;
+      tool.rotation.z=pose.tool;
     }
     const workFx=character.userData.workFx;
     if(workFx){
@@ -1124,14 +1180,23 @@ function sync(s){
   });
 }
 function updateLabels(s){
+  labelLayer.style.visibility=s.overlaysOpen?'hidden':'visible';
+  const zoomBounds=s.zoom<=1.13?document.getElementById('zoomTools')?.getBoundingClientRect?.():null;
   for(let i=0;i<s.owners.length;i++){
     const o=s.owners[i],label=labelNodes[i];
     // Em detalhes, liberar a paisagem das etiquetas das cabanhas.
     if(s.zoom>1.13){label.style.display='none';continue}
     const p=new THREE.Vector3(o.x,14,o.y-40).project(camera);
-    const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;
+    const halfWidth=Math.min(110,o.name.length*3.8+10);
+    const projectedX=(p.x*.5+.5)*innerWidth;
+    const x=Math.max(halfWidth+12,Math.min(innerWidth-halfWidth-12,projectedX));
+    let y=(-p.y*.5+.5)*innerHeight;
+    // Na vista regional, os nomes também precisam liberar os botões de zoom.
+    if(zoomBounds&&x+halfWidth>zoomBounds.left-8&&x-halfWidth<zoomBounds.right+8&&
+       y+16>zoomBounds.top&&y-16<zoomBounds.bottom)y=zoomBounds.top-22;
     label.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';
-    label.style.display=x<0||x>innerWidth||y<95||y>innerHeight-55?'none':'block';
+    label.style.display=projectedX<-halfWidth||projectedX>innerWidth+halfWidth||
+      y<(innerWidth<=700?215:130)||y>innerHeight-105?'none':'block';
   }
   if(fairLabel){
     const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
@@ -1160,7 +1225,8 @@ function updateLabels(s){
     const v=new THREE.Vector3(f.x,6.3,f.y).project(camera);
     const px=(v.x*.5+.5)*innerWidth,py=(-v.y*.5+.5)*innerHeight;
     // Um rótulo não pode cobrir outro nem invadir indicadores de interface.
-    if(px<75||px>innerWidth-75||py<170||py>innerHeight-105||
+    if(px<75||px>innerWidth-75||py<(innerWidth<=700?215:150)||
+       py>innerHeight-(s.followTarget?155:105)||
        placed.some(p=>Math.abs(p.x-px)<154&&Math.abs(p.y-py)<31)){
       el.style.display='none';continue;
     }
@@ -1250,6 +1316,9 @@ function start(){
     fail.textContent='Three.js não inicializou ou o contexto está indisponível; modo 2D preservado.';return
   }
   if(enabled)return;
+  // Um CDN lento pode terminar depois do aviso de nove segundos.
+  // Remover o handler de contingência evita dois comandos no mesmo clique.
+  btn.onclick=null;
   enabled=true;lastFrameAt=0;cameraInitialized=false;
   const thisLoop=++renderGeneration;
   renderer.domElement.style.display='block';
@@ -1287,6 +1356,7 @@ function init(){
   const sun=new THREE.DirectionalLight(0xffe5b9,1.55);sun.position.set(-210,310,180);scene.add(sun);
   const s=api.state();drawWorld(s);
   labelLayer=document.createElement('div');
+  labelLayer.id='sceneLabels';
   labelLayer.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1';
   for(const o of s.owners){
     const el=document.createElement('div');el.textContent=o.name;

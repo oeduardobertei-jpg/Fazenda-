@@ -1,66 +1,41 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.7</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#17271c;color:#fff;font:14px system-ui;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#hud{position:fixed;top:10px;left:10px;right:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;pointer-events:none}.pill{background:#152d25e8;border:1px solid #7a9877;border-radius:12px;padding:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#bottom{position:fixed;bottom:12px;left:8px;right:8px;display:flex;gap:5px}button{background:#254d38;color:white;border:1px solid #93b58c;border-radius:9px;padding:12px 6px;flex:1;font:inherit}#panel{position:fixed;bottom:76px;left:8px;right:8px;background:#183628f2;border:1px solid #7a9877;border-radius:14px;padding:12px;max-height:50dvh;overflow:auto}#panel[hidden]{display:none}#actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}#status{position:fixed;top:102px;left:8px;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none;transition:opacity .4s}#error{position:fixed;top:35%;left:12px;right:12px;background:#4a2828;border:2px solid orange;border-radius:12px;padding:15px}#error[hidden]{display:none}@media(max-width:450px){button{font-size:12px;padding:11px 3px}.pill{font-size:11px}}#game{position:fixed;inset:0;z-index:0}
-#hud,#status,#economy{z-index:5}
-#bottom{z-index:6}
-#panel{z-index:8}
-#renderMode{position:fixed;z-index:6;top:176px;left:8px;max-width:160px;width:auto;padding:8px 12px;background:#1c4a41eb;border-color:#bbe1ad}
-#renderStatus{position:fixed;z-index:6;top:215px;left:8px;background:#143e2fd9;font-size:11px;padding:5px 7px;border-radius:6px;max-width:230px;pointer-events:none}
-@media(max-width:450px){#hud{gap:4px;top:6px;left:6px;right:6px}.pill{padding:6px 7px}#status{top:84px;left:6px;max-width:calc(100vw - 12px);font-size:11px}#economy{top:115px!important;left:6px!important;max-width:calc(100vw - 12px)!important;font-size:10px!important}#renderMode{top:149px;left:6px;font-size:11px}#renderStatus{top:190px;left:6px}}#zoomTools{position:fixed;z-index:6;right:9px;top:165px;display:flex;flex-direction:column;gap:7px}#zoomTools button{width:48px;height:47px;flex:initial;border-radius:13px;padding:4px;font-size:24px;font-weight:700;background:#1d4938ed;border:1px solid #b1cf9f;touch-action:manipulation;box-shadow:0 2px 7px #0a251d5e}@media(max-width:450px){#zoomTools{top:158px;right:7px}} /* Gestão 0.9 — folha modal separada dos controles de construção. */
-#management{position:fixed;z-index:12;left:8px;right:8px;bottom:76px;max-height:min(78dvh,790px);overflow:hidden;
-  background:#19392ced;color:#f8f7ec;border:1px solid #b4cda6;border-radius:15px;
-  box-shadow:0 12px 45px #09221ab0;display:flex;flex-direction:column}
-#management[hidden]{display:none}
-#management .manageHead{padding:11px 12px 9px;background:#17382b;border-bottom:1px solid #43694d;display:flex;align-items:center;justify-content:space-between;gap:9px}
-#management .manageHead strong{font-size:17px;letter-spacing:.15px}
-#management .manageHead button{flex:initial;width:40px;min-height:36px;padding:5px;font-size:18px}
-#manageTabs{display:flex;flex-shrink:0;gap:5px;padding:7px 9px;overflow-x:auto;scrollbar-width:thin;touch-action:pan-x}
-#manageTabs button{flex:0 0 auto;padding:9px 10px;font-size:12px;white-space:nowrap;background:#244c38}
-#manageTabs button[aria-selected="true"]{background:#9cba7b;color:#193b2d;font-weight:800;border-color:#e6ecc5}
-#manageBody{overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:11px 12px 17px;min-height:0;line-height:1.5}
-#manageBody .mgGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-#manageBody .mgCard{background:#254835e0;border:1px solid #54795d;border-radius:11px;padding:10px;min-width:0}
-#manageBody h4{margin:4px 0 7px;color:#f6e6b5;font-size:14px}
-#manageBody p{margin:4px 0 8px}
-#manageBody .mgValue{font-size:18px;font-weight:800;overflow-wrap:anywhere}
-#manageBody .mgSmall{font-size:11px;opacity:.83}
-#manageBody .mgLine{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;font-size:12px}
-#manageBody .mgLine span:last-child{text-align:right}
-#manageBody .mgTrack{height:7px;border-radius:99px;background:#102c22;border:1px solid #466147;overflow:hidden}
-#manageBody .mgFill{height:100%;background:#aacb83}
-#manageBody .mgRow{background:#224333;border:1px solid #486e56;border-radius:10px;padding:10px;margin:7px 0}
-#manageBody .mgRow button{margin:7px 0 0;width:100%;min-height:32px;padding:7px}
-#manageBody .mgAction{width:100%;margin-top:9px;padding:10px 8px;background:#426b4d}
-#manageBody svg{max-width:100%;width:100%;height:auto;display:block;background:#142e25;border:1px solid #44694e;border-radius:9px}
-#manageBody .mgGood{color:#c3efa5}#manageBody .mgBad{color:#ffcab0}
-#manageBody .mgNote{font-size:11px;color:#d6e0c6;margin-top:9px}
-#manageOpen{display:block;width:100%;margin-top:8px;background:#416b4c;border-color:#d1e7a9;font-weight:700}
-#perfHud{position:fixed;z-index:7;top:96px;right:8px;max-width:min(48vw,220px);
-  background:#102e25eb;color:#e8f4df;border:1px solid #b0caa0;border-radius:10px;
-  padding:7px 9px;font:600 11px/1.55 ui-monospace,monospace;pointer-events:none;
-  box-shadow:0 3px 11px #102d2480}
-#perfHud[hidden]{display:none}
-#perfMode{width:100%;display:block;margin-top:7px;background:#355d43}
-@media(max-width:450px){#perfHud{top:86px;right:6px;max-width:49vw;font-size:10px}}
-
-@media(max-width:450px){#management{bottom:73px;max-height:79dvh}#manageBody{padding:8px 10px 14px}
-#manageBody .mgValue{font-size:16px}#management .manageHead strong{font-size:15px}}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.8</title>
+<style>
+:root{color-scheme:dark;--ink:#f8f1dd;--muted:#c4d1ba;--panel:#17392ded;--edge:#739477;--gold:#dfc18a;--top:calc(10px + env(safe-area-inset-top,0px));--base:calc(10px + env(safe-area-inset-bottom,0px));--side:12px}
+*{box-sizing:border-box}body{margin:0;background:#1b3528;color:var(--ink);font:14px/1.45 system-ui,sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#game{position:fixed;inset:0;z-index:0}
+button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--edge);border-radius:12px;min-height:44px;padding:10px 12px;cursor:pointer;touch-action:manipulation}button:hover{background:#3c6549}button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:2px}button:disabled{opacity:.5;cursor:default}button[aria-pressed=true]{background:#597553;border-color:var(--gold)}[hidden]{display:none!important}
+#hud{position:fixed;z-index:5;top:var(--top);left:var(--side);display:grid;grid-template-columns:1fr 1fr;gap:5px;width:min(400px,calc(100vw - 24px));pointer-events:none}.pill{background:#17392deb;border:1px solid #91ab8055;border-radius:11px;padding:8px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}#hud .brand{color:var(--gold);font-weight:750;letter-spacing:.3px}#economy{position:fixed;z-index:5;top:calc(var(--top) + 85px);left:var(--side);max-width:min(400px,calc(100vw - 24px));background:#17392ddb;border-radius:9px;padding:6px 10px;color:var(--muted);font-size:11px;pointer-events:none}
+#topTools{position:fixed;z-index:6;top:var(--top);right:var(--side);display:flex;gap:6px}#topTools button{font-size:12px;background:#183c30ed;min-width:50px}#renderMode{min-width:95px}#renderStatus{position:fixed;z-index:6;top:calc(var(--top) + 130px);left:var(--side);max-width:min(335px,calc(100vw - 85px));padding:7px 10px;border-radius:9px;background:#4e4534e8;color:#f3dbab;font-size:11px;pointer-events:none}
+#status{position:fixed;z-index:7;left:50%;bottom:calc(var(--base) + 79px);transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);background:#173c2bec;border:1px solid #9eb78b66;padding:6px 12px;border-radius:12px;font-size:11px;text-align:center;pointer-events:none;transition:opacity .3s}body:has(#sceneContext:not([hidden]),#management:not([hidden]),#welcome:not([hidden]),#panel:not([hidden])) #status{opacity:0!important}#zoomTools{position:fixed;z-index:6;right:var(--side);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px}#zoomTools button{width:44px;height:44px;font-size:23px;padding:2px;background:#204633ed}
+#bottom{position:fixed;z-index:6;bottom:var(--base);left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:min(550px,calc(100vw - 24px));padding:7px;background:#133428ed;border:1px solid #8faa7655;border-radius:17px;box-shadow:0 7px 24px #10261945}#bottom button{font-size:12px;padding:10px 5px}#manageQuick{background:#acbe85;color:#20382a;font-weight:750;border-color:#d6dfb3}
+#panel,#management,#welcome{position:fixed;z-index:12;left:50%;transform:translateX(-50%);bottom:calc(var(--base) + 77px);width:min(570px,calc(100vw - 24px));max-height:calc(100dvh - var(--base) - var(--top) - 91px);background:var(--panel);border:1px solid #b4cda67a;border-radius:18px;box-shadow:0 14px 50px #09221a80}#panel{overflow:auto;padding:18px;overscroll-behavior:contain}h3{font-size:19px;margin:0 0 8px}p{margin:6px 0 12px}#panel p{color:var(--muted);font-size:12px}#actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}#panel>button{display:block;width:100%;margin-top:8px}#panel>button#buyhorse{border-color:var(--gold)}#resetGame{background:#684937;border-color:#b48f64}#helpOpen{background:#385c48}#panel details{margin-top:14px;border-top:1px solid #73947755;padding-top:12px}#panel summary{cursor:pointer;font-weight:650;min-height:44px;padding:9px 0}#panel details button{width:100%;margin:5px 0}#panel .panelHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}#panelClose{min-width:44px;padding:4px}
+#management{display:flex;flex-direction:column;overflow:hidden}#management .manageHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-bottom:1px solid #73947755;background:#1b3b2e}#management .manageHead strong{font-size:16px}#manageClose{min-width:44px;padding:4px;font-size:20px}#manageTabs{display:flex;flex-shrink:0;gap:6px;overflow-x:auto;padding:9px 12px;scrollbar-width:thin;touch-action:pan-x}#manageTabs button{flex:0 0 auto;font-size:12px;padding:9px 11px;white-space:nowrap}#manageTabs button[aria-selected=true]{background:#b4c38b;color:#203b2d;border-color:#e6ecc5;font-weight:750}#manageBody{overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;min-height:0;padding:5px 16px 18px;line-height:1.5}#manageBody .mgGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#manageBody .mgCard{background:#284b39c9;border:1px solid #73947755;border-radius:12px;padding:12px;min-width:0}#manageBody h4{font-size:14px;color:var(--gold);margin:15px 0 8px}#manageBody .mgValue{font-size:19px;font-weight:750;overflow-wrap:anywhere}#manageBody .mgSmall{font-size:12px;color:var(--muted)}#manageBody .mgLine{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;font-size:12px}#manageBody .mgLine span:last-child{text-align:right}#manageBody .mgTrack{height:6px;background:#173629;border-radius:99px;overflow:hidden;margin:7px 0}#manageBody .mgFill{height:100%;background:#b8cd8f}#manageBody .mgRow{padding:12px;background:#234533c9;border:1px solid #73947755;border-radius:12px;margin:8px 0}#manageBody .mgRow button,#manageBody .mgCard button,#manageBody .mgAction{width:100%;margin-top:8px}#manageBody svg{width:100%;height:auto;display:block;background:#142e25;border-radius:10px}#manageBody .mgGood{color:#c3efa5}#manageBody .mgBad{color:#ffcab0}#manageBody .mgNote{font-size:11px;color:var(--muted);margin-top:12px}
+#sceneContext{position:fixed;z-index:6;left:50%;bottom:calc(var(--base) + 79px);transform:translateX(-50%);display:flex;align-items:center;justify-content:space-between;gap:12px;width:min(540px,calc(100vw - 24px));padding:7px 9px 7px 13px;background:#173c2bef;border:1px solid #b8c99170;border-radius:13px;font-size:12px}#sceneContext button{min-height:36px;padding:5px 10px;font-size:12px}#sceneContext span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#welcome{width:min(430px,calc(100vw - 24px));padding:22px;background:#16392bf5}#welcome .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold)}#welcome h2{font-size:25px;margin:6px 0 10px}#welcome p{font-size:13px;color:#d8e1c7}#welcome .welcomeActions{display:flex;gap:8px;margin-top:16px}#welcome .welcomeActions button{flex:1}#guideNext{background:#b8c88e;color:#1b3727;font-weight:750}#guideProgress{color:var(--gold);font-size:11px}#perfHud{position:fixed;z-index:7;top:calc(var(--top) + 132px);right:var(--side);background:#122e25ed;border:1px solid #abc29966;border-radius:10px;padding:8px 10px;font:600 10px/1.6 ui-monospace,monospace;pointer-events:none}#error{position:fixed;z-index:20;left:12px;right:12px;top:35%;background:#4a2828;border:1px solid #dbb26e;border-radius:12px;padding:15px}
+@media(max-width:700px){#topTools{top:calc(var(--top) + 121px);right:auto;left:var(--side)}#topTools button{font-size:11px;min-height:44px;padding:8px 10px}#renderStatus{top:calc(var(--top) + 170px)}#hud .pill{font-size:11px;padding:7px 9px}#economy{top:calc(var(--top) + 78px);font-size:11px}#perfHud{top:calc(var(--top) + 122px)}#panel,#management{max-height:calc(100dvh - var(--base) - var(--top) - 91px)}}
+@media(max-height:500px) and (min-width:600px){#hud{width:390px;grid-template-columns:1fr 1fr}#economy{top:calc(var(--top) + 80px)}#topTools{top:var(--top);right:var(--side);left:auto}#renderStatus{top:calc(var(--top) + 109px)}#zoomTools{top:55%}#panel,#management{left:var(--side);transform:none;width:min(470px,calc(100vw - 84px));bottom:calc(var(--base) + 77px)}#welcome{max-height:calc(100dvh - var(--base) - var(--top) - 85px);overflow:auto;padding:16px}#welcome h2{font-size:21px}#welcome p{font-size:12px}#welcome .welcomeActions{margin-top:10px}}
+@media(prefers-reduced-motion:reduce){#status{transition:none}}
 </style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.9.7</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Sua cabanha · Construção e gestão</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button" style="display:block;width:100%;margin-top:7px">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" style="display:block;width:100%;margin-top:7px" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Menu</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-label="Gestão da cabanha" aria-modal="true" role="dialog" hidden>
-<header class="manageHead"><strong>📊 Gestão da cabanha · ⏸</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
-<nav id="manageTabs" aria-label="Seções da gestão">
-<button data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
-<button data-mgtab="financas" aria-selected="false">💰 Finanças</button>
-<button data-mgtab="cavalos" aria-selected="false">🐎 Cavalos</button>
-<button data-mgtab="equipe" aria-selected="false">👨‍🌾 Equipe</button>
-<button data-mgtab="mercado" aria-selected="false">🌾 Mercado</button>
-<button data-mgtab="metas" aria-selected="false">🏆 Metas</button>
+<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.8</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
+<header class="manageHead"><strong id="manageTitle">Gestão da cabanha · tempo pausado</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
+<nav id="manageTabs" role="tablist" aria-label="Seções da gestão">
+<button id="tab-resumo" role="tab" aria-controls="manageBody" data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
+<button id="tab-financas" role="tab" aria-controls="manageBody" data-mgtab="financas" aria-selected="false">💰 Finanças</button>
+<button id="tab-cavalos" role="tab" aria-controls="manageBody" data-mgtab="cavalos" aria-selected="false">🐎 Cavalos</button>
+<button id="tab-equipe" role="tab" aria-controls="manageBody" data-mgtab="equipe" aria-selected="false">👨‍🌾 Equipe</button>
+<button id="tab-mercado" role="tab" aria-controls="manageBody" data-mgtab="mercado" aria-selected="false">🌾 Mercado</button>
+<button id="tab-metas" role="tab" aria-controls="manageBody" data-mgtab="metas" aria-selected="false">🏆 Metas</button>
 </nav>
-<div id="manageBody" tabindex="0" aria-live="polite"></div>
-</section><div id="error" hidden></div>
+<div id="manageBody" role="tabpanel" aria-labelledby="tab-resumo" tabindex="0"></div>
+</section><div id="sceneContext" hidden><span id="contextText"></span><button id="contextCancel" type="button">Encerrar</button></div>
+<section id="welcome" role="dialog" aria-labelledby="guideTitle"><div class="eyebrow">Campos do Sul · Fazenda Viva</div><div id="guideProgress">GUIA · 1 DE 3</div><h2 id="guideTitle">Sua cabanha, viva.</h2><p id="guideText">Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.</p><p id="guideHint">A partida começa no dia 1 a cada abertura. Não há salvamento automático.</p><div class="welcomeActions"><button id="guideSkip" type="button">Explorar agora</button><button id="guideNext" type="button">Próximo →</button></div></section>
+<div id="error" hidden></div>
+<script src="./motion.js?v=098"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
+const motion=window.FazendaVivaMotion;
 let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,lowGraphics=false,paused=false,speed=1,day=1,acc=0,build=null,selected=null,seed=314159,overview=false,mode3D=false,visitIndex=0;
+let followTarget=null,guideStep=0,lastDialogFocus=null;
 let showPerformance=false,localFps=0,framesSinceSample=0,sampleStart=0;
 let performanceSnapshot={mode:'2D',fps:0,dpr:1,calls:0,triangles:0};const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const owners=[{name:'Sua cabanha',x:-315,y:-280,cash:19000,ai:false,color:'#b78355'},{name:'Estância Horizonte',x:305,y:-275,cash:18000,ai:true,color:'#6f9eb1'},{name:'Cabanha Santa Fé',x:-315,y:285,cash:14000,ai:true,color:'#c98c81'},{name:'Agro Vale',x:315,y:280,cash:16000,ai:true,color:'#d4bb76'},{name:'Rincão Verde',x:0,y:0,cash:12000,ai:true,color:'#91ad72'}];
 // Identidades espaciais compartilhadas por Canvas e Three.js: cada propriedade
@@ -78,6 +53,18 @@ const ranchStyles=[
   trim:0x668e67,leaf:0x477b54,detail:'mata e sombra'}
 ];
 owners.forEach((owner,index)=>{owner.style=ranchStyles[index]});
+// Uma única geometria de estradas públicas. O acesso começa na porteira;
+// desenhá-lo até a sede em 2D cortava a casa e a cocheira.
+const regionalRoads=[
+  {x1:-140,y1:-580,x2:-140,y2:580,w:14,elevation:.16},
+  {x1:140,y1:-580,x2:140,y2:580,w:14,elevation:.16},
+  {x1:-580,y1:140,x2:580,y2:140,w:14,elevation:.205},
+  {x1:-65,y1:140,x2:-65,y2:185,w:6,elevation:.24},
+  ...owners.map(o=>o.x<-100?
+    {x1:o.x+122,y1:o.y,x2:-140,y2:o.y,w:8,elevation:.235}:
+    o.x>100?{x1:140,y1:o.y,x2:o.x-122,y2:o.y,w:8,elevation:.235}:
+    {x1:o.x,y1:140,x2:o.x,y2:o.y+120,w:8,elevation:.235})
+];
 const defs={house:{w:12,h:10,cost:4000},stable:{w:17,h:10,cost:3200},barn:{w:16,h:13,cost:2400},paddock:{w:20,h:16,cost:1300}};const market={grain:1,horse:1,timber:1};const ruralEvents=[
  {id:'feira',name:'Feira regional de criadores',horseFactor:1.16,grainFactor:1,costFactor:1,price:320},
  {id:'safra',name:'Contrato de alimentos',horseFactor:1,grainFactor:1.20,costFactor:1,price:280},
@@ -365,11 +352,18 @@ function drawBuilding(b){
     rect(p.x-barW/2,p.y+h/2+3,barW*progress/100,Math.max(3,s*.7),'#e7ca70');
   }
 }
+// A cerca da frente participa da profundidade; o solo nunca cobre os animais.
+function drawPaddockFront(b){
+  const p=screen(b.x,b.y),s=Math.min(W/300,H/260)*zoom;
+  const w=b.w*s,x=p.x-w/2,y=p.y+b.h*s*.67/2;
+  ctx.strokeStyle='#e4d4a5';ctx.lineWidth=Math.max(2,s*.6);
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
+  for(let k=1;k<5;k++)rect(x+w*k/5,y-3,Math.max(2,s*.25),Math.max(3,s*1.1),'#e4d4a5');
+}
 function drawFairground(){
   const s=Math.min(W/300,H/260)*zoom;
   const p=screen(fairground.x,fairground.y);
   if(p.x<-135*s||p.x>W+135*s||p.y<-100*s||p.y>H+100*s)return;
-  drawRoad(-65,140,-65,183,6);
   ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s*.67);
   rect(-37,-25,74,50,'#a5ae79');
   rect(-32,-20,64,40,'#bba67c');
@@ -450,22 +444,24 @@ function drawHorseSprite(h){
   ctx.save();
   ctx.fillStyle='#35523655';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.70,s*2.4,s*.72,0,0,Math.PI*2);ctx.fill();
-  ctx.translate(p.x,p.y);ctx.rotate(-h.heading);ctx.scale(s,s*.67);
-  const movement=h.motion==='walk'?Math.sin(h.gait):0;
-  const grazing=h.motion==='graze';
+  ctx.translate(p.x,p.y);ctx.scale(s,s*.67);ctx.rotate(-h.heading);
+  const pose=motion.horse(h);
+  const movement=Math.sin(h.gait||0)*pose.walk;
+  const grazing=pose.graze>.5;
   // Pelagem, peito e garupa seguem a mesma silhueta low-poly do modelo 3D.
   rect(-2,-.85,4,1.7,h.coat);
   rect(-1.56,-.91,1.05,1.82,h.coat);
   rect(1.14,-.76,.73,1.52,h.coat);
   rect(-2.51,-.28,.66,.55,'#504033');
   rect(1.40,-.52,1.23,1.04,h.coat);
-  rect(2.48,-.40,.79,.80,grazing?'#9b806a':h.coat);
+  rect(2.48+pose.graze*.35,-.40,.79,.80,h.coat);
   rect(2.86,-.39,.28,.17,'#43372f');
   for(const side of [-1,1]){
     rect(2.31,side*.48-.10,.14,.20,'#3a2d25');
     rect(2.67,side*.31-.10,.14,.20,'#574137');
-    rect(-1.25+movement*.19,side*.7-.19,.32,.61,'#534238');
-    rect(1.06-movement*.19,side*.7-.19,.32,.61,'#534238');
+    const near=side===-1?0:1;
+    rect(-1.25+pose.legs[near].x,side*.7-.19,.32,.61,'#534238');
+    rect(1.06+pose.legs[near+2].x,side*.7-.19,.32,.61,'#534238');
   }
   for(let j=0;j<3;j++)rect(1.10-j*.26,-.59,.19,.32,'#514036');
   ctx.restore();
@@ -497,8 +493,9 @@ function drawWorkerSprite(f){
   ctx.ellipse(p.x,p.y+s*.34,s*.83,s*.34,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
   ctx.save();ctx.translate(p.x,p.y);
-  ctx.rotate(f.visualHeading??f.heading??0);ctx.scale(s,s*.67);
-  const walk=f.motion==='walk'?Math.sin(f.gait)*.28:0;
+  ctx.scale(s,s*.67);ctx.rotate(f.visualHeading??f.heading??0);
+  const pose=motion.worker(f);
+  const walk=Math.sin(f.gait||0)*pose.walk*.28;
   rect(-1,-.6,1.8,1.2,f.color);
   rect(-1.38,-.63,.55,.42,'#50483c');
   rect(-1.38,.21,.55,.42,'#50483c');
@@ -548,11 +545,7 @@ function render(){
     ctx.ellipse(pos.x,pos.y,121*s,118*s*.67,0,0,Math.PI*2);
     ctx.fill();
   }
-  drawRoad(-140,-580,-140,580,14);drawRoad(140,-580,140,580,14);drawRoad(-580,140,580,140,14);
-  for(const o of owners){
-    if(Math.abs(o.x)<100){drawRoad(o.x,o.y,o.x,140,7)}
-    else{let x=o.x<0?-140:140;drawRoad(o.x,o.y,x,o.y,7);drawRoad(x,o.y,x,140,7)}
-  }
+  for(const road of regionalRoads)drawRoad(road.x1,road.y1,road.x2,road.y2,road.w);
   drawLandscape();
   drawFairground();
   // Trilhas compactadas em três camadas, como no renderizador 3D.
@@ -584,9 +577,12 @@ function render(){
     ctx.setLineDash([8,6]);ctx.beginPath();ctx.ellipse(p.x,p.y,121*s,118*s*.67,0,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
   }
   const visible=(x,y,margin=24)=>{let p=screen(x,y);return p.x>-margin&&p.x<W+margin&&p.y>-margin&&p.y<H+margin};
+  const paddocks=buildings.filter(b=>b.type==='paddock'&&isBuilt(b)&&visible(b.x,b.y,45));
+  paddocks.forEach(drawBuilding);
   const objects=[
+    ...paddocks.map(b=>({y:b.y+b.h/2,draw:()=>drawPaddockFront(b)})),
     ...trees.filter(t=>visible(t.x,t.y)).map(t=>({y:t.y,draw:()=>drawTree(t)})),
-    ...buildings.filter(b=>visible(b.x,b.y,45)).map(b=>({y:b.y,draw:()=>drawBuilding(b)})),
+    ...buildings.filter(b=>!(b.type==='paddock'&&isBuilt(b))&&visible(b.x,b.y,45)).map(b=>({y:b.y,draw:()=>drawBuilding(b)})),
     ...horses.filter(h=>visible(h.x,h.y,35)).map(h=>({y:h.y,draw:()=>drawHorseSprite(h)})),
     ...farmers.filter(f=>visible(f.x,f.y,20)).map(f=>({y:f.y,draw:()=>drawWorkerSprite(f)}))
   ];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(let o of owners){if(!visible(o.x,o.y,90))continue;let p=screen(o.x,o.y-25),scale=Math.min(W/300,H/260)*zoom;ctx.font='bold '+Math.max(10,Math.min(14,scale*8))+'px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#173625';ctx.strokeText(o.name,p.x,p.y);ctx.fillStyle='#fff9df';ctx.fillText(o.name,p.x,p.y);
@@ -1125,6 +1121,15 @@ function animateFarmers(dt){
     // os mesmos estados e distância percorrida (não o número de frames).
     f.animTime=(f.animTime||0)+maxDt;
     if(f.wait>0){
+      if(f.working){
+        const patient=horses.find(h=>h.o===f.o&&h.id===f.targetHorseId);
+        const target=patient||f.targetBuilding;
+        if(target){
+          const goal=Math.atan2(target.y-f.y,target.x-f.x);
+          const turn=Math.atan2(Math.sin(goal-f.visualHeading),Math.cos(goal-f.visualHeading));
+          f.visualHeading+=turn*(1-Math.exp(-maxDt*6));
+        }
+      }
       f.wait-=maxDt;f.moving=false;
       f.motion=f.working?'work':'idle';
       if(f.wait<=0){
@@ -1726,24 +1731,96 @@ function renderManagement(force=false){
   lastManagementRender=now;
   const body=$('manageBody'),scroll=body.scrollTop;
   body.innerHTML=managementContent(manageTab);
+  body.setAttribute('aria-labelledby','tab-'+manageTab);
   body.scrollTop=force?0:scroll;
   for(const tab of $('manageTabs').querySelectorAll('[data-mgtab]')){
     tab.setAttribute('aria-selected',String(tab.dataset.mgtab===manageTab));
+    tab.setAttribute('tabindex',tab.dataset.mgtab===manageTab?'0':'-1');
   }
 }
 function closeManagement(){
   $('management').hidden=true;
+  lastDialogFocus?.focus?.();
 }
-$('manageOpen').onclick=()=>{
-  $('panel').hidden=true;
+function setPanel(open){
+  $('panel').hidden=!open;
+  $('toggle').setAttribute('aria-expanded',String(open));
+}
+function openManagement(){
+  lastDialogFocus=document.activeElement;
+  finishGuide();
+  setPanel(false);
   manageTab='resumo';
   $('management').hidden=false;renderManagement(true);
-};
+  $('manageClose').focus?.();
+}
+$('manageOpen').onclick=openManagement;
+$('manageQuick').onclick=openManagement;
+$('panelClose').onclick=()=>setPanel(false);
 $('manageClose').onclick=closeManagement;
 $('manageTabs').onclick=e=>{
   const button=e.target.closest('[data-mgtab]');
   if(!button)return;
   manageTab=button.dataset.mgtab;renderManagement(true);
+};
+$('manageTabs').addEventListener('keydown',e=>{
+  const keys=['ArrowLeft','ArrowRight','Home','End'];
+  if(!keys.includes(e.key))return;
+  e.preventDefault();
+  const tabs=[...$('manageTabs').querySelectorAll('[data-mgtab]')];
+  const current=tabs.findIndex(t=>t.dataset.mgtab===manageTab);
+  const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:
+    (current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  manageTab=tabs[next].dataset.mgtab;renderManagement(true);tabs[next].focus();
+});
+function updateSceneContext(){
+  $('sceneContext').hidden=!build&&!followTarget;
+  $('contextText').textContent=build?'Construir '+typeNames[build]+' · toque em terreno livre':
+    followTarget?'Acompanhando '+followTarget.label:'';
+  $('contextCancel').textContent=build?'Cancelar':'Encerrar';
+}
+function stopFollowing(){followTarget=null;updateSceneContext()}
+function follow(kind,obj,label){
+  build=null;followTarget={kind,id:obj.id,label};updateSceneContext();
+}
+function updateFollowing(){
+  if(!followTarget)return;
+  const obj=(followTarget.kind==='horse'?horses:farmers).find(x=>x.id===followTarget.id);
+  if(!obj){stopFollowing();return}
+  let x=obj.x,y=obj.y;
+  if(followTarget.kind==='care'){
+    const patient=horses.find(h=>h.o===obj.o&&h.id===obj.targetHorseId);
+    if(patient){x=(x+patient.x)*.5;y=(y+patient.y)*.5}
+  }
+  panX=x;panY=y;
+}
+$('contextCancel').onclick=()=>{
+  const constructing=!!build;
+  build=null;stopFollowing();
+  $('status').textContent=constructing?'Construção cancelada · escolha outra ação':
+    'Acompanhamento encerrado · arraste para explorar';
+};
+const guidePages=[
+  ['Sua cabanha, viva.','Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.','A partida começa no dia 1 a cada abertura. Não há salvamento automático.'],
+  ['Chegue mais perto.','Arraste o mapa e use a pinça ou os botões + e −. Fazenda volta à sua cabanha; Mapa mostra toda a região.','Em Gestão → Cavalos ou Equipe, localize e acompanhe animais e funcionários. Arrastar encerra o acompanhamento.'],
+  ['Seu primeiro investimento.','Toque em Construir, escolha uma instalação e toque em um espaço livre dentro da sua gleba. Uma obra por vez, concluída em cerca de 20 dias do jogo.','Gestão reúne finanças, manejo, mercado e metas. O tempo fica pausado enquanto você lê; retoma ao fechar.']
+];
+function renderGuide(){
+  const [title,text,hint]=guidePages[guideStep];
+  $('guideTitle').textContent=title;$('guideText').textContent=text;$('guideHint').textContent=hint;
+  $('guideProgress').textContent='GUIA · '+(guideStep+1)+' DE 3';
+  $('guideNext').textContent=guideStep===2?'Começar a cuidar':'Próximo →';
+}
+function finishGuide(){
+  if($('welcome').hidden)return;
+  $('welcome').hidden=true;
+  $('guideNext').blur?.();
+}
+$('guideNext').onclick=()=>{if(guideStep>=2)finishGuide();else{guideStep++;renderGuide()}};
+$('guideSkip').onclick=finishGuide;
+$('helpOpen').onclick=()=>{
+  closeManagement();setPanel(false);guideStep=0;renderGuide();$('welcome').hidden=false;
+  $('guideNext').focus?.();
 };
 $('manageBody').onclick=e=>{
   const button=e.target.closest('[data-mgaction]');
@@ -1755,12 +1832,13 @@ $('manageBody').onclick=e=>{
   if(action==='visitCompetitor'){
     const farm=owners[index];
     if(!farm)return;
-    panX=farm.x;panY=farm.y;zoom=2.35;overview=false;
+    stopFollowing();panX=farm.x;panY=farm.y;zoom=2.35;overview=false;
     $('map').textContent='🗺️ Mapa';
     $('status').textContent='🌿 Visitando '+farm.name+' · '+farm.style.label+'.';
     closeManagement();return;
   }
   if(action==='visitFair'){
+    stopFollowing();
     panX=fairground.x;panY=fairground.y;zoom=2.25;overview=false;
     $('map').textContent='🗺️ Mapa';
     $('status').textContent='🏛️ Visitando o Centro Rural.';
@@ -1780,6 +1858,7 @@ $('manageBody').onclick=e=>{
     panX=cared?(handler.x+cared.x)*.5:handler.x;
     panY=cared?(handler.y+cared.y)*.5:handler.y;
     zoom=3.65;overview=false;
+    follow('care',handler,'o manejo');
     $('map').textContent='🗺️ Mapa';
     $('status').textContent='👁️ Acompanhando o manejo de '+(cared?.name||'seus cavalos')+'.';
     closeManagement();return;
@@ -1800,13 +1879,24 @@ $('manageBody').onclick=e=>{
   }
   const obj=action==='findHorse'?ownHorses()[index]:action==='findWorker'?ownFarmers()[index]:null;
   if(!obj)return;
+  follow(action==='findHorse'?'horse':'worker',obj,obj.name||obj.role);
   panX=obj.x;panY=obj.y;zoom=3.45;overview=false;
   $('map').textContent='🗺️ Mapa';
   $('status').textContent=action==='findHorse'?'🐎 Acompanhando '+obj.name:'👨‍🌾 Acompanhando '+obj.role;
   closeManagement();
 };
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&!$('management').hidden)closeManagement();
+  if(e.key==='Escape'){
+    if(!$('welcome').hidden)finishGuide();
+    else if(!$('management').hidden)closeManagement();
+    else{setPanel(false);build=null;stopFollowing()}
+  }
+  if(e.key==='Tab'&&!$('management').hidden){
+    const items=[...$('management').querySelectorAll('button:not([disabled]),[tabindex="0"]')];
+    const first=items[0],last=items.at(-1);
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}
+  }
 });
 function refresh(){
   evaluateGoals();
@@ -1815,11 +1905,12 @@ function refresh(){
   $('money').textContent='💰 R$ '+owners[0].cash.toLocaleString('pt-BR');
   const sites=buildings.filter(b=>b.status==='building'||b.status==='upgrading').length;
   const myReady=ownBuildings().filter(isBuilt).length;
-  $('buildings').textContent='🏡 '+myReady+'/'+buildings.length+' · 🏅 '+reputation;
+  $('buildings').textContent='🏡 '+myReady+' estruturas · 🏅 '+reputation;
   $('buildings').title='Estruturas da sua cabanha / total da região · reputação';
   const e=finances(owners[0]);
   $('economy').textContent='🐎 '+horses.filter(h=>h.o===owners[0]).length+'/'+capacity(owners[0])+
-    ' cavalos · 📈 R$ '+e.gross+' receita · R$ '+e.cost+' custos · '+(e.net>=0?'+':'')+'R$ '+e.net;
+    ' cavalos · '+(e.net>=0?'+':'')+brl(e.net)+' / 5 dias · 💚 '+herdCare(owners[0])+'/100';
+  $('economy').title=brl(e.gross)+' de receitas · '+brl(e.cost)+' de despesas por ciclo';
   const report=$('workerReport');
   if(report){
     const team=farmers.filter(f=>f.o===owners[0]);
@@ -1936,7 +2027,14 @@ let prev=performance.now();function frame(now){try{
     if(!mode3D)reportPerformance({mode:'2D',fps:localFps,dpr,
       calls:0,triangles:0});
   }
-  let dt=Math.min(.05,(now-prev)/1000);prev=now;if(!paused&&$('management').hidden){acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);placeHorses();animateFarmers(dt*speed);if(acc>=3){acc-=3;tick()}}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
+  const dt=Math.max(0,Math.min(.05,(now-prev)/1000));prev=now;
+  if(!paused&&$('management').hidden&&$('welcome').hidden){
+    acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);
+    placeHorses();animateFarmers(dt*speed);
+    horses.forEach(h=>motion.blend(h,dt*speed));farmers.forEach(f=>motion.blend(f,dt*speed));
+    if(acc>=3){acc-=3;tick()}
+  }
+  updateFollowing();if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
 // Gestos robustos: uma máquina de estados para um e dois dedos.
 // Nunca reaproveita distância anterior após levantar ou cancelar um ponteiro.
 const pointers=new Map();
@@ -2000,6 +2098,7 @@ function resetMotion(){
   gesture.lastDist=v?.dist||0;
 }
 function translateCamera(x1,y1,x2,y2){
+  stopFollowing();
   let dx=x2-x1,dy=y2-y1;
   if(mode3D){
     const before=cameraGroundAt(x1,y1),after=cameraGroundAt(x2,y2);
@@ -2065,12 +2164,12 @@ canvas.addEventListener('pointerup',e=>{
   const o=owners[0];
   const picked=mode3D&&window.FazendaVivaBridge?.groundAt?.(e.clientX,e.clientY);
   if(picked){x=picked.x;y=picked.y}
-  if(!build){let b=buildings.find(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+2&&Math.abs(y-b.y)<b.h/2+(mode3D?8:2)&&b.type!=='paddock');if(b){selected=b;$('upgrade').hidden=false;$('upgrade').textContent='🔨 Ampliar '+({house:'casa',stable:'cocheira',barn:'galpão'}[b.type]||'estrutura')+' (nível '+(b.tier||1)+'/3) · R$ '+(1800*(b.tier||1)).toLocaleString('pt-BR');$('panel').hidden=false;$('status').textContent='🏗️ Estrutura selecionada';}return}if(activeSite(o)){$('status').textContent='👷 Conclua a obra atual antes de iniciar outra';return}if(!insideFarm(o,x,y,defs[build].w,defs[build].h)){$('status').textContent='⚠️ Área fora dos limites da sua cabanha';return}if(owners.slice(1).some(other=>Math.hypot(x-other.x,y-other.y)<32)){$('status').textContent='⚠️ Terreno pertence a outra fazenda';return}if(owners[0].cash<defs[build].cost){$('status').textContent='💰 Saldo insuficiente';return}if(add(o,build,x,y,true,true)){$('status').textContent='👷 Obra iniciada — conclusão em cerca de 20 dias simulados';build=null;refresh()}else $('status').textContent='⚠️ Local ocupado: escolha outro espaço'
+  if(!build){let b=buildings.find(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+2&&Math.abs(y-b.y)<b.h/2+(mode3D?8:2)&&b.type!=='paddock');if(b){selected=b;$('upgrade').hidden=false;$('upgrade').textContent='🔨 Ampliar '+({house:'casa',stable:'cocheira',barn:'galpão'}[b.type]||'estrutura')+' (nível '+(b.tier||1)+'/3) · R$ '+(1800*(b.tier||1)).toLocaleString('pt-BR');setPanel(true);$('status').textContent='🏗️ Estrutura selecionada';}return}if(activeSite(o)){$('status').textContent='👷 Conclua a obra atual antes de iniciar outra';return}if(!insideFarm(o,x,y,defs[build].w,defs[build].h)){$('status').textContent='⚠️ Área fora dos limites da sua cabanha';return}if(owners.slice(1).some(other=>Math.hypot(x-other.x,y-other.y)<32)){$('status').textContent='⚠️ Terreno pertence a outra fazenda';return}if(owners[0].cash<defs[build].cost){$('status').textContent='💰 Saldo insuficiente';return}if(add(o,build,x,y,true,true)){$('status').textContent='👷 Obra iniciada — conclusão em cerca de 20 dias simulados';build=null;updateSceneContext();refresh()}else $('status').textContent='⚠️ Local ocupado: escolha outro espaço'
 });
 $('zoomIn').onclick=()=>changeZoom(zoom*1.35);
 $('zoomOut').onclick=()=>changeZoom(zoom/1.35);
-$('resetGame').onclick=()=>{if(!confirm('Reiniciar a Fazenda Viva do dia 1? Toda a partida atual será perdida.'))return;try{localStorage.removeItem('fazenda-viva-v080');localStorage.removeItem('fazenda-viva-v040')}catch(_){}location.reload()};$('buyhorse').onclick=()=>{let o=owners[0],herd=horses.filter(h=>h.o===o);if(herd.length+pregnancies.filter(p=>p.o===o).length>=capacity(o)){$('status').textContent='🏠 Amplie as cocheiras: há vagas reservadas para futuros potros';return}if(o.cash<2500){$('status').textContent='💰 Saldo insuficiente para comprar cavalo';return}o.cash-=2500;let h=makeHorse(o);horses.push(h);$('status').textContent='🐎 '+h.name+' ('+h.breed+') chegou à cabanha!';$('news').textContent='Novo cavalo: '+h.name+' · '+h.breed+' · qualidade '+h.quality+'/100';refresh()};$('upgrade').onclick=()=>{if(!selected)return;let b=selected,t=b.tier||1,cost=1800*t;if(t>=3){$('status').textContent='⭐ Estrutura no nível máximo';return}if(owners[0].cash<cost){$('status').textContent='💰 Saldo insuficiente para ampliar';return}if(activeSite(owners[0])){$('status').textContent='👷 Aguarde a obra atual terminar';return}owners[0].cash-=cost;b.status='upgrading';b.progress=0;b.plannedTier=t+1;refresh();$('upgrade').hidden=true;$('status').textContent='👷 Ampliação iniciada — nível '+(t+1)+' em 20 dias simulados'};$('toggle').onclick=()=>{$('panel').hidden=!$('panel').hidden};$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'▶ Retomar':'⏸ Pausar'};$('speed').onclick=()=>{speed=speed===1?3:speed===3?8:1;$('speed').textContent='⏩ '+speed+'×'};$('map').onclick=()=>{
-  overview=!overview;
+$('resetGame').onclick=()=>{if(!confirm('Reiniciar a Fazenda Viva do dia 1? Toda a partida atual será perdida.'))return;try{localStorage.removeItem('fazenda-viva-v080');localStorage.removeItem('fazenda-viva-v040')}catch(_){}location.reload()};$('buyhorse').onclick=()=>{let o=owners[0],herd=horses.filter(h=>h.o===o);if(herd.length+pregnancies.filter(p=>p.o===o).length>=capacity(o)){$('status').textContent='🏠 Amplie as cocheiras: há vagas reservadas para futuros potros';return}if(o.cash<2500){$('status').textContent='💰 Saldo insuficiente para comprar cavalo';return}o.cash-=2500;let h=makeHorse(o);horses.push(h);$('status').textContent='🐎 '+h.name+' ('+h.breed+') chegou à cabanha!';$('news').textContent='Novo cavalo: '+h.name+' · '+h.breed+' · qualidade '+h.quality+'/100';refresh()};$('upgrade').onclick=()=>{if(!selected)return;let b=selected,t=b.tier||1,cost=1800*t;if(t>=3){$('status').textContent='⭐ Estrutura no nível máximo';return}if(owners[0].cash<cost){$('status').textContent='💰 Saldo insuficiente para ampliar';return}if(activeSite(owners[0])){$('status').textContent='👷 Aguarde a obra atual terminar';return}owners[0].cash-=cost;b.status='upgrading';b.progress=0;b.plannedTier=t+1;refresh();$('upgrade').hidden=true;$('status').textContent='👷 Ampliação iniciada — nível '+(t+1)+' em 20 dias simulados'};$('toggle').onclick=()=>{finishGuide();closeManagement();setPanel($('panel').hidden)};$('pause').onclick=()=>{paused=!paused;$('pause').setAttribute('aria-pressed',String(paused));$('pause').textContent=paused?'▶ Retomar':'⏸ Pausar'};$('speed').onclick=()=>{speed=speed===1?3:speed===3?8:1;$('speed').textContent='⏩ '+speed+'×'};$('map').onclick=()=>{
+  stopFollowing();overview=!overview;
   if(overview){
     panX=0;panY=0;
     const base=Math.min(W/300,H/260);
@@ -2096,19 +2195,19 @@ $('viewWorkers').onclick=()=>{
   if(!team.length)return;
   const f=team[viewedWorkerIndex%team.length];
   viewedWorkerIndex++;
-  panX=f.x;panY=f.y;zoom=3.45;overview=false;
-  $('panel').hidden=true;$('map').textContent='🗺️ Mapa';
+  follow('worker',f,f.role);panX=f.x;panY=f.y;zoom=3.45;overview=false;
+  setPanel(false);$('map').textContent='🗺️ Mapa';
   $('status').textContent='👨‍🌾 '+f.role+' · '+(f.activity||'iniciando')+
     ' · '+(f.tasksDone||0)+' serviços concluídos. Toque novamente para o próximo trabalhador.';
 };
 $('visitFarm').onclick=()=>{
-  visitIndex=(visitIndex+1)%owners.length;
+  stopFollowing();visitIndex=(visitIndex+1)%owners.length;
   const o=owners[visitIndex];
   panX=o.x;panY=o.y;zoom=2.1;overview=false;
-  $('map').textContent='🗺️ Mapa';$('panel').hidden=true;
+  $('map').textContent='🗺️ Mapa';setPanel(false);
   $('status').textContent='🧭 '+o.name;
 };
-$('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;$('panel').hidden=true;$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
+$('focus').onclick=()=>{stopFollowing();panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;stopFollowing();setPanel(false);updateSceneContext();$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 function reportPerformance(snapshot){
   performanceSnapshot=snapshot;
@@ -2129,9 +2228,10 @@ $('perfMode').onclick=()=>{
   if(showPerformance)reportPerformance(performanceSnapshot);
 };
 window.FazendaVivaBridge={
-  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
+  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,regionalRoads,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
     regionalOffers:regionalHorseOffers(),ranchDecor:farmLandscaping(),
-    cameraGesture:pointers.size>0,careMean:owners.map(herdCare),
+    cameraGesture:pointers.size>0,followTarget,performance:performanceSnapshot,
+    overlaysOpen:!$('management').hidden||!$('panel').hidden||!$('welcome').hidden,careMean:owners.map(herdCare),
     careJournal}),
   projectedGroundAt:(x,y,z)=>cameraGroundAt(x,y,z),
   reportPerformance,
@@ -2159,4 +2259,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=097"></script></body></html>
+</script><script type="module" src="./world3d.js?v=098"></script></body></html>
