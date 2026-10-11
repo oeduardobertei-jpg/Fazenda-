@@ -15,14 +15,14 @@ const api = window.FazendaVivaBridge;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer;
+let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer, ranchLayer;
 let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
 const modelsByBuilding=new Map();
 let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
 let workerLabels=[],last3DWorkersShown=0,appliedLowGraphics=null;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
-let labelLayer, labelNodes = [], fairLabel=null, lastFairStamp='';
+let labelLayer, labelNodes = [], fairLabel=null, lastFairStamp='', lastRanchDecor=null, lastDecorEco=null;
 const colors = {
   grass: 0x89a970, grass2: 0x9bb97b, earth: 0xb8a17a,
   fence: 0xc9a775, timber: 0x806042, path: 0xc5aa86,
@@ -620,6 +620,103 @@ function drawWorld(s){
   trailLayer=new THREE.Group();scene.add(trailLayer);
   grassLayer=new THREE.Group();scene.add(grassLayer);
   fairLayer=new THREE.Group();scene.add(fairLayer);
+  ranchLayer=new THREE.Group();scene.add(ranchLayer);
+}
+// Mesmo conjunto de props usados no Canvas. Geometrias simples, recoloridas
+// por InstancedMesh e recalculadas só quando a simulação rearranja o terreno.
+function syncRanchDecor(s){
+  const sites=s.ranchDecor||[];
+  const isEco=!!s.lowGraphics;
+  ranchLayer.visible=s.zoom>=.62;
+  if(sites===lastRanchDecor&&isEco===lastDecorEco)return;
+  lastRanchDecor=sites;lastDecorEco=isEco;
+  for(const old of [...ranchLayer.children]){
+    ranchLayer.remove(old);disposeTransientGroup(old);
+  }
+  const visible=isEco?sites.filter((_,i)=>i%3!==0):sites;
+  const species=['arvore','arbusto','flores','feno','pedra'];
+  const geometry=(type)=>{
+    let g;
+    if(type==='arvore_tronco')g=new THREE.CylinderGeometry(.46,.70,4.45,6);
+    else if(type==='arvore_copa')g=new THREE.IcosahedronGeometry(1,1);
+    else if(type==='arvore_luz')g=new THREE.IcosahedronGeometry(1,0);
+    else if(type==='arbusto')g=new THREE.IcosahedronGeometry(1,0);
+    else if(type==='flores')g=new THREE.IcosahedronGeometry(.38,0);
+    else if(type==='flores_folhas')g=new THREE.ConeGeometry(.8,1.35,5);
+    else if(type==='feno')g=new THREE.CylinderGeometry(1.1,1.1,2.35,9);
+    else if(type==='feno_faixa')g=new THREE.CylinderGeometry(1.14,1.14,.18,9);
+    else g=new THREE.IcosahedronGeometry(1,0);
+    g.__fvTransient=true;return g;
+  };
+  const meshes={
+    arvore_tronco:geometry('arvore_tronco'),
+    arvore_copa:geometry('arvore_copa'),
+    arvore_luz:geometry('arvore_luz'),
+    arbusto:geometry('arbusto'),
+    flores:geometry('flores'),
+    flores_folhas:geometry('flores_folhas'),
+    feno:geometry('feno'),
+    feno_faixa:geometry('feno_faixa'),
+    pedra:geometry('pedra')
+  };
+  const layouts={
+    arvore:[['arvore_tronco',0x7c6245],['arvore_copa',0x6b934f],['arvore_luz',0x94b66f]],
+    arbusto:[['arbusto',0x628b52]],
+    flores:[['flores_folhas',0x74994b],['flores',0xe2b66a]],
+    feno:[['feno',0xc7b077],['feno_faixa',0x8c7048]],
+    pedra:[['pedra',0x939286]]
+  };
+  const dummy=new THREE.Object3D();
+  const allMeshes=[];
+  for(const kind of species){
+    const selected=visible.filter(p=>p.kind===kind);
+    if(!selected.length)continue;
+    for(const [part,tint] of layouts[kind]){
+      const mesh=new THREE.InstancedMesh(meshes[part],mat(tint),selected.length);
+      selected.forEach((p,i)=>{
+        const scale=p.scale||1;
+        let px=p.x,py=.44,pz=p.y,sx=scale,sy=scale,sz=scale;
+        if(part==='arvore_tronco'){
+          py=2.4*scale;sx=scale;sy=scale;sz=scale;
+        }else if(part==='arvore_copa'){
+          py=5.75*scale;sx=3.35*scale;sy=2.35*scale;sz=3.1*scale;
+        }else if(part==='arvore_luz'){
+          px-=1.2*scale;py=6.65*scale;pz+=.55*scale;
+          sx=1.85*scale;sy=1.55*scale;sz=1.75*scale;
+        }else if(part==='arbusto'){
+          py=1.0*scale;sx=1.8*scale;sy=1.0*scale;sz=1.5*scale;
+        }else if(part==='flores_folhas'){
+          py=.75*scale;sx=scale;sy=scale;sz=scale;
+        }else if(part==='flores'){
+          py=1.48*scale;sx=1.0*scale;sy=.7*scale;sz=1.05*scale;
+        }else if(part==='feno'){
+          py=1.35*scale;sx=scale;sy=scale;sz=scale;
+        }else if(part==='feno_faixa'){
+          py=1.35*scale;sx=scale;sy=scale;sz=scale;
+        }else if(part==='pedra'){
+          py=.66*scale;sx=1.25*scale;sy=.54*scale;sz=.92*scale;
+        }
+        dummy.position.set(px,py,pz);
+        dummy.rotation.set(0,(p.variant||0)*.76,part==='feno'?Math.PI/2:0);
+        dummy.scale.set(sx,sy,sz);dummy.updateMatrix();
+        mesh.setMatrixAt(i,dummy.matrix);
+        if(mesh.setColorAt){
+          const color=part==='arvore_copa'||part==='arbusto'?
+            (p.color||0x6b934f):part==='flores'?
+            (p.variant%2?0xe4b48d:0xe5c17b):tint;
+          mesh.setColorAt(i,new THREE.Color(color));
+        }
+      });
+      mesh.instanceMatrix.needsUpdate=true;
+      if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+      mesh.frustumCulled=false;ranchLayer.add(mesh);
+      allMeshes.push(mesh);
+    }
+  }
+  // Descartar malhas geométricas de tipos ausentes.
+  for(const [name,geo] of Object.entries(meshes)){
+    if(!allMeshes.some(mesh=>mesh.geometry===geo))geo.dispose?.();
+  }
 }
 // Feira e contratos têm presença no mundo: tendas, madeira e cores coerentes
 // com o evento da economia. A camada só muda quando o evento muda.
@@ -806,6 +903,7 @@ function modelVersion(b,highDetail){
 function sync(s){
   syncTrails(s);
   syncFairground(s);
+  syncRanchDecor(s);
   // No modo econômico preservamos a navegação e o mundo, ocultando somente decoração.
   grassLayer.visible=!s.lowGraphics;
   if(!s.lowGraphics)scatterPasture(s);
