@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.4 — identidades rurais, praça regional e mercado equino visíveis no 3D.
+/* Fazenda Viva 0.9.5 — arquitetura regional, microvegetação compartilhada e vida rural em 3D.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -159,7 +159,7 @@ function building(b,detail=true){
     group.userData.building=b;
     return group;
   }
-  const variety=(Math.abs(Math.round(b.x*17+b.y*23))%5);
+  const variety=(Math.abs(Math.round(b.x*17+b.y*23+((b.o?.style?.roof||0)%17)))%5);
   if(b.type==='paddock'){
     flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
     rails(group,w-.7,d-.7,PALETTE.lightWood);
@@ -191,10 +191,10 @@ function building(b,detail=true){
   const usedW=Math.min(w-.45,w*(.54+.22*(t-1)));
   const usedD=d-.55;
   const height=b.type==='barn'?6.7:b.type==='stable'?5.5:5.8;
-  const facade=b.type==='house'?(variety%3===0?PALETTE.offwhite:b.o.color):
+  const facade=b.type==='house'?(b.o.style?.wall??PALETTE.offwhite):
                b.type==='stable'?([0xcdb796,0xc0bca0,0xcebfa9,0xb8ac8a,0xc9c2ac][variety]):
                ([0xb4beb4,0xb7b7a5,0xb4b5aa,0xa8b3a5,0xb9c0af][variety]);
-  const roofColor=b.type==='house'?([PALETTE.tile,PALETTE.tile2,0xa76347,0x9d614b,0x925342][variety]):
+  const roofColor=b.type==='house'?(b.o.style?.roof??PALETTE.tile):
                   b.type==='stable'?([0x79543e,0x785944,0x6d5444,0x866146,0x675441][variety]):
                   ([PALETTE.metal,0x707d72,0x8a8877,0x687777,0x7b8079][variety]);
   const zFront=usedD*.50;
@@ -545,7 +545,7 @@ function drawWorld(s){
     if(o.x<-100)road(root,o.x+122,o.y,-140,o.y,8,.235);
     else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8,.235);
     else road(root,o.x,140,o.x,o.y+120,8,.235);
-    ellipse(root,o.x,o.y,121,118,o.ai?0x91ae74:0xa0b779,.24);
+    ellipse(root,o.x,o.y,121,118,o.style?.ground??(o.ai?0x91ae74:0xa0b779),.24);
     // Solo compactado junto à entrada, sem passar por baixo das estruturas.
     const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
     const entranceY=Math.abs(o.x)<100?o.y+112:o.y;
