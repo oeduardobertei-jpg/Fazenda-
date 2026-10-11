@@ -1,0 +1,62 @@
+# Fazenda Viva — critérios para o marco 1.0
+
+**Visão:** simulação rural brasileira tridimensional, estilizada, viva e legível em celulares, com cinco propriedades claramente distintas, economia de criação de cavalos e produtores autônomos. Uma versão 1.0 é uma experiência completa, não apenas um aumento do número da versão.
+
+## Critérios de aceitação para 1.0
+
+### A. Identidade e encantamento visual
+- [ ] Cada cabanha possui estilo arquitetônico, vegetação, disposição e atividades próprias, distinguíveis mesmo com aproximação similar.
+- [ ] Casa, cocheira, piquete, galpão, lavoura, açude, praça rural e estradas apresentam materiais/volumes coerentes, sem sobreposição de telhados, "fundações" ou props.
+- [ ] A transição 2D ↔ 3D conserva posição, escala relativa e sentido das entidades; os dois renderizadores exibem eventos de forma coerente.
+- [ ] Plantas, solo e detalhes físicos do manejo rural ficam visíveis no zoom próximo e são simplificados no zoom distante.
+
+### B. Vida rural em movimento
+- [ ] Cavalos possuem poses procedurais convincentes em repouso, caminhada e pasto (também para potros).
+- [ ] Nenhum cavalo fica empilhado sobre outro; piquetes e edificações impedem atravessamento visível.
+- [ ] Trabalhadores usam a rede real de caminhos, executam tarefas coerentes com cada instalação e deixam claras as suas ações no ambiente, com etiquetas não sobrepostas.
+- [ ] Pelo menos três tarefas de manejo animal/econômico alteram estado visual da instalação ou dos personagens, não apenas números de HUD.
+
+### C. Simulação econômica com consequência
+- [ ] Obras têm custo real, prazo, evolução visual e no máximo uma obra ativa por fazenda.
+- [ ] Quatro IAs administram caixa, cavalos e propriedades sem ocupar espaços proibidos.
+- [ ] Transações entre propriedades preservam animais e dinheiro (soma antes/depois), sem clones ou vendas duplicadas.
+- [ ] Reprodução possui pedigree básico, vagas, gestação e impacto na produção — com transparência das regras.
+- [ ] Eventos rurais com efeitos moderados, decisões legíveis e consequência no mundo.
+- [ ] O ranking e as metas incentivam escolhas significativas, não um crescimento infinito sem estratégia.
+
+### D. Android e acessibilidade
+- [ ] Movimentação da câmera e gesto de pinça responsivos, sem travamentos ao alternar um/dois dedos, com botões de zoom acessíveis.
+- [ ] Elementos de HUD não cobrem personagens, janelas importantes ou ações; menus permanecem usáveis no modo paisagem e retrato.
+- [ ] Cena 3D continua funcional após muitos minutos; modo 2D disponível como fallback.
+- [ ] Testes manuais de usabilidade e desempenho no Android real com captura de tela e inspeção de erros JavaScript/WebGL.
+- [ ] Monitorar FPS e tempo de frame em dispositivo real; ajustar densidade/LOD se houver quedas notáveis.
+
+## Portões de versão
+
+**0.9.4 — circuito de criadores e marco regional**  
+Genética detalhada, trocas reais de cavalos, Centro Rural visível e primeiro beauty-pass de lavouras e edificações. **Implementado; aguarda inspeção visual Android.**
+
+**0.9.5 — autoria visual e vida em campo**  
+Arquitetura individual, animais com animação mais suave, ações visíveis dos NPCs, solo, microvegetação, áreas de produção e conectividade física das instalações.
+
+**0.9.6 — câmera, desempenho e QA Android**  
+Prova de longo prazo, câmera sem travas, revisão de LOD, fallback WebGL, redução de travessias/artefatos e ajuste do layout.
+
+**0.9.7 — equilíbrio e tarefas de alto valor**  
+Criação seletiva mais significativa, escolhas econômicas, negociações e tarefas do manejo realmente visíveis.
+
+**0.9.8 — integração e interface final**  
+Padronização de rótulos, menus e informações; consistência dos modelos 2D/3D, onboarding em português.
+
+**0.9.9 — candidato à 1.0**  
+Congelamento de recursos, correção de defeitos críticos, teste em celulares reais, verificação de regressões automatizadas e orçamento de performance.
+
+**1.0 — lançamento**  
+Somente quando os critérios acima forem cumpridos/explicitamente revisados.
+
+## Regras de transparência
+- Não apresentar como "verificado no Android" um teste de Three.js simulado.
+- Não afirmar que o GitHub Pages publicou uma versão antes de abrir e conferir o link.
+- O usuário prefere partidas sem salvamento automático; reiniciar deve começar no dia 1.
+- Não introduzir ciclo dia/noite, clima ou sistemas de necessidades pessoais de NPCs sem nova decisão do projeto.
+- Tratar a própria cabanha e as concorrentes como espaços rurais extensos, nunca como edifícios colados uns aos outros.
