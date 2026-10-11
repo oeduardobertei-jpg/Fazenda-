@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.3 — criação de potros, eventos rurais e economia integrada ao mundo 3D.
+/* Fazenda Viva 0.9.4 — identidades rurais, praça regional e mercado equino visíveis no 3D.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -15,14 +15,14 @@ const api = window.FazendaVivaBridge;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer;
+let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer;
 let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
 const modelsByBuilding=new Map();
 let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
 let workerLabels=[],last3DWorkersShown=0,appliedLowGraphics=null;
 let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
-let labelLayer, labelNodes = [];
+let labelLayer, labelNodes = [], fairLabel=null, lastFairStamp='';
 const colors = {
   grass: 0x89a970, grass2: 0x9bb97b, earth: 0xb8a17a,
   fence: 0xc9a775, timber: 0x806042, path: 0xc5aa86,
@@ -434,6 +434,25 @@ function drawWorld(s){
     const tint=i%4===0?0x8eaf73:i%3===0?0x86a66c:0x8aaa70;
     ellipse(root,x,z,rx,rz,tint,.065+(i%4)*.013);
   }
+  // Centro Rural: referência espacial persistente, conectado à estrada horizontal.
+  const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
+  road(root,fx,140,fx,185,6,.24);
+  flat(root,81,58,fx,fz,0x9ba979,.12);
+  flat(root,71,49,fx,fz,0xc9b18a,.20);
+  flat(root,60,38,fx,fz,0xdcc69e,.29);
+  // Cerca baixa, entrada aberta ao sul e área de circulação para visitantes.
+  for(const side of [-1,1]){
+    const x=fx+side*35;
+    box(root,.50,1.9,42,x,1.08,fz,0xa68c62);
+    for(let i=-2;i<=2;i++)
+      box(root,.66,2.1,.66,x,1.1,fz+i*9.3,0xcbb287);
+  }
+  box(root,62,.30,.52,fx,1.14,fz-24,0xa68c62);
+  box(root,62,.30,.52,fx,1.14,fz+24,0xa68c62);
+  for(const x of [fx-18,fx+18]){
+    box(root,.65,3.4,.65,x,1.87,fz-25,0x967954);
+    box(root,.75,.28,.75,x,3.7,fz-25,0xd2b17b);
+  }
   // Pátios e conexões internos são desenhados sem cruzar as baias.
 
   road(root,-140,-580,-140,580,14,.16);
@@ -505,7 +524,57 @@ function drawWorld(s){
   workerLayer=new THREE.Group();scene.add(workerLayer);
   trailLayer=new THREE.Group();scene.add(trailLayer);
   grassLayer=new THREE.Group();scene.add(grassLayer);
+  fairLayer=new THREE.Group();scene.add(fairLayer);
 }
+// Feira e contratos têm presença no mundo: tendas, madeira e cores coerentes
+// com o evento da economia. A camada só muda quando o evento muda.
+function syncFairground(s){
+  const e=s.ruralEvent,stamp=(e?.id||'sem-evento')+'|'+
+    (e?.claimed?'participou':'disponivel')+'|'+!!s.lowGraphics;
+  if(stamp===lastFairStamp)return;
+  lastFairStamp=stamp;
+  for(const old of [...fairLayer.children]){
+    fairLayer.remove(old);disposeTransientGroup(old);
+  }
+  const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
+  const tint=e?.id==='feira'?0xb55b40:e?.id==='safra'?0xd2b65c:
+    e?.id==='insumos'?0x5b9795:e?.id==='mutirao'?0x8fae69:0x937a5b;
+  const trim=e?.claimed?0xe6d79c:0xf3dfad;
+  const placements=[[-19,-11],[8,-11],[-19,9],[8,9]];
+  const boothCount=s.lowGraphics?2:placements.length;
+  for(let i=0;i<boothCount;i++){
+    const [dx,dz]=placements[i],booth=new THREE.Group();
+    booth.position.set(fx+dx,0,fz+dz);fairLayer.add(booth);
+    // Abrigos montáveis apoiados em estacas reais (sem telhado flutuante).
+    for(const x of [-5.6,5.6])for(const z of [-3.8,3.8]){
+      box(booth,.27,3.8,.27,x,2.21,z,0x826246);
+    }
+    roof(booth,13.0,8.6,4.18,5.75,tint);
+    box(booth,9.4,.27,.32,0,4.14,4.15,trim);
+    box(booth,8.6,.20,1.9,0,1.28,3.05,0x99744d);
+    box(booth,7.5,1.1,.24,0,.73,3.90,0x735a40);
+    for(const x of [-3.5,3.5])
+      cylinder(booth,.53,.63,.88,x,.71,3.13,0xbda267,7);
+    // Cada evento tem materiais reconhecíveis: feira, colheita ou insumos.
+    if(e?.id==='safra'||e?.id==='insumos'){
+      for(const x of [-2.6,0,2.6])
+        box(booth,1.6,.94,1.5,x,.76,-.7,e.id==='safra'?0xc8b16d:0x789d91);
+    }else if(e?.id==='feira'){
+      rails(booth,8,5,0xcbad7b,1.15);
+    }else{
+      box(booth,2.0,.80,1.2,-2.2,.70,-.70,0xbd9a68);
+      box(booth,1.35,.43,2.4,2.1,.57,-.75,0x789a81);
+    }
+  }
+  const board=new THREE.Group();
+  board.position.set(fx,0,fz-22);fairLayer.add(board);
+  box(board,17.5,3.35,.35,0,3.1,0,0x685039);
+  box(board,16.4,2.50,.42,0,3.1,.24,e?tint:0x947b54);
+  for(const x of [-6.7,6.7])box(board,.5,4.5,.45,x,2.3,0,0xc9a575);
+  for(let i=0;i<3;i++)
+    box(board,3.0,.26,.45,(i-1)*4.1,3.1,.47,trim);
+}
+
 // Estradas internas são quads leves em uma única malha instanciada.
 function syncTrails(s){
   const segments=s.trails||[];
@@ -641,6 +710,7 @@ function modelVersion(b,highDetail){
 }
 function sync(s){
   syncTrails(s);
+  syncFairground(s);
   // No modo econômico preservamos a navegação e o mundo, ocultando somente decoração.
   grassLayer.visible=!s.lowGraphics;
   if(!s.lowGraphics)scatterPasture(s);
@@ -739,6 +809,18 @@ function updateLabels(s){
     const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;
     label.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';
     label.style.display=x<0||x>innerWidth||y<95||y>innerHeight-55?'none':'block';
+  }
+  if(fairLabel){
+    const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
+    const p=new THREE.Vector3(fx,10,fz-34).project(camera);
+    const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;
+    const visible=s.zoom<2.7&&x>84&&x<innerWidth-84&&y>185&&y<innerHeight-100;
+    fairLabel.style.display=visible?'block':'none';
+    if(visible){
+      fairLabel.style.transform='translate(-50%,-100%) translate('+x+'px,'+y+'px)';
+      const label=s.ruralEvent?'🎪 '+s.ruralEvent.name:'🏛️ Centro Rural';
+      if(fairLabel.textContent!==label)fairLabel.textContent=label;
+    }
   }
   if(!workerLabels.length)return;
   // Duas identificações próximas no máximo: não cobrir os personagens no celular.
@@ -860,6 +942,12 @@ function init(){
     el.style.cssText='position:absolute;top:0;left:0;white-space:nowrap;color:#fff7df;background:#1f3b28b9;border:1px solid #f7e5b04f;border-radius:8px;padding:3px 7px;font:600 11px system-ui;box-shadow:0 2px 6px #0004';
     labelLayer.appendChild(el);labelNodes.push(el);
   }
+  fairLabel=document.createElement('div');
+  fairLabel.style.cssText='position:absolute;left:0;top:0;white-space:nowrap;'+
+    'color:#fff2c7;background:#314d39df;border:1px solid #e7cb87a8;'+
+    'border-radius:10px;padding:4px 9px;font:700 11px system-ui;'+
+    'box-shadow:0 2px 6px #0004;display:none';
+  labelLayer.appendChild(fairLabel);
   for(const f of s.farmers){
     const el=document.createElement('div');
     el.style.cssText='position:absolute;left:0;top:0;white-space:nowrap;color:#fff4d1;background:#254635ee;border:1px solid #f1ddad9a;border-radius:10px;padding:3px 5px;font:600 10px system-ui;box-shadow:0 2px 6px #0004;display:none';
