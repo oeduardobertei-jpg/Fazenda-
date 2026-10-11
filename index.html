@@ -1702,7 +1702,8 @@ $('visitFarm').onclick=()=>{
 $('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;$('panel').hidden=true;$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 window.FazendaVivaBridge={
-  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground}),
+  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
+    regionalOffers:regionalHorseOffers()}),
   mode:(active)=>{mode3D=!!active;document.getElementById('renderStatus').textContent=active?'🌄 3D ativo':'🗺️ 2D compatível'}
 };
 setTimeout(()=>{
