@@ -53,6 +53,15 @@ try{
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  for(const tree of get().trees){
+    assert.ok(!get().owners.some(o=>
+      Math.hypot(tree.x-o.x,tree.y-o.y)<139),
+      'árvore antiga obstrui a clareira das propriedades');
+    assert.ok(!(tree.x>-114&&tree.x<-16&&tree.y>165&&tree.y<263),
+      'árvore antiga atravessa a praça regional');
+  }
+  assert.ok(get().trees.length>450,'mata externa precisa permanecer presente');
+
   // Projeção de câmera: ao aplicar zoom com âncora fora do centro, a mesma
   // posição do solo precisa permanecer sob o mesmo pixel, também na transição
   // entre câmera próxima e regional.
