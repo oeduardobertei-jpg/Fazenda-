@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Baixar repositório e referência 0.9.7
+      - name: Baixar repositório e referência 0.9.8
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -46,6 +46,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fazenda-viva-qa-0.9.8
+          name: fazenda-viva-qa-0.9.9
           path: qa-artifacts/
           retention-days: 14

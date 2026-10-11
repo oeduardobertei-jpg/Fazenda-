@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.8</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9</title>
 <style>
 :root{color-scheme:dark;--ink:#f8f1dd;--muted:#c4d1ba;--panel:#17392ded;--edge:#739477;--gold:#dfc18a;--top:calc(10px + env(safe-area-inset-top,0px));--base:calc(10px + env(safe-area-inset-bottom,0px));--side:12px}
 *{box-sizing:border-box}body{margin:0;background:#1b3528;color:var(--ink);font:14px/1.45 system-ui,sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#game{position:fixed;inset:0;z-index:0}
@@ -16,7 +16,7 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 @media(max-height:500px) and (min-width:600px){#hud{width:390px;grid-template-columns:1fr 1fr}#economy{top:calc(var(--top) + 80px)}#topTools{top:var(--top);right:var(--side);left:auto}#renderStatus{top:calc(var(--top) + 109px)}#zoomTools{top:55%}#panel,#management{left:var(--side);transform:none;width:min(470px,calc(100vw - 84px));bottom:calc(var(--base) + 77px)}#welcome{max-height:calc(100dvh - var(--base) - var(--top) - 85px);overflow:auto;padding:16px}#welcome h2{font-size:21px}#welcome p{font-size:12px}#welcome .welcomeActions{margin-top:10px}}
 @media(prefers-reduced-motion:reduce){#status{transition:none}}
 </style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.8</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
+<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong id="manageTitle">Gestão da cabanha · tempo pausado</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" role="tablist" aria-label="Seções da gestão">
 <button id="tab-resumo" role="tab" aria-controls="manageBody" data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -30,7 +30,7 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 </section><div id="sceneContext" hidden><span id="contextText"></span><button id="contextCancel" type="button">Encerrar</button></div>
 <section id="welcome" role="dialog" aria-labelledby="guideTitle"><div class="eyebrow">Campos do Sul · Fazenda Viva</div><div id="guideProgress">GUIA · 1 DE 3</div><h2 id="guideTitle">Sua cabanha, viva.</h2><p id="guideText">Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.</p><p id="guideHint">A partida começa no dia 1 a cada abertura. Não há salvamento automático.</p><div class="welcomeActions"><button id="guideSkip" type="button">Explorar agora</button><button id="guideNext" type="button">Próximo →</button></div></section>
 <div id="error" hidden></div>
-<script src="./motion.js?v=098"></script>
+<script src="./motion.js?v=099"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
 const motion=window.FazendaVivaMotion;
@@ -159,17 +159,20 @@ function capacity(o){return buildings.filter(b=>b.o===o&&b.type==='stable'&&isBu
   }
   return true;
 }
-function free(x,y,w,h,o){
+function free(x,y,w,h,o,spacing=8.4){
   if(Math.abs(x)+w/2>595||Math.abs(y)+h/2>555)return false;
   if(o&&!insideFarm(o,x,y,w,h))return false;
   for(const p of ponds){
     let dx=Math.max(0,Math.abs(x-p.x)-w/2),dy=Math.max(0,Math.abs(y-p.y)-h/2);
     if((dx/(p.rx+4))**2+(dy/(p.ry+4))**2<1)return false;
   }
-  return !buildings.some(b=>Math.abs(x-b.x)<(w+b.w)/2+5&&Math.abs(y-b.y)<(h+b.h)/2+5);
+  if(buildings.some(b=>b.type==='paddock'&&Math.abs(x-b.x)<w/2+4.2&&Math.abs(y-(b.y-b.h/2-4.5))<h/2+7.5))return false;
+  if(horses.some(animal=>Math.abs(x-animal.x)<w/2+3.5&&Math.abs(y-animal.y)<h/2+3.5))return false;
+  if(horses.some(animal=>animal.homePoint&&Math.abs(x-animal.homePoint.x)<w/2+3.5&&Math.abs(y-animal.homePoint.y)<h/2+3.5))return false;
+  return !buildings.some(b=>Math.abs(x-b.x)<(w+b.w)/2+spacing&&Math.abs(y-b.y)<(h+b.h)/2+spacing);
 }
 function add(o,type,x,y,charge=true,asSite=false){
-  const d=defs[type];if(!d||!free(x,y,d.w,d.h,o)||(charge&&o.cash<d.cost))return false;
+  const d=defs[type];if(!d||!free(x,y,d.w,d.h,o,charge?8.4:5)||(charge&&o.cash<d.cost))return false;
   if(asSite&&activeSite(o))return false; // uma obra de cada vez por fazenda
   if(charge)o.cash-=d.cost;
   buildings.push({o,type,x,y,w:d.w,h:d.h,tier:1,status:asSite?'building':'complete',progress:asSite?0:100});
@@ -243,6 +246,10 @@ function farmLandscaping(){
       if(buildings.some(b=>b.o===o&&
         Math.abs(x-b.x)<b.w/2+r+3.2&&
         Math.abs(y-b.y)<b.h/2+r+3.2))continue;
+      if(buildings.some(b=>b.o===o&&b.type==='paddock'&&
+        Math.abs(x-b.x)<r+5&&Math.abs(y-(b.y-b.h/2-5.5))<r+7))continue;
+      if(horses.some(h=>h.o===o&&(Math.hypot(x-h.x,y-h.y)<r+3||
+        (h.homePoint&&Math.hypot(x-h.homePoint.x,y-h.homePoint.y)<r+3))))continue;
       if(roads.some(t=>distanceToRoad(x,y,t)<(t.w||2.5)*.5+r+1.5))continue;
       if(ponds.some(p=>((x-p.x)/(p.rx+r+2))**2+
         ((y-p.y)/(p.ry+r+2))**2<1))continue;
@@ -318,14 +325,17 @@ function drawBuilding(b){
   }
   if(b.type==='paddock'){
     rect(x,y,w,h,'#84aa67');
-    ctx.strokeStyle='#e4d4a5';ctx.lineWidth=Math.max(2,s*.6);ctx.strokeRect(x,y,w,h);
+    ctx.strokeStyle='#e4d4a5';ctx.lineWidth=Math.max(2,s*.6);
+    ctx.beginPath();ctx.moveTo(x+w/2-3.1*s,y);ctx.lineTo(x,y);ctx.lineTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w,y);ctx.lineTo(x+w/2+3.1*s,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x+w/2-3.1*s,y);ctx.lineTo(x+w/2-9.3*s,y-.4*s);ctx.stroke();
     for(let k=1;k<5;k++){
+      if(k===2||k===3)continue;
       const xx=x+w*k/5;
       rect(xx,y-2,Math.max(2,s*.25),Math.max(3,s*1.1),'#e4d4a5');
       rect(xx,y+h-3,Math.max(2,s*.25),Math.max(3,s*1.1),'#e4d4a5')
     }
-    rect(x+w*.13,y+h*.15,w*.24,h*.21,'#aa8054');
-    rect(x+w*.6,y+h*.70,w*.25,h*.08,'#649aad');
+    rect(x+w*.10,y+h*.77,w*.20,h*.11,'#aa8054');
+    rect(x+w*.71,y+h*.78,w*.17,h*.08,'#649aad');
     rect(x+w*.44,y+h*.31,Math.max(2,s*.8),Math.max(2,s*.8),'#5f9856');
     return;
   }
@@ -375,6 +385,9 @@ function drawFairground(){
     rect(x,z,12,9,ruralEvent?accent:'#9b8a6c');
     rect(x+1,z+1,10,3,ruralEvent?'#ead6ab':'#b2a27b');
     for(const px of [x,x+12])rect(px,z+2,.65,8,'#785e43');
+    rect(x+2,z+8,7,2,'#98714b');
+    for(let j=0;j<3;j++)rect(x+2+j*2.4,z+7,1.7,1.2,'#c2ad76');
+    rect(x+10,z+9,1.8,1.6,'#73978c');rect(x+10.3,z+8.5,1.2,.8,'#d3ac87');
   }
   rect(-10,-25,20,5,'#8b704d');
   rect(-8,-23,16,3,ruralEvent?'#f2d78e':'#c1af82');
@@ -387,9 +400,10 @@ function drawFairground(){
     ctx.textAlign='center';
     ctx.font='bold '+Math.max(10,Math.min(18,2.1*s))+'px system-ui';
     ctx.strokeStyle='#254732';ctx.lineWidth=3;
-    const title=ruralEvent?'🎪 '+ruralEvent.name:'🏛️ Centro Rural';
+    const title='🏛️ Centro Rural'+(zoom>1.1?' · toque para Mercado':'');
     ctx.strokeText(title,p.x,p.y-19*s);
     ctx.fillStyle='#fff1ce';ctx.fillText(title,p.x,p.y-19*s);
+    if(ruralEvent){ctx.font='600 '+Math.max(10,Math.min(14,1.8*s))+'px system-ui';ctx.fillText('🎪 '+ruralEvent.name,p.x,p.y-19*s+18);}
   }
 }
 function drawLandscape(){
@@ -439,32 +453,57 @@ function drawRoad(x1,y1,x2,y2,width=9){
   ctx.setLineDash([7*s,13*s]);ctx.stroke();ctx.setLineDash([]);
 }
 // Silhuetas 2D usam os mesmos heading/gait/motion usados nos modelos Three.js.
+const horseCanvasForms={};
 function drawHorseSprite(h){
   const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom*(horseAge(h)<1?.64:horseAge(h)<2?.82:1);
   ctx.save();
   ctx.fillStyle='#35523655';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.70,s*2.4,s*.72,0,0,Math.PI*2);ctx.fill();
-  ctx.translate(p.x,p.y);ctx.scale(s,s*.67);ctx.rotate(-h.heading);
-  const pose=motion.horse(h);
-  const movement=Math.sin(h.gait||0)*pose.walk;
-  const grazing=pose.graze>.5;
-  // Pelagem, peito e garupa seguem a mesma silhueta low-poly do modelo 3D.
-  rect(-2,-.85,4,1.7,h.coat);
-  rect(-1.56,-.91,1.05,1.82,h.coat);
-  rect(1.14,-.76,.73,1.52,h.coat);
-  rect(-2.51,-.28,.66,.55,'#504033');
-  rect(1.40,-.52,1.23,1.04,h.coat);
-  rect(2.48+pose.graze*.35,-.40,.79,.80,h.coat);
-  rect(2.86,-.39,.28,.17,'#43372f');
-  for(const side of [-1,1]){
-    rect(2.31,side*.48-.10,.14,.20,'#3a2d25');
-    rect(2.67,side*.31-.10,.14,.20,'#574137');
-    const near=side===-1?0:1;
-    rect(-1.25+pose.legs[near].x,side*.7-.19,.32,.61,'#534238');
-    rect(1.06+pose.legs[near+2].x,side*.7-.19,.32,.61,'#534238');
-  }
-  for(let j=0;j<3;j++)rect(1.10-j*.26,-.59,.19,.32,'#514036');
   ctx.restore();
+  const pose=motion.horse(h),faces=[],heading=h.heading||0;
+  const rotate=(x,y,angle)=>({x:x*Math.cos(angle)-y*Math.sin(angle),y:x*Math.sin(angle)+y*Math.cos(angle)});
+  const project=(x,height,z)=>{
+    const wx=x*Math.cos(heading)+z*Math.sin(heading),wy=-x*Math.sin(heading)+z*Math.cos(heading);
+    return {x:p.x+wx*s,y:p.y+(wy*.67-height*.82)*s,depth:wy*.82+height*.67};
+  };
+  const colorShade=(color,factor)=>{
+    const rgb=parseInt(color.replace('#',''),16);
+    return '#'+[rgb>>16&255,rgb>>8&255,rgb&255].map(v=>Math.min(255,Math.round(v*factor)).toString(16).padStart(2,'0')).join('');
+  };
+  const addForm=(name,color,transform)=>{
+    const form=horseCanvasForms[name]||(horseCanvasForms[name]=motion.volume(motion.horseForm[name]));
+    const points=form.vertices.map(([x,y,z])=>{const v=transform(x,y,z);return project(v.x,v.y,v.z)});
+    form.faces.forEach((face,j)=>faces.push({points:face.map(i=>points[i]),color:colorShade(color,.80+(j%8)*.029)}));
+  };
+  const addBox=(x,y,z,w,height,d,color,angle=0)=>{
+    const points=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(([xx,yy,zz])=>{
+      const v=rotate(xx*w/2,yy*height/2,angle);return project(x+v.x,y+v.y,z+zz*d/2);
+    });
+    for(const face of [[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]])
+      faces.push({points:face.map(i=>points[i]),color});
+  };
+  addForm('body',h.coat,(x,y,z)=>({x,y:y+pose.bodyBob,z}));
+  const neck=(x,y,z)=>{const v=rotate(x,y,pose.neck);return {x:1.36+v.x,y:2.58+pose.bodyBob-pose.neckDrop+v.y,z}};
+  const head=(x,y,z)=>{const v=rotate(x,y,pose.head);return neck(1.02+v.x,1.35+v.y,z)};
+  addForm('neck',h.coat,neck);addForm('mane','#382d27',neck);addForm('head',h.coat,head);
+  const muzzle=head(1.22,-.37,0);addBox(muzzle.x,muzzle.y,0,.36,.29,.45,'#837363',pose.neck+pose.head-.2);
+  for(const side of [-1,1]){
+    const ear=head(-.03,.56,side*.2);addBox(ear.x,ear.y,ear.z,.15,.44,.15,h.coat,pose.neck+pose.head-.22);
+    const eye=head(.30,.20,side*.3);addBox(eye.x,eye.y,eye.z,.105,.11,.065,'#211d19');
+  }
+  if(h.id%3===1){const stripe=head(.56,.02,.272);addBox(stripe.x,stripe.y,stripe.z,.11,.40,.025,'#e5d7bf',pose.neck+pose.head+.49);}
+  addForm('tail','#382d27',(x,y,z)=>{const v=rotate(x,y,pose.tail);return {x:-1.93+v.x,y:2.65+v.y,z}});
+  for(let j=0;j<4;j++){
+    const x=j<2?-1.24:1.22,z=j%2? .45:-.45,leg=pose.legs[j];
+    const upper=rotate(0,-.365,leg.hip);addBox(x+upper.x,1.55+upper.y,z,.30,.73,.29,h.coat,leg.hip);
+    const knee=rotate(0,-.73,leg.hip),lower=rotate(0,-.375,leg.hip+leg.knee);
+    addBox(x+knee.x+lower.x,1.55+knee.y+lower.y,z,.17,.75,.18,h.coat,leg.hip+leg.knee);
+    if(h.id%4===0){const sock=rotate(0,-.60,leg.hip+leg.knee);addBox(x+knee.x+sock.x,1.55+knee.y+sock.y,z,.19,.20,.20,'#d7ccb8',leg.hip+leg.knee);}
+    const foot=rotate(0,-.75,leg.hip+leg.knee);
+    addBox(x+knee.x+foot.x+.035,1.55+knee.y+foot.y,z,.31,.24,.29,'#332d27');
+  }
+  faces.sort((a,b)=>a.points.reduce((n,v)=>n+v.depth,0)/a.points.length-b.points.reduce((n,v)=>n+v.depth,0)/b.points.length);
+  for(const face of faces)poly(face.points.map(v=>[v.x,v.y]),face.color);
   const fresh=h.interacting||(h.careEffectUntil??-1)>h.phase;
   if(fresh&&zoom>1.45){
     // Ações sincronizadas com o modelo 3D: tratador presente ou cuidado recém
@@ -591,83 +630,192 @@ function render(){
     ctx.fillStyle='#eff5c4';ctx.fillText(o.style.label,p.x,p.y+16);
   }
 }}
-// Até dois cavalos por piquete. Excedentes usam pastagem livre, sem empilhamento.
+// 0.9.9 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
 let horseSlotsKey='',horseSlots=new Map();
-function placeHorses(){
+const animalObstacles=new Map();let animalDecor=null;
+function syncAnimalObstacles(){
+  const decor=farmLandscaping();if(decor===animalDecor)return;
+  animalDecor=decor;for(const o of owners)animalObstacles.set(o,decor.filter(p=>p.o===o));
+}
+function fieldSafe(o,x,y,margin=3.1){
+  if(!insideFarm(o,x,y,margin*2,margin*2))return false;
+  if(buildings.some(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+margin&&Math.abs(y-b.y)<b.h/2+margin))return false;
+  if(ponds.some(p=>((x-p.x)/(p.rx+margin))**2+((y-p.y)/(p.ry+margin))**2<1))return false;
+  return (animalObstacles.get(o)||[]).every(p=>
+    Math.hypot(x-p.x,y-p.y)>(p.kind==='arvore'?4.8:p.kind==='feno'?3.8:2.8));
+}
+function paddockPassage(b){
+  return [{x:b.x,y:b.y-b.h/2+3.0,home:true},
+    {x:b.x,y:b.y-b.h/2-5.5,home:true}];
+}
+function horseGateBusy(h){
+  if(!h.homePaddock)return false;
+  const exit=paddockPassage(h.homePaddock).at(-1);
+  return horses.some(other=>other!==h&&other.homePaddock===h.homePaddock&&other.pastureRoute?.length&&
+    (other.pastureStage==='saindo'||other.pastureStage==='retornando'||Math.hypot(other.x-exit.x,other.y-exit.y)<12));
+}
+function setHorseRoute(h,route,stage){
+  h.pastureRoute=route;h.pastureIndex=0;h.pastureStage=stage;h.blockedTime=0;
+  h.activity=stage==='retornando'?'Voltando para água e manejo':stage==='saindo'?'Saindo pelo portão':'Caminhando pelo campo';
+}
+function fieldDestination(h,rest=false){
+  const candidates=[];
+  if(rest)for(const p of animalObstacles.get(h.o)||[]){
+    if(p.kind!=='arvore')continue;
+    const a=h.id*2.4; candidates.push({x:p.x+Math.cos(a)*8,y:p.y+Math.sin(a)*8});
+  }
+  for(let i=0;i<36;i++){
+    const a=(i+h.id*3+(h.excursions||0)*7)*2.39996;
+    const radius=[42,61,79][(i+h.id)%3];
+    candidates.push({x:h.o.x+Math.cos(a)*radius,y:h.o.y+Math.sin(a)*radius});
+  }
+  const from=h.pastureStage==='piquete'&&h.homePaddock?
+    paddockPassage(h.homePaddock).at(-1):h;
+  for(const p of candidates){
+    if(!fieldSafe(h.o,p.x,p.y)||Math.hypot(p.x-h.x,p.y-h.y)<14)continue;
+    if(horses.some(other=>other!==h&&other.o===h.o&&
+      (Math.hypot(p.x-other.x,p.y-other.y)<9||
+        (other.pastureRoute?.length&&Math.hypot(p.x-other.pastureRoute.at(-1).x,p.y-other.pastureRoute.at(-1).y)<9))))continue;
+    const route=farmRoute(h.o,from.x,from.y,p.x,p.y,true);
+    if(route.length)return {route,rest};
+  }
+  return null;
+}
+function returnHorseHome(h){
+  if(h.pastureStage==='retornando'||h.pastureStage==='piquete')return;
+  if(horseGateBusy(h)){h.pastureWait=2;return}
+  if(h.homePaddock&&Math.abs(h.x-h.homePaddock.x)<h.homePaddock.w/2-.35&&h.y<h.homePaddock.y+h.homePaddock.h/2-.35&&
+    (h.y>=h.homePaddock.y-h.homePaddock.h/2+.35||(Math.abs(h.x-h.homePaddock.x)<2.8&&h.y>=h.homePaddock.y-h.homePaddock.h/2-5.6))){
+    setHorseRoute(h,[paddockPassage(h.homePaddock)[0],{...h.homePoint,home:true}],'retornando');return;
+  }
+  const entry=h.homePaddock?paddockPassage(h.homePaddock).at(-1):h.homePoint;
+  const route=farmRoute(h.o,h.x,h.y,entry.x,entry.y,true);
+  if(!route.length){h.pastureWait=2;return}
+  if(h.homePaddock)route.push(...paddockPassage(h.homePaddock).slice(0,-1).reverse());
+  route.push({...h.homePoint,home:true});setHorseRoute(h,route,'retornando');
+}
+function stepHorse(h,x,y,dt){
+  const goal=-Math.atan2(y-h.y,x-h.x),turn=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading));
+  h.heading+=turn*(1-Math.exp(-dt*9));h.x=x;h.y=y;
+}
+function movePastureHorse(h,dt){
+  let remaining=dt*(2.5+(h.id%3)*.16),moved=0;
+  while(remaining>0&&h.pastureIndex<h.pastureRoute.length){
+    const p=h.pastureRoute[h.pastureIndex],dx=p.x-h.x,dy=p.y-h.y,d=Math.hypot(dx,dy);
+    if(h.pastureStage==='saindo'&&!p.home)h.pastureStage='campo';
+    if(d<.05){h.pastureIndex++;continue}
+    const step=Math.min(remaining,d,1),nx=h.x+dx/d*step,ny=h.y+dy/d*step;
+    const blocker=horses.find(other=>other!==h&&other.o===h.o&&Math.hypot(nx-other.x,ny-other.y)<5.7);
+    if(blocker){
+      h.blockedTime=(h.blockedTime||0)+dt;
+      // Contornar encontros em campo; dentro do piquete, esperar pelo portão.
+      let bypassed=false;
+      if(fieldSafe(h.o,h.x,h.y))for(const side of [h.id>blocker.id?1:-1,h.id>blocker.id?-1:1]){
+        const sx=h.x-dy/d*step*side,sy=h.y+dx/d*step*side;
+        if(!fieldSafe(h.o,sx,sy)||horses.some(other=>other!==h&&other.o===h.o&&Math.hypot(sx-other.x,sy-other.y)<5.7))continue;
+        stepHorse(h,sx,sy,dt);moved+=step;remaining-=step;bypassed=true;break;
+      }
+      // Em corredores, o animal de ID maior procura uma saída lateral que
+      // aumente a distância do encontro; o outro mantém a prioridade.
+      if(!bypassed&&h.id>blocker.id&&fieldSafe(h.o,h.x,h.y)){
+        const away=Math.atan2(h.y-blocker.y,h.x-blocker.x),distance=Math.hypot(h.x-blocker.x,h.y-blocker.y);
+        let best=null;
+        for(const offset of [0,Math.PI/4,-Math.PI/4,Math.PI/2,-Math.PI/2]){
+          const x=h.x+Math.cos(away+offset)*step,y=h.y+Math.sin(away+offset)*step;
+          const separation=Math.hypot(x-blocker.x,y-blocker.y);
+          if(separation<distance+.03||!fieldSafe(h.o,x,y)||
+            horses.some(other=>other!==h&&other.o===h.o&&Math.hypot(x-other.x,y-other.y)<5.7))continue;
+          if(!best||separation>best.separation)best={x,y,separation};
+        }
+        if(best){stepHorse(h,best.x,best.y,dt);moved+=step;remaining-=step;bypassed=true}
+      }
+      if(!bypassed){
+        if(h.blockedTime>7&&h.pastureStage==='saindo'){
+          setHorseRoute(h,[{...paddockPassage(h.homePaddock)[0]},{...h.homePoint,home:true}],'retornando');
+        }
+        break;
+      }
+      if(h.blockedTime>7){h.pastureRoute=[];h.pastureWait=1;h.pastureStage='campo';break}
+      continue;
+    }
+    // Uma obra nova pode fechar a rota. Replanejar em campo antes de avançar.
+    const atHome=!!p.home;
+    if(!atHome&&!fieldSafe(h.o,nx,ny,3.1)){
+      h.pastureRoute=[];h.pastureWait=1;h.pastureStage='campo';break;
+    }
+    h.blockedTime=0;stepHorse(h,nx,ny,dt);moved+=step;remaining-=step;
+    if(step>=d-.001)h.pastureIndex++;
+  }
+  if(Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>18)h.outOnField=true;
+  h.gait=(h.gait||0)+moved*2.6;h.motion=moved>.001?'walk':'idle';
+  if(h.pastureIndex>=h.pastureRoute.length){
+    const returned=h.pastureStage==='retornando';
+    h.pastureRoute=[];h.pastureStage=returned?'piquete':'campo';
+    h.pastureWait=returned?5+h.id%5:8+h.id%7;
+    if(returned){if(h.outOnField)h.excursions=(h.excursions||0)+1;h.outOnField=false;h.fieldStops=0;h.homeReturns=(h.homeReturns||0)+1}
+    else h.fieldStops=(h.fieldStops||0)+1;
+    h.motion=returned?'idle':h.resting?'idle':'graze';
+  }
+}
+function placeHorses(dt=0){
+  syncAnimalObstacles();
   const key=horses.map(h=>h.id+':'+owners.indexOf(h.o)).join(',')+'|'+
     buildings.map(b=>b.x+':'+b.y+':'+b.type+':'+b.status).join(',');
   if(key!==horseSlotsKey){
     horseSlotsKey=key;horseSlots=new Map();
     for(const o of owners){
-      const assigned=[];
-      const herd=horses.filter(h=>h.o===o);
-      const obstacles=farmLandscaping().filter(p=>p.o===o);
-      const spaceFree=(x,y)=>obstacles.every(p=>
-        Math.hypot(x-p.x,y-p.y)>(p.kind==='arvore'?7.0:
-          p.kind==='feno'?5.0:4.2));
-      const paddocks=buildings.filter(b=>b.o===o&&b.type==='paddock'&&isBuilt(b));
-      const candidates=[];
-      for(const b of paddocks){
-        candidates.push({x:b.x-3.9,y:b.y-1.5},{x:b.x+3.9,y:b.y-1.5});
+      const assigned=[],herd=horses.filter(h=>h.o===o),candidates=[];
+      for(const b of buildings.filter(b=>b.o===o&&b.type==='paddock'&&isBuilt(b)))
+        candidates.push({x:b.x-4.5,y:b.y,paddock:b},{x:b.x+4.5,y:b.y,paddock:b});
+      for(let radius=27;radius<=86;radius+=7)for(let i=0;i<32;i++){
+        const a=i*Math.PI/16+radius*.03,x=o.x+radius*Math.cos(a),y=o.y+radius*Math.sin(a);
+        if(fieldSafe(o,x,y))candidates.push({x,y});
       }
-      for(let radius=23;radius<=85;radius+=7){
-        for(let i=0;i<32;i++){
-          const a=i*Math.PI/16+radius*.03;
-          const x=o.x+radius*Math.cos(a),y=o.y+radius*Math.sin(a);
-          if(!insideFarm(o,x,y,7,7))continue;
-          if(buildings.some(b=>Math.abs(x-b.x)<b.w/2+5&&Math.abs(y-b.y)<b.h/2+5))continue;
-          if(!spaceFree(x,y))continue;
-          candidates.push({x,y});
-        }
-      }
-      for(let j=0;j<herd.length;j++){
-        const point=candidates.find(p=>assigned.every(q=>Math.hypot(q.x-p.x,q.y-p.y)>=7.4));
-        const location=point||{x:o.x-26+(j%4)*12,y:o.y+30+Math.floor(j/4)*12};
-        assigned.push(location);horseSlots.set(herd[j].id,location);
+      for(const h of herd){
+        const old=h.homeOwner===o&&h.homePoint;
+        const point=(old&&candidates.find(p=>Math.hypot(p.x-old.x,p.y-old.y)<.1)&&
+          assigned.every(q=>Math.hypot(q.x-old.x,q.y-old.y)>=8))?old:
+          candidates.find(p=>assigned.every(q=>Math.hypot(q.x-p.x,q.y-p.y)>=8)&&
+            herd.every(other=>other===h||Math.hypot(other.x-p.x,other.y-p.y)>=8));
+        if(!point)continue;
+        assigned.push(point);horseSlots.set(h.id,point);
       }
     }
   }
   for(const h of horses){
     const p=horseSlots.get(h.id);if(!p)continue;
-    // Posição e estados são únicos: Canvas e Three.js só interpretam a mesma pose.
-    if(h._slot!==p){
-      h._slot=p;h._orbit=h.id*2.39996;
-      h.x=p.x+Math.cos(h._orbit)*.90;
-      h.y=p.y+Math.sin(h._orbit)*.68;
-      h._lastPhase=h.phase;
-      h.gait=0;h.motion='idle';h.heading=0;
+    if(h.homeOwner!==h.o||!h.homePoint){
+      h.homeOwner=h.o;h.homePoint=p;h.homePaddock=p.paddock;
+      h.x=p.x;h.y=p.y;h.heading=0;h.gait=0;h.motion='idle';
+      h.pastureStage='piquete';h.pastureWait=6+(h.id%5)*2;h.pastureRoute=[];h.fieldStops=0;h.outOnField=false;
+    }else if(h.homePoint!==p){
+      h.homePoint=p;h.homePaddock=p.paddock;h.pastureStage='campo';h.pastureRoute=[];h.pastureWait=0;
+      returnHorseHome(h);
     }
-    const delta=Math.max(0,Math.min(.22,h.phase-(h._lastPhase??h.phase)));
-    h._lastPhase=h.phase;
-    const handler=farmers.find(f=>f.o===h.o&&f.role==='tratador'&&
-      f.working&&f.targetHorseId===h.id);
-    h.interacting=!!handler;
-    if(handler){
-      // O animal responde ao tratador, sem atravessar cercas nem alterar seu
-      // ponto de pastejo. O giro é compartilhado entre Canvas e Three.js.
-      h.motion='idle';
-      const desired=-Math.atan2(handler.y-h.y,handler.x-h.x);
-      const turn=Math.atan2(Math.sin(desired-h.heading),Math.cos(desired-h.heading));
-      h.heading+=turn*Math.min(1,.22+delta*4);
+    const handler=farmers.find(f=>f.o===h.o&&f.role==='tratador'&&f.targetHorseId===h.id);
+    h.interacting=!!handler?.working&&Math.hypot(handler.x-h.x,handler.y-h.y)<13.5;
+    if(!dt)continue;
+    if(handler&&h.pastureStage!=='piquete')returnHorseHome(h);
+    if(h.pastureRoute?.length){movePastureHorse(h,dt);continue}
+    h.pastureWait=Math.max(0,(h.pastureWait||0)-dt);
+    if(h.pastureStage==='piquete'&&(handler||(h.homePaddock&&horseCare(h)<65))){
+      h.motion='idle';h.activity=handler?'Água e manejo':'Aguardando manejo no piquete';
+      if(handler){
+        const goal=-Math.atan2(handler.y-h.y,handler.x-h.x);
+        h.heading+=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading))*(1-Math.exp(-dt*4));
+      }
       continue;
     }
-    const cycle=(h.phase+h.id*.97)%15;
-    const walking=(cycle>=2.4&&cycle<6.5)||(cycle>=10.5&&cycle<12.9);
-    h.motion=walking?'walk':cycle>=6.5&&cycle<10.5?'graze':'idle';
-    if(walking&&delta>0){
-      h._orbit+=delta*1.42;
-      const nx=p.x+Math.cos(h._orbit)*.90;
-      const ny=p.y+Math.sin(h._orbit)*.68;
-      const dx=nx-h.x,dy=ny-h.y,distance=Math.hypot(dx,dy);
-      h.x=nx;h.y=ny;
-      if(distance>.001){
-        const goal=-Math.atan2(dy,dx);
-        // Rotação em Y no Three.js: a cabeça +X gira para (cos(yaw), -sin(yaw)).
-        const turn=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading));
-        h.heading+=turn*Math.min(1,.4+delta*3);
-        h.gait+=distance*2.8;
-      }
-    }
+    h.motion=h.pastureStage==='campo'&&!h.resting?'graze':h.pastureWait>2?'idle':'graze';
+    h.activity=h.pastureStage==='campo'?(h.resting?'Descansando no campo':'Pastando no campo'):(h.homePaddock?'No piquete':'Na área de manejo');
+    if(h.pastureWait>0)continue;
+    if(h.pastureStage==='campo'&&(handler||(h.fieldStops||0)>=2)){returnHorseHome(h);continue}
+    if(h.pastureStage==='piquete'&&horseGateBusy(h)){h.pastureWait=2;continue}
+    const destination=fieldDestination(h,h.pastureStage==='campo'&&(h.fieldStops||0)%2===1);
+    if(!destination){h.pastureWait=3;continue}
+    const exit=h.pastureStage==='piquete'&&h.homePaddock?paddockPassage(h.homePaddock):[];
+    h.resting=destination.rest;setHorseRoute(h,[...exit,...destination.route],exit.length?'saindo':'campo');
+    h.activity=exit.length?'Saindo para o campo':'Explorando a pastagem';
   }
 }
 // Funcionários autônomos: tratadores, agricultores e administradores.
@@ -683,18 +831,19 @@ function workerSafe(o,x,y,margin=2.1){
   return !buildings.some(b=>b.o===o&&
     Math.abs(x-b.x)<b.w/2+margin&&Math.abs(y-b.y)<b.h/2+margin);
 }
-function farmGrid(o){
+function farmGrid(o,animal=false){
   const structures=buildings.filter(b=>b.o===o);
   const key=structures.map(b=>[b.x.toFixed(1),b.y.toFixed(1),b.w,b.h].join(',')).join('|');
-  const old=navCache.get(o);
-  if(old&&old.key===key)return old;
+  const cacheId=owners.indexOf(o)+':'+animal;
+  const old=navCache.get(cacheId);
+  if(old&&old.key===key&&(!animal||old.decor===animalDecor))return old;
   const x0=o.x-106,y0=o.y-106,blocked=new Uint8Array(NAV_N*NAV_N);
   for(let iy=0;iy<NAV_N;iy++)for(let ix=0;ix<NAV_N;ix++){
-    if(!workerSafe(o,x0+ix*NAV_STEP,y0+iy*NAV_STEP,2.6))blocked[iy*NAV_N+ix]=1;
+    if(!(animal?fieldSafe:workerSafe)(o,x0+ix*NAV_STEP,y0+iy*NAV_STEP,animal?3.4:2.6))blocked[iy*NAV_N+ix]=1;
   }
-  const grid={o,x0,y0,key,blocked};navCache.set(o,grid);return grid;
+  const grid={o,x0,y0,key,blocked,decor:animalDecor};navCache.set(cacheId,grid);return grid;
 }
-function nearestWalkable(grid,x,y){
+function nearestWalkable(grid,x,y,animal=false){
   const gx=Math.round((x-grid.x0)/NAV_STEP),gy=Math.round((y-grid.y0)/NAV_STEP);
   let best=-1,score=Infinity;
   for(let r=0;r<=10;r++){
@@ -704,6 +853,8 @@ function nearestWalkable(grid,x,y){
       if(ix<0||iy<0||ix>=NAV_N||iy>=NAV_N)continue;
       const idx=iy*NAV_N+ix;
       if(grid.blocked[idx])continue;
+      if((animal||workerSafe(grid.o,x,y,2.0))&&
+        !clearWalkSegment(grid.o,x,y,grid.x0+ix*NAV_STEP,grid.y0+iy*NAV_STEP,animal))continue;
       const dist=(grid.x0+ix*NAV_STEP-x)**2+(grid.y0+iy*NAV_STEP-y)**2;
       if(dist<score){score=dist;best=idx}
     }
@@ -711,16 +862,39 @@ function nearestWalkable(grid,x,y){
   }
   return best;
 }
-function clearWalkSegment(o,ax,ay,bx,by){
-  const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)/1.75));
-  for(let j=0;j<=n;j++){
-    const k=j/n,x=ax+(bx-ax)*k,y=ay+(by-ay)*k;
-    if(!workerSafe(o,x,y,2.0))return false;
+function clearWalkSegment(o,ax,ay,bx,by,animal=false){
+  const margin=animal?3.1:2.0,safe=animal?fieldSafe:workerSafe;
+  if(!safe(o,ax,ay,margin)||!safe(o,bx,by,margin))return false;
+  // Interseção contínua: amostras espaçadas podiam perder uma quina curta.
+  // O movimento então rejeitava a rota que o planejador continuava escolhendo.
+  for(const b of buildings){
+    if(b.o!==o)continue;
+    let low=0,high=1,miss=false;
+    for(const [start,delta,center,half] of [[ax,bx-ax,b.x,b.w/2+margin],[ay,by-ay,b.y,b.h/2+margin]]){
+      const min=center-half+1e-6,max=center+half-1e-6;
+      if(Math.abs(delta)<1e-9){if(start<=min||start>=max){miss=true;break}}
+      else{
+        const t1=(min-start)/delta,t2=(max-start)/delta;
+        low=Math.max(low,Math.min(t1,t2));high=Math.min(high,Math.max(t1,t2));
+        if(low>=high){miss=true;break}
+      }
+    }
+    if(!miss&&low<high)return false;
   }
+  if(!animal)return true;
+  const distance=(x,y,rx=1,ry=rx)=>{
+    const dx=(bx-ax)/rx,dy=(by-ay)/ry,px=(x-ax)/rx,py=(y-ay)/ry;
+    const t=Math.max(0,Math.min(1,(px*dx+py*dy)/(dx*dx+dy*dy||1)));
+    return Math.hypot(px-dx*t,py-dy*t);
+  };
+  if(ponds.some(p=>distance(p.x,p.y,p.rx+margin,p.ry+margin)<1))return false;
+  if((animalObstacles.get(o)||[]).some(p=>distance(p.x,p.y)<
+    (p.kind==='arvore'?4.8:p.kind==='feno'?3.8:2.8)))return false;
   return true;
 }
-function farmRoute(o,sx,sy,tx,ty){
-  const grid=farmGrid(o),from=nearestWalkable(grid,sx,sy),dest=nearestWalkable(grid,tx,ty);
+function farmRoute(o,sx,sy,tx,ty,animal=false){
+  const safe=animal?fieldSafe:workerSafe;
+  const grid=farmGrid(o,animal),from=nearestWalkable(grid,sx,sy,animal),dest=nearestWalkable(grid,tx,ty,animal);
   if(from<0||dest<0)return [];
   const N=NAV_N* NAV_N,scores=new Float64Array(N).fill(Infinity);
   const parent=new Int32Array(N).fill(-1),done=new Uint8Array(N),heap=[];
@@ -769,13 +943,13 @@ function farmRoute(o,sx,sy,tx,ty){
   const nodes=[];let at=dest;
   while(at>=0){nodes.push({x:grid.x0+(at%NAV_N)*NAV_STEP,y:grid.y0+((at/NAV_N)|0)*NAV_STEP});at=parent[at]}
   nodes.reverse();
-  const start=workerSafe(o,sx,sy,2)?{x:sx,y:sy}:nodes[0];
-  const goal=workerSafe(o,tx,ty,2)?{x:tx,y:ty}:nodes[nodes.length-1];
+  const start=safe(o,sx,sy,animal?3.1:2)?{x:sx,y:sy}:nodes[0];
+  const goal=safe(o,tx,ty,animal?3.1:2)?{x:tx,y:ty}:nodes[nodes.length-1];
   const list=[start,...nodes,goal],route=[];
   let i=0;
   while(i<list.length-1){
     let j=list.length-1;
-    while(j>i+1&&!clearWalkSegment(o,list[i].x,list[i].y,list[j].x,list[j].y))j--;
+    while(j>i+1&&!clearWalkSegment(o,list[i].x,list[i].y,list[j].x,list[j].y,animal))j--;
     route.push({x:list[j].x,y:list[j].y});i=j;
   }
   return route.slice(0,55);
@@ -1038,21 +1212,37 @@ function chooseFarmerTarget(f){
   let list=buildings.filter(b=>b.o===f.o&&wanted.includes(b.type)&&isBuilt(b));
   if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
   if(!list.length){f.route=[];f.activity='Aguardando instalações';return}
+  const patientsByBuilding=new Map();
+  if(f.role==='tratador'){
+    for(const b of list){
+      const points=[{x:b.x-b.w/2-4.4,y:b.y},{x:b.x+b.w/2+4.4,y:b.y},
+        {x:b.x,y:b.y+b.h/2+4.4},{x:b.x,y:b.y-b.h/2-4.4}]
+        .filter(p=>workerSafe(f.o,p.x,p.y,2.4));
+      const patients=horses.filter(h=>h.o===f.o&&
+        (horseCare(h)<65||(h.pastureStage==='piquete'&&horseCare(h)<85))&&
+        points.some(p=>Math.hypot(p.x-(h.homePoint?.x??h.x),p.y-(h.homePoint?.y??h.y))<13.0))
+        .sort((p,q)=>horseCare(p)-horseCare(q));
+      patientsByBuilding.set(b,patients);
+    }
+    // Necessidade real vem antes de um passeio aleatório entre instalações.
+    // Usar a área de manejo permite chamar pacientes que estão longe no campo.
+    list.sort((a,b)=>(patientsByBuilding.get(a)[0]?horseCare(patientsByBuilding.get(a)[0]):1000)-
+      (patientsByBuilding.get(b)[0]?horseCare(patientsByBuilding.get(b)[0]):1000)||
+      Math.hypot(a.x-f.x,a.y-f.y)-Math.hypot(b.x-f.x,b.y-f.y));
+  }
   const offset=f.id%list.length;
   for(let k=0;k<list.length;k++){
-    const b=list[(k+offset+Math.floor(rnd()*list.length))%list.length];
+    const b=f.role==='tratador'?list[k]:list[(k+offset+Math.floor(rnd()*list.length))%list.length];
     const gap=4.4;
-    const goals=[
+    let goals=[
       {x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
       {x:b.x,y:b.y+b.h/2+gap},{x:b.x,y:b.y-b.h/2-gap}
     ].filter(p=>workerSafe(f.o,p.x,p.y,2.4));
     // O tratador se dirige à lateral da cocheira/piquete mais próxima de
     // seu paciente, reduzindo o manejo a distância e evitando atravessar cercas.
-    const candidateHorses=f.role==='tratador'?
-      horses.filter(h=>h.o===f.o&&Math.hypot(h.x-b.x,h.y-b.y)<42)
-        .sort((p,q)=>(horseCare(p)+Math.hypot(p.x-b.x,p.y-b.y)*.35)-
-          (horseCare(q)+Math.hypot(q.x-b.x,q.y-b.y)*.35)):[];
-    const patient=candidateHorses[0];
+    const candidateHorses=patientsByBuilding.get(b)||[];
+    const patient=candidateHorses.find(h=>goals.some(p=>Math.hypot(p.x-(h.homePoint?.x??h.x),p.y-(h.homePoint?.y??h.y))<13.0));
+    if(patient)goals=goals.filter(p=>Math.hypot(p.x-(patient.homePoint?.x??patient.x),p.y-(patient.homePoint?.y??patient.y))<13.0);
     const scoreGoal=p=>Math.hypot(p.x-f.x,p.y-f.y)*.18+
       (patient?Math.hypot(p.x-patient.x,p.y-patient.y):Math.hypot(p.x-f.x,p.y-f.y));
     goals.sort((p,q)=>scoreGoal(p)-scoreGoal(q));
@@ -1092,7 +1282,7 @@ function completeWorkerJob(f){
   }
   if(f.role==='tratador'){
     const cared=horses.find(h=>h.id===f.targetHorseId&&h.o===f.o);
-    if(cared){
+    if(cared&&Math.hypot(cared.x-f.x,cared.y-f.y)<13.5){
       // Alimento reforçado só é consumido quando o trato acontece no mapa.
       const ration=(f.o.feedStock||0)>0?10:0;
       if(ration){
@@ -1155,9 +1345,16 @@ function animateFarmers(dt){
     }
     const dx=waypoint.x-f.x,dy=waypoint.y-f.y,d=Math.hypot(dx,dy);
     if(d<.7){
+      const patient=horses.find(h=>h.o===f.o&&h.id===f.targetHorseId);
+      if(f.routeIndex===f.route.length-1&&patient&&Math.hypot(patient.x-f.x,patient.y-f.y)>=13.5){
+        f.motion='idle';f.activity='Aguardando retorno do cavalo';
+        f.patientWait=(f.patientWait||0)+maxDt;
+        if(f.patientWait>45){f.patientWait=0;chooseFarmerTarget(f)}
+        continue;
+      }
       f.routeIndex++;
       if(f.routeIndex>=f.route.length){
-        f.working=true;f.wait=2.2+(f.id%3)*.7;
+        f.patientWait=0;f.working=true;f.wait=2.2+(f.id%3)*.7;
         f.activity=f.task;f.moving=false;f.motion='work';
       }
       continue;
@@ -1581,7 +1778,7 @@ function managementContent(tab){
       '<div class="mgLine"><span>💚 Cuidado médio do plantel</span><strong>'+
         herdCare(o)+'/100</strong></div>'+
       progressBar(herdCare(o),100)+
-      '<p class="mgSmall">Tratadores alimentam e escovam os cavalos. Cuidado preservado melhora a produção e o valor dos animais.</p></div>'+
+      '<p class="mgSmall">Os cavalos saem pelo portão, pastam e descansam nos campos da própria fazenda. Retornam ao piquete para água e manejo. Tratadores alimentam e escovam os cavalos. Cuidado preservado melhora a produção e o valor dos animais.</p><button type="button" data-mgaction="watchPasture">🌿 Acompanhar pastoreio no mapa</button></div>'+
       '<div class="mgCard"><div class="mgLine"><span>🌾 Ração de qualidade disponível</span>'+
         '<strong>'+Math.max(0,o.feedStock||0)+' porções</strong></div>'+
       '<p class="mgSmall">Cada porção acrescenta +10 pontos de cuidado quando o tratador atende um animal. O alimento não é consumido sem serviço realizado.</p>'+
@@ -1611,6 +1808,7 @@ function managementContent(tab){
         '<div class="mgLine"><span>💚 Bem-estar e manejo</span><strong>'+
           Math.round(horseCare(h))+'/100</strong></div>'+
         progressBar(horseCare(h),100)+
+        '<div class="mgSmall">🌿 '+(h.activity||'No piquete')+' · Saídas ao campo: '+(h.excursions||0)+'</div>'+
         '<div class="mgSmall">Cuidados recebidos: '+(h.careServices||0)+
           ' · Último manejo: dia '+(h.lastCareDay??'—')+'</div>'+
         '<div class="mgSmall">🧬 Aptidões herdáveis</div>'+
@@ -1675,7 +1873,7 @@ function managementContent(tab){
     return '<div class="mgGrid">'+
       statCard('🐎','Índice equestre',price(marketIndex('horse')))+
       statCard('🌾','Índice agrícola',price(marketIndex('grain')))+
-      '</div><h4>🌾 Agenda regional</h4>'+activity+
+      '</div><h4>🏛️ Centro Rural</h4><p class="mgSmall">As quatro bancas reúnem criadores, alimentos, suprimentos e melhorias da região. O espaço continua aberto entre eventos. Toque nele no mapa para abrir este mercado.</p><h4>🌾 Agenda regional</h4>'+activity+
       '<button type="button" class="mgAction" data-mgaction="visitFair">📍 Visitar Centro Rural no mapa</button>'+
       '<h4>🐎 Negociações entre cabanhas</h4>'+
       (regionalHorseOffers().length?
@@ -1746,11 +1944,11 @@ function setPanel(open){
   $('panel').hidden=!open;
   $('toggle').setAttribute('aria-expanded',String(open));
 }
-function openManagement(){
+function openManagement(tab='resumo'){
   lastDialogFocus=document.activeElement;
   finishGuide();
   setPanel(false);
-  manageTab='resumo';
+  manageTab=typeof tab==='string'?tab:'resumo';
   $('management').hidden=false;renderManagement(true);
   $('manageClose').focus?.();
 }
@@ -1803,7 +2001,7 @@ $('contextCancel').onclick=()=>{
 const guidePages=[
   ['Sua cabanha, viva.','Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.','A partida começa no dia 1 a cada abertura. Não há salvamento automático.'],
   ['Chegue mais perto.','Arraste o mapa e use a pinça ou os botões + e −. Fazenda volta à sua cabanha; Mapa mostra toda a região.','Em Gestão → Cavalos ou Equipe, localize e acompanhe animais e funcionários. Arrastar encerra o acompanhamento.'],
-  ['Seu primeiro investimento.','Toque em Construir, escolha uma instalação e toque em um espaço livre dentro da sua gleba. Uma obra por vez, concluída em cerca de 20 dias do jogo.','Gestão reúne finanças, manejo, mercado e metas. O tempo fica pausado enquanto você lê; retoma ao fechar.']
+  ['Seu primeiro investimento.','Toque em Construir, escolha uma instalação e toque em um espaço livre dentro da sua propriedade. Uma obra por vez, concluída em cerca de 20 dias do jogo.','Gestão reúne finanças, manejo, mercado e metas. O tempo fica pausado enquanto você lê; retoma ao fechar.']
 ];
 function renderGuide(){
   const [title,text,hint]=guidePages[guideStep];
@@ -1863,6 +2061,13 @@ $('manageBody').onclick=e=>{
     $('status').textContent='👁️ Acompanhando o manejo de '+(cared?.name||'seus cavalos')+'.';
     closeManagement();return;
   }
+  if(action==='watchPasture'){
+    const herd=ownHorses();
+    const animal=herd.find(h=>h.pastureStage==='campo'&&h.motion==='graze')||herd.find(h=>h.pastureStage==='campo'||h.pastureStage==='saindo')||herd.find(h=>!farmers.some(f=>f.targetHorseId===h.id))||herd[0];
+    if(!animal)return;
+    follow('horse',animal,animal.name+' · pastoreio');panX=animal.x;panY=animal.y;zoom=4.25;overview=false;
+    $('map').textContent='🗺️ Mapa';closeManagement();return;
+  }
   if(action==='breedHorse'){
     breedHorses();renderManagement(true);return;
   }
@@ -1899,6 +2104,7 @@ document.addEventListener('keydown',e=>{
   }
 });
 function refresh(){
+  placeHorses();
   evaluateGoals();
   renderManagement();
   $('date').textContent='📅 Dia '+day;
@@ -2030,7 +2236,7 @@ let prev=performance.now();function frame(now){try{
   const dt=Math.max(0,Math.min(.05,(now-prev)/1000));prev=now;
   if(!paused&&$('management').hidden&&$('welcome').hidden){
     acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);
-    placeHorses();animateFarmers(dt*speed);
+    placeHorses(dt*speed);animateFarmers(dt*speed);
     horses.forEach(h=>motion.blend(h,dt*speed));farmers.forEach(f=>motion.blend(f,dt*speed));
     if(acc>=3){acc-=3;tick()}
   }
@@ -2164,6 +2370,9 @@ canvas.addEventListener('pointerup',e=>{
   const o=owners[0];
   const picked=mode3D&&window.FazendaVivaBridge?.groundAt?.(e.clientX,e.clientY);
   if(picked){x=picked.x;y=picked.y}
+  if(!build&&Math.abs(x-fairground.x)<37&&Math.abs(y-fairground.y)<27){
+    openManagement('mercado');return;
+  }
   if(!build){let b=buildings.find(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+2&&Math.abs(y-b.y)<b.h/2+(mode3D?8:2)&&b.type!=='paddock');if(b){selected=b;$('upgrade').hidden=false;$('upgrade').textContent='🔨 Ampliar '+({house:'casa',stable:'cocheira',barn:'galpão'}[b.type]||'estrutura')+' (nível '+(b.tier||1)+'/3) · R$ '+(1800*(b.tier||1)).toLocaleString('pt-BR');setPanel(true);$('status').textContent='🏗️ Estrutura selecionada';}return}if(activeSite(o)){$('status').textContent='👷 Conclua a obra atual antes de iniciar outra';return}if(!insideFarm(o,x,y,defs[build].w,defs[build].h)){$('status').textContent='⚠️ Área fora dos limites da sua cabanha';return}if(owners.slice(1).some(other=>Math.hypot(x-other.x,y-other.y)<32)){$('status').textContent='⚠️ Terreno pertence a outra fazenda';return}if(owners[0].cash<defs[build].cost){$('status').textContent='💰 Saldo insuficiente';return}if(add(o,build,x,y,true,true)){$('status').textContent='👷 Obra iniciada — conclusão em cerca de 20 dias simulados';build=null;updateSceneContext();refresh()}else $('status').textContent='⚠️ Local ocupado: escolha outro espaço'
 });
 $('zoomIn').onclick=()=>changeZoom(zoom*1.35);
@@ -2259,4 +2468,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=098"></script></body></html>
+</script><script type="module" src="./world3d.js?v=099"></script></body></html>

@@ -1,10 +1,22 @@
-# Fazenda Viva — versão 0.9.8 (para testes)
+# Fazenda Viva — versão 0.9.9 (para testes)
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Testar a 0.9.8:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=098
+**Testar a 0.9.9:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=099
 
-A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.8**. Os critérios de Android físico da 1.0 continuam pendentes.
+A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.9**. Os critérios de Android físico da 1.0 continuam pendentes.
+
+## 0.9.9 — cavalos em campo e Centro Rural
+
+- Guia usa **propriedade** no lugar de “gleba”.
+- Anatomia equina compartilhada pelo Canvas e Three.js: dorso/peito/garupa, pescoço curvo, mandíbula e focinho afilados, orelhas, crina, cauda e cascos.
+- Pastoreio automático dentro de cada fazenda: saída pela porteira, exploração de duas áreas de campo, pausas de pasto/descanso e retorno para manejo. O jogador pode acompanhar a rotina em **Gestão → Cavalos → Acompanhar pastoreio**.
+- Navegação considera edificações, açudes, cercados, paisagismo e outros animais. A porteira admite uma passagem por vez; encontros no campo têm espera/desvio. Novas obras preservam pontos de manejo e corredores; o paisagismo mantém os acessos livres. Transferências continuam preservando a identidade dos animais.
+- O tratador prioriza quem precisa de cuidado, chama o paciente pela área de manejo e aguarda seu retorno antes de concluir o serviço ou consumir ração. Cavalos com cuidado baixo aguardam atendimento no piquete antes de sair. A construção de outra instalação não recoloca todo o plantel nos pontos iniciais.
+- O **Centro Rural é um único espaço regional permanente**. Seu subtítulo muda conforme o evento: mostra equina, contrato agrícola, suprimentos ou mutirão. As quatro bancas ganham produtos e comerciantes, e tocar no terreno do Centro abre **Gestão → Mercado**, inclusive entre eventos.
+- Sem novo salvamento automático, necessidades de NPCs, clima ou ciclo dia/noite.
+
+A série 0.9.9 foi ampliada a pedido do usuário após inspeção das capturas da 0.9.8. O congelamento para a 1.0 ocorre após esta revisão visual e de comportamento; a numeração não declara concluídos os critérios mobile.
 
 ## Novidades da série 0.8
 
@@ -290,7 +302,8 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 - `tests/geometry3d.mjs`: matrizes e buffers oficiais do Three.js em Node (sem WebGL).
 - `tests/browser.mjs`: Chromium/WebGL real, cinco viewports, comparação de chamadas e capturas.
 - `.github/workflows/qa.yml`: simulação, geometria e navegador em push para main e pull requests.
-- `RELEASE_0.9.8.md`: avaliação, escopo, critérios de verificação e próximos passos.
+- `RELEASE_0.9.8.md`: avaliação anterior e critérios de integração.
+- `RELEASE_0.9.9.md`: mudanças motivadas pelas capturas, limites e verificação do pastoreio.
 
 ## Validação
 
@@ -310,5 +323,5 @@ Execute `npm ci` e `npm test` (simulação, renderizador simulado, poses e geome
 0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
 0.9.7 — manejo animal real, histórico de cuidados, bem-estar econômico, metas e correção de bloqueios de trabalhadores; implementado e testado em simulação, pendente inspeção Android;
 0.9.8 — candidata para testes públicos: integração/interface, poses e contato implementados; testes Chromium/WebGL e inspeção de capturas executados, Android físico pendente;
-0.9.9 — candidato à 1.0, orçamento de performance e testes em celulares reais;
+0.9.9 — revisão equina e pastoreio autônomo; congelamento e validação da 1.0 após estes ajustes;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.
