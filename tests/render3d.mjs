@@ -228,6 +228,16 @@ try{
   frame(20600);
   assert.ok(horseModel.userData.careFx.visible,
     'efeito de conclusão mantém destaque temporário');
+  // Trocar um animal por outro sem alterar o tamanho do plantel deve mudar o
+  // modelo físico — antes a malha reaproveitava a pelagem do cavalo vendido.
+  const replacement={...state.horses[0],id:88,coat:'#c69a64',
+    interacting:false,careEffectUntil:-1,careSpecialUntil:-1};
+  state.horses=[replacement];
+  frame(20700);
+  const newer=sceneObjects.find(model=>model.userData.horse===replacement);
+  assert.ok(newer&&newer!==horseModel,
+    'identidade 3D deve acompanhar o cavalo após compra/venda de mesmo tamanho');
+
 
 
 
