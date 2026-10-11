@@ -254,7 +254,8 @@ function farmLandscaping(){
 }
 function drawRanchDecor(){
   const s=Math.min(W/300,H/260)*zoom;
-  if(s<.18)return;
+  // No enquadramento regional, não desenhar 180 props de tamanho subpixel.
+  if(zoom<.62||s<.18)return;
   for(const prop of farmLandscaping()){
     const p=screen(prop.x,prop.y);
     if(p.x<-30||p.x>W+30||p.y<-30||p.y>H+30)continue;
