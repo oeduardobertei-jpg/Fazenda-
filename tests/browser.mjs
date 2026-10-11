@@ -77,7 +77,7 @@ try{
   await basePage.locator('#pause').click();
   const before=await measurements(basePage);
   await basePage.screenshot({path:resolve(output,'baseline-0.9.8-portrait.png')});
-  results.push({version:'0.9.9',viewport:'390x844',...before});
+  results.push({version:'0.9.8',viewport:'390x844',...before});
   console.log('BASELINE',JSON.stringify(results.at(-1)));
   await baseContext.close();
 

@@ -1865,11 +1865,11 @@ function setPanel(open){
   $('panel').hidden=!open;
   $('toggle').setAttribute('aria-expanded',String(open));
 }
-function openManagement(){
+function openManagement(tab='resumo'){
   lastDialogFocus=document.activeElement;
   finishGuide();
   setPanel(false);
-  manageTab='resumo';
+  manageTab=typeof tab==='string'?tab:'resumo';
   $('management').hidden=false;renderManagement(true);
   $('manageClose').focus?.();
 }
@@ -2292,7 +2292,7 @@ canvas.addEventListener('pointerup',e=>{
   const picked=mode3D&&window.FazendaVivaBridge?.groundAt?.(e.clientX,e.clientY);
   if(picked){x=picked.x;y=picked.y}
   if(!build&&Math.abs(x-fairground.x)<37&&Math.abs(y-fairground.y)<27){
-    manageTab='mercado';openManagement();return;
+    openManagement('mercado');return;
   }
   if(!build){let b=buildings.find(b=>b.o===o&&Math.abs(x-b.x)<b.w/2+2&&Math.abs(y-b.y)<b.h/2+(mode3D?8:2)&&b.type!=='paddock');if(b){selected=b;$('upgrade').hidden=false;$('upgrade').textContent='🔨 Ampliar '+({house:'casa',stable:'cocheira',barn:'galpão'}[b.type]||'estrutura')+' (nível '+(b.tier||1)+'/3) · R$ '+(1800*(b.tier||1)).toLocaleString('pt-BR');setPanel(true);$('status').textContent='🏗️ Estrutura selecionada';}return}if(activeSite(o)){$('status').textContent='👷 Conclua a obra atual antes de iniciar outra';return}if(!insideFarm(o,x,y,defs[build].w,defs[build].h)){$('status').textContent='⚠️ Área fora dos limites da sua cabanha';return}if(owners.slice(1).some(other=>Math.hypot(x-other.x,y-other.y)<32)){$('status').textContent='⚠️ Terreno pertence a outra fazenda';return}if(owners[0].cash<defs[build].cost){$('status').textContent='💰 Saldo insuficiente';return}if(add(o,build,x,y,true,true)){$('status').textContent='👷 Obra iniciada — conclusão em cerca de 20 dias simulados';build=null;updateSceneContext();refresh()}else $('status').textContent='⚠️ Local ocupado: escolha outro espaço'
 });

@@ -190,6 +190,14 @@ try{
   ui.get('manageOpen').onclick();
   ui.get('manageClose').onclick();
   assert.equal(ui.get('management').hidden,true,'painel de gestão fecha');
+  ui.get('manageOpen').onclick();
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'mercado'}})}});
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'visitFair'}})}});
+  bridge.mode(false);
+  game.callbacks.pointerdown(pointer(50,195,422));game.callbacks.pointerup(pointer(50,195,422));
+  assert.equal(ui.get('management').hidden,false,'Centro Rural responde ao toque no mapa');
+  assert.ok(ui.get('manageBody').innerHTML.includes('As quatro bancas'),'toque abre Mercado, sem voltar ao Resumo');
+  ui.get('manageClose').onclick();ui.get('focus').onclick();
   const initialZoom=get().zoom;
   ui.get('zoomIn').onclick();assert.ok(get().zoom>initialZoom,'zoom +');
   ui.get('zoomOut').onclick();
