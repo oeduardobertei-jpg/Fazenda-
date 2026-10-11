@@ -21,7 +21,7 @@ assert.ok(repRewards.length>=7&&thresholds?.length>=7,
   'progressão/recompensas incompletas');
 assert.ok(repRewards.reduce((a,b)=>a+b,0)>=thresholds.at(-1),
   'nível máximo de reputação inalcançável');
-const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody'.split(' ');
+const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode perfMode perfHud renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody'.split(' ');
 const noop=()=>{},ctx=new Proxy({setTransform:noop},{
   get:(o,key)=>o[key]??noop,set:(o,key,v)=>{o[key]=v;return true}
 });
@@ -53,6 +53,31 @@ try{
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  // Projeção de câmera: ao aplicar zoom com âncora fora do centro, a mesma
+  // posição do solo precisa permanecer sob o mesmo pixel, também na transição
+  // entre câmera próxima e regional.
+  const bridge=window.FazendaVivaBridge;
+  bridge.mode(true);
+  const game=ui.get('game'),anchorPx=277,anchorPy=370;
+  function expectAnchor(deltaY){
+    const before=bridge.projectedGroundAt(anchorPx,anchorPy);
+    game.callbacks.wheel({deltaY,clientX:anchorPx,clientY:anchorPy,
+      cancelable:true,preventDefault:noop});
+    const after=bridge.projectedGroundAt(anchorPx,anchorPy);
+    assert.ok(Math.hypot(before.x-after.x,before.y-after.y)<.01,
+      'zoom 3D altera o ponto de terreno sob a âncora');
+  }
+  expectAnchor(-200);
+  expectAnchor(1420); // atravessa o limiar câmera oblíqua -> regional
+  expectAnchor(-1200);
+  bridge.mode(false);
+  ui.get('perfMode').onclick();
+  assert.equal(ui.get('perfHud').hidden,false,'diagnóstico deve ser opcional');
+  assert.ok(ui.get('perfHud').textContent.includes('2D'),
+    'diagnóstico apresenta modo de renderização');
+  ui.get('perfMode').onclick();
+  assert.equal(ui.get('perfHud').hidden,true,'diagnóstico pode ser fechado');
+
   const ruralProps=get().ranchDecor;
   assert.ok(ruralProps.length>=150,'mata, jardins e adornos devem ocupar as cinco cabanhas');
   for(const owner of get().owners){
