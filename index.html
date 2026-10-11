@@ -197,7 +197,8 @@ function placement(o,type,x,y){
     color:['#4d8182','#9e774d','#c5a25a'][i]});
 }});
 for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;
-  if(x>-114&&x<-16&&y>165&&y<263)continue; // clareira do centro ruralif(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;
+  if(x>-114&&x<-16&&y>165&&y<263)continue; // clareira do Centro Rural
+  if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue; // bosques externos aos lotes
   if(Math.abs(x-140)<18||Math.abs(x+140)<18||Math.abs(y-140)<17)continue;
   // Corredores de acesso às fazendas, açudes e lavouras não podem nascer dentro das árvores.
   if(owners.some(o=>o.x<-100?x>o.x+115&&x<-130&&Math.abs(y-o.y)<11:
