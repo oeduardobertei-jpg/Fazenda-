@@ -1446,7 +1446,8 @@ function managementContent(tab){
       '<p class="mgNote">Os trabalhadores visitam instalações ligadas às suas funções. As tarefas geram produtividade simulada, sujeita a limites.</p>';
   }
   if(tab==='mercado'){
-    const comps=owners.filter(f=>f!==o).map(f=>({name:f.name,score:cabanhaScore(f),
+    const comps=owners.filter(f=>f!==o).map(f=>({name:f.name,ownerId:owners.indexOf(f),
+      style:f.style.label,score:cabanhaScore(f),
       animals:horses.filter(h=>h.o===f).length,
       structures:buildings.filter(b=>b.o===f&&isBuilt(b)).length}));
     const price=v=>Math.round(v*100)+'%';
@@ -1499,8 +1500,10 @@ function managementContent(tab){
         brl(t.price)+'</strong></div>').join(''):'')+
       '<h4>🏘️ Competidores autônomos</h4>'+
       comps.map(p=>'<div class="mgRow"><strong>'+p.name+'</strong>'+
+        '<div class="mgSmall">🌿 Região: '+p.style+'</div>'+
         '<div class="mgLine"><span>Estruturas / cavalos</span><span>'+p.structures+' / '+p.animals+'</span></div>'+
-        '<div class="mgLine"><span>Índice econômico</span><strong>'+p.score+' pontos</strong></div></div>').join('')+
+        '<div class="mgLine"><span>Índice econômico</span><strong>'+p.score+' pontos</strong></div>'+
+        '<button type="button" data-mgaction="visitCompetitor" data-index="'+p.ownerId+'">📍 Visitar fazenda</button></div>').join('')+
       '<p class="mgNote">Mercado e eventos inteiramente simulados, com efeitos temporários em preços, custos e obras. A participação é opcional e ocorre uma vez por evento.</p>';
   }
   if(tab==='metas'){
@@ -1554,6 +1557,14 @@ $('manageBody').onclick=e=>{
   const index=Number(button.dataset.index||0),action=button.dataset.mgaction;
   if(action==='buyHorse'){
     $('buyhorse').onclick();renderManagement(true);return;
+  }
+  if(action==='visitCompetitor'){
+    const farm=owners[index];
+    if(!farm)return;
+    panX=farm.x;panY=farm.y;zoom=2.35;overview=false;
+    $('map').textContent='🗺️ Mapa';
+    $('status').textContent='🌿 Visitando '+farm.name+' · '+farm.style.label+'.';
+    closeManagement();return;
   }
   if(action==='visitFair'){
     panX=fairground.x;panY=fairground.y;zoom=2.25;overview=false;
