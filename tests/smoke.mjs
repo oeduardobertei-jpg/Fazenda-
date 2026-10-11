@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const motion=createRequire(import.meta.url)('../motion.js');
 const sound=createRequire(import.meta.url)('../audio.js');
+const terrain=createRequire(import.meta.url)('../terrain.js');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const inline=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];
@@ -25,7 +26,7 @@ assert.ok(repRewards.length>=7&&thresholds?.length>=7,
 assert.ok(repRewards.reduce((a,b)=>a+b,0)>=thresholds.at(-1),
   'nível máximo de reputação inalcançável');
 const ids='observe observeTools observeCaption observeNext observePause observeExit soundToggle growthHud growthTitle growthLevel growthDetail growthFill game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode perfMode perfHud renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody manageQuick panelClose sceneContext contextText contextCancel welcome guideTitle guideText guideHint guideProgress guideNext guideSkip helpOpen'.split(' ');
-const noop=()=>{},ctx=new Proxy({setTransform:noop},{
+const noop=()=>{},ctx=new Proxy({setTransform:noop,createRadialGradient:()=>({addColorStop:noop})},{
   get:(o,key)=>o[key]??noop,set:(o,key,v)=>{o[key]=v;return true}
 });
 const ui=new Map(ids.map(id=>[id,{
@@ -38,7 +39,7 @@ const ui=new Map(ids.map(id=>[id,{
 }]));
 let step=()=>{},saved=0,reset=false;
 const values={
-  window:{FazendaVivaMotion:motion,FazendaVivaAudio:sound},document:{getElementById:id=>{
+  window:{FazendaVivaMotion:motion,FazendaVivaAudio:sound,FazendaVivaTerrain:terrain},document:{getElementById:id=>{
     assert.ok(ui.has(id),'HTML control ausente: '+id);return ui.get(id);
   },addEventListener:noop},innerWidth:390,innerHeight:844,devicePixelRatio:2,
   addEventListener:noop,requestAnimationFrame:fn=>step=fn,
@@ -148,6 +149,9 @@ try{
     }
   }
   assert.equal(get().ranchDecor,ruralProps,'paisagismo em cache durante navegação');
+  const surface=get().terrain;
+  assert.ok(surface.areas.length>100&&surface.sprigs.length>200,'solo e margens devem ocupar as propriedades');
+  assert.equal(get().terrain,surface,'solo permanece em cache durante navegação');
 
   assert.equal(get().fairground.x,-65,'coordenada da praça de feiras');
   assert.ok(get().regionalOffers.length>=3,'ofertas entre propriedades existentes');
