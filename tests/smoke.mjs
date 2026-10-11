@@ -275,7 +275,16 @@ try{
   assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
   assert.ok(roadMiddle>10,'trechos centrais de trilha devem ser utilizados');
   assert.ok(offRoad<=roadMiddle*.1,'funcionários cortando trilhas em excesso');
-  assert.ok(get().day>1,'dias devem avançar');
+  const attended=get().horses.filter(h=>(h.careServices||0)>0);
+  assert.ok(attended.length>=4,'tratadores devem concluir cuidados em animais reais');
+  assert.ok(get().horses.every(h=>Number.isFinite(h.care)&&h.care>=15&&h.care<=100),
+    'bem-estar individual deve permanecer dentro dos limites');
+  assert.ok(get().careMean.every(v=>v>=0&&v<=100),
+    'cuidado médio deve permanecer entre 0 e 100');
+  assert.ok(get().farmers.filter(f=>f.role==='tratador').every(f=>
+    f.lastHorseName&&f.tasksDone>0),
+    'cada tratador deve atender pelo menos um animal');
+    assert.ok(get().day>1,'dias devem avançar');
   assert.ok(get().trails.length>0,'caminhos existentes');
   assert.ok(get().farmers.some(f=>(f.tasksDone||0)>0),'tarefas em execução');
   assert.equal(overlap,0,'NPC não pode atravessar construções');
@@ -289,6 +298,25 @@ try{
     'trabalhadores não alternaram entre caminhar e executar tarefas');
   assert.ok(maxSite<=1,'no máximo uma obra por fazenda');
   assert.equal(saved,0,'sem salvamento automático');
+  ui.get('manageOpen').onclick();
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
+  assert.ok(ui.get('manageBody').innerHTML.includes('Cuidado médio do plantel'),
+    'gestão mostra o bem-estar animal');
+  assert.ok(ui.get('manageBody').innerHTML.includes('Ração de qualidade'),
+    'gestão oferece estoque de ração especial');
+  const careOwner=get().owners[0],moneyBeforeCare=careOwner.cash;
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'buyCareFeed'}})}});
+  assert.equal(careOwner.cash,moneyBeforeCare-200,'ração tem custo efetivo no caixa');
+  assert.equal(careOwner.feedStock,4,'compra acrescenta quatro porções');
+  ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'watchCare'}})}});
+  assert.equal(ui.get('management').hidden,true,'acompanhar manejo fecha gestão');
+  assert.ok(get().zoom>3,'modo de acompanhamento aproxima câmera');
+  let stepsToTreatment=0;
+  while(careOwner.feedStock===4&&stepsToTreatment++<600){ms+=50;step(ms)}
+  assert.ok(careOwner.feedStock<4,
+    'ração reforçada deve ser consumida apenas em serviço realmente concluído');
+  assert.ok(get().horses.some(h=>h.o===careOwner&&
+    h.careSpecialUntil!==undefined),'trato reforçado deve ativar um efeito no animal');
   ui.get('manageOpen').onclick();
   ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'financas'}})}});
   assert.ok(ui.get('manageBody').innerHTML.includes('Evolução do saldo'),
