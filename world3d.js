@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.2 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.3 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -490,6 +490,7 @@ function makeHorse(h){
   neckPivot.add(headPivot);equinePart(headPivot,'head',h.coat);
   equinePart(headPivot,'forelock',0x382d27);
   const muzzle=equinePart(headPivot,'muzzle',0x635349);group.userData.muzzle=muzzle;
+  const ears=[];
   for(const side of [-1,1]){
     box(headPivot,.105,.08,.045,.18,.13,side*.286,0x211d19);
     box(headPivot,.025,.022,.047,.16,.15,side*.289,0xf5e9d5);
@@ -498,6 +499,7 @@ function makeHorse(h){
     const earPivot=new THREE.Group();earPivot.position.set(-.06,.33,side*.18);
     earPivot.rotation.x=side*.14;headPivot.add(earPivot);
     equinePart(earPivot,'ear',h.coat);
+    ears.push(earPivot);
   }
   // Lista acompanha a face superior do nariz, em vez de uma placa lateral.
   if(h.id%3===1)equinePart(headPivot,'blaze',0xe5d7bf);
@@ -540,6 +542,7 @@ function makeHorse(h){
   group.userData.neck=neckPivot;
   group.userData.head=headPivot;
   group.userData.tail=tailPivot;
+  group.userData.ears=ears;
   return group;
 }
 function makeWorker(f){
@@ -582,9 +585,14 @@ function makeWorker(f){
   box(upper,.025,.10,.14,.29,1.26,0,0xbe9e64);
   const tool=new THREE.Group();tool.position.set(.04,-.59,0);elbows[1].add(tool);
   if(f.role==='tratador'){
-    cylinder(tool,.27,.21,.45,.10,-.36,.12,0x668b92,9);
-    box(tool,.055,.22,.055,.10,-.04,.12,0xbdc4ba);
-    box(tool,.33,.055,.055,.10,.08,.12,0xbdc4ba);
+    const bucket=new THREE.Group(),brush=new THREE.Group();tool.add(bucket,brush);
+    cylinder(bucket,.27,.21,.45,.10,-.36,.12,0x668b92,9);
+    box(bucket,.055,.22,.055,.10,-.04,.12,0xbdc4ba);
+    box(bucket,.33,.055,.055,.10,.08,.12,0xbdc4ba);
+    box(brush,.29,.11,.20,.12,-.02,.08,0x986d44);
+    box(brush,.27,.08,.18,.12,-.11,.08,0xc5b596);
+    batchCharacter(bucket);batchCharacter(brush);brush.visible=false;
+    group.userData.bucket=bucket;group.userData.brush=brush;
   }else if(f.role==='agricultor'){
     box(tool,.095,1.64,.095,.18,.12,.05,0xa77f4e);
     box(tool,.45,.065,.27,.28,-.67,.05,0x758481);
@@ -1177,8 +1185,11 @@ function sync(s){
       mesh.userData.neck.position.y=motion.horseRig.neckY+pose.bodyBob-pose.neckDrop;
     }
     if(mesh.userData.head)mesh.userData.head.rotation.z=pose.head;
-    if(mesh.userData.tail)
+    if(mesh.userData.ears)mesh.userData.ears.forEach((ear,j)=>ear.rotation.z=pose.ears[j]);
+    if(mesh.userData.tail){
       mesh.userData.tail.rotation.z=pose.tail;
+      mesh.userData.tail.position.y=motion.horseRig.tailY+pose.bodyBob;
+    }
     const careFx=mesh.userData.careFx;
     if(careFx){
       const rationActive=(h.careSpecialUntil??-1)>h.phase;
@@ -1216,7 +1227,13 @@ function sync(s){
       if(knees[k])knees[k].rotation.z=pose.legs[k].knee;
       if(character.userData.boots?.[k])character.userData.boots[k].rotation.z=-(pose.legs[k].hip+pose.legs[k].knee);
     }
-    if(character.userData.upper)character.userData.upper.rotation.z=pose.lean;
+    if(character.userData.upper){
+      character.userData.upper.rotation.z=pose.lean;
+      character.userData.upper.position.y=pose.bodyBob;
+    }
+    const brushing=pose.action==='brush'&&pose.work>.2;
+    if(character.userData.brush)character.userData.brush.visible=brushing;
+    if(character.userData.bucket)character.userData.bucket.visible=!brushing;
     for(let k=0;k<arms.length;k++){
       arms[k].rotation.z=pose.arms[k]+(k===1?pose.tool:0);
       if(character.userData.elbows?.[k])character.userData.elbows[k].rotation.z=pose.elbows[k];

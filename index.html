@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.2</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.3</title>
 <style>
 :root{color-scheme:dark;--ink:#f8f1dd;--muted:#c4d1ba;--panel:#17392ded;--edge:#739477;--gold:#dfc18a;--top:calc(10px + env(safe-area-inset-top,0px));--base:calc(10px + env(safe-area-inset-bottom,0px));--side:12px}
 *{box-sizing:border-box}body{margin:0;background:#1b3528;color:var(--ink);font:14px/1.45 system-ui,sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#game{position:fixed;inset:0;z-index:0}
@@ -17,7 +17,7 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 #hud .brand{font-size:clamp(8.5px,2.6vw,11px);letter-spacing:0;padding-inline:5px}
 @media(prefers-reduced-motion:reduce){#status{transition:none}}
 </style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.2</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
+<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.3</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong id="manageTitle">Gestão da cabanha · tempo pausado</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" role="tablist" aria-label="Seções da gestão">
 <button id="tab-resumo" role="tab" aria-controls="manageBody" data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -31,7 +31,7 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 </section><div id="sceneContext" hidden><span id="contextText"></span><button id="contextCancel" type="button">Encerrar</button></div>
 <section id="welcome" role="dialog" aria-labelledby="guideTitle"><div class="eyebrow">Campos do Sul · Fazenda Viva</div><div id="guideProgress">GUIA · 1 DE 3</div><h2 id="guideTitle">Sua cabanha, viva.</h2><p id="guideText">Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.</p><p id="guideHint">A partida começa no dia 1 a cada abertura. Não há salvamento automático.</p><div class="welcomeActions"><button id="guideSkip" type="button">Explorar agora</button><button id="guideNext" type="button">Próximo →</button></div></section>
 <div id="error" hidden></div>
-<script src="./motion.js?v=0992"></script>
+<script src="./motion.js?v=0993"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
 const motion=window.FazendaVivaMotion;
@@ -512,12 +512,12 @@ function drawHorseSprite(h){
   addForm('neck',h.coat,neck);addForm('mane','#382d27',neck);addForm('head',h.coat,head);
   addForm('forelock','#382d27',head);addForm('muzzle','#635349',head);
   for(const side of [-1,1]){
-    addForm('ear',h.coat,(x,y,z)=>head(x-.06,y+.33,z+side*.18));
+    addForm('ear',h.coat,(x,y,z)=>{const v=rotate(x,y,pose.ears[side<0?0:1]);return head(v.x-.06,v.y+.33,z+side*.18)});
     const eye=head(.18,.13,side*.286);addBox(eye.x,eye.y,eye.z,.105,.08,.045,'#211d19');
     const nostril=head(1.13,-.50,side*.226);addBox(nostril.x,nostril.y,nostril.z,.075,.045,.032,'#292522',pose.neck+pose.head);
   }
   if(h.id%3===1)addForm('blaze','#e5d7bf',head);
-  addForm('tail','#382d27',(x,y,z)=>{const v=rotate(x,y,pose.tail);return {x:rig.tailX+v.x,y:rig.tailY+v.y,z}});
+  addForm('tail','#382d27',(x,y,z)=>{const v=rotate(x,y,pose.tail);return {x:rig.tailX+v.x,y:rig.tailY+pose.bodyBob+v.y,z}});
   for(let j=0;j<4;j++){
     const x=rig.legXs[j<2?0:1],z=j%2?rig.legZ:-rig.legZ,leg=pose.legs[j];
     const upper=(xx,y,zz)=>{const v=rotate(xx,y,leg.hip);return {x:x+v.x,y:pose.legRoot+v.y,z:z+zz}};
@@ -563,7 +563,7 @@ function drawWorkerSprite(f){
   ctx.restore();
   const pose=motion.worker(f),look=motion.workerLook(f);
   const model=spriteGeometry(p,s,-(f.visualHeading??f.heading??0)),{addForm,addBox,rotate}=model;
-  const upper=(x,y,z)=>{const v=rotate(x,y,pose.lean);return {x:v.x,y:v.y,z}};
+  const upper=(x,y,z)=>{const v=rotate(x,y,pose.lean);return {x:v.x,y:v.y+pose.bodyBob,z}};
   addForm('torso',look.shirt,upper,true);addForm('head',look.skin,upper,true);
   const detail=(x,y,z,w,height,d,color)=>{const v=upper(x,y,z);addBox(v.x,v.y,v.z,w,height,d,color,pose.lean)};
   detail(0,2.48,0,.28,.28,.28,look.skin);
@@ -587,7 +587,10 @@ function drawWorkerSprite(f){
     addForm('sleeve',look.shirt,sleeve,true);addForm('forearm',look.skin,arm,true);addForm('hand',look.skin,arm,true);
     if(j){
       const tool=(x,y,z,w,h,d,color)=>{const v=rotate(x+.04,y-.59,pose.tool),point=arm(v.x,v.y,z);addBox(point.x,point.y,point.z,w,h,d,color,pose.lean+angle+pose.elbows[j]+pose.tool)};
-      if(f.role==='tratador'){tool(.10,-.36,.12,.48,.45,.48,'#668b92');tool(.10,.08,.12,.33,.055,.055,'#bdc4ba')}
+      if(f.role==='tratador'){
+        if(pose.action==='brush'&&pose.work>.2){tool(.12,-.02,.08,.29,.11,.20,'#986d44');tool(.12,-.11,.08,.27,.08,.18,'#c5b596')}
+        else{tool(.10,-.36,.12,.48,.45,.48,'#668b92');tool(.10,.08,.12,.33,.055,.055,'#bdc4ba')}
+      }
       else if(f.role==='agricultor'){tool(.18,.12,.05,.095,1.64,.095,'#a77f4e');tool(.28,-.67,.05,.45,.065,.27,'#758481')}
       else{tool(.20,.12,.10,.48,.63,.065,'#8e683e');tool(.20,.13,.14,.40,.50,.07,'#e4d8ba')}
     }
@@ -676,7 +679,7 @@ function render(){
     ctx.fillStyle='#eff5c4';ctx.fillText(o.style.label,p.x,p.y+16);
   }
 }}
-// 0.9.9.2 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
+// 0.9.9.3 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
 let horseSlotsKey='',horseSlots=new Map();
 const animalObstacles=new Map();let animalDecor=null;
 function syncAnimalObstacles(){
@@ -741,8 +744,8 @@ function returnHorseHome(h){
   route.push({...h.homePoint,home:true});setHorseRoute(h,route,'retornando');
 }
 function stepHorse(h,x,y,dt){
-  const goal=-Math.atan2(y-h.y,x-h.x),turn=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading));
-  h.heading+=turn*(1-Math.exp(-dt*9));h.x=x;h.y=y;
+  const goal=-Math.atan2(y-h.y,x-h.x);
+  h.heading=motion.turnToward(h.heading||0,goal,dt);h.x=x;h.y=y;
 }
 function movePastureHorse(h,dt){
   let remaining=dt*(2.5+(h.id%3)*.16),moved=0;
@@ -793,7 +796,7 @@ function movePastureHorse(h,dt){
     if(step>=d-.001)h.pastureIndex++;
   }
   if(Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>18)h.outOnField=true;
-  h.gait=(h.gait||0)+moved*2.6;h.motion=moved>.001?'walk':'idle';
+  h.gait=(h.gait||0)+moved*motion.horseGaitPerUnit;h.motion=moved>.001?'walk':'idle';
   if(h.pastureIndex>=h.pastureRoute.length){
     const returned=h.pastureStage==='retornando';
     h.pastureRoute=[];h.pastureStage=returned?'piquete':'campo';
@@ -840,6 +843,7 @@ function placeHorses(dt=0){
     }
     const handler=farmers.find(f=>f.o===h.o&&f.role==='tratador'&&f.targetHorseId===h.id);
     h.interacting=!!handler?.working&&Math.hypot(handler.x-h.x,handler.y-h.y)<13.5;
+    h.careKind=h.interacting?handler.serviceKind:null;
     if(!dt)continue;
     if(handler&&h.pastureStage!=='piquete')returnHorseHome(h);
     if(h.pastureRoute?.length){movePastureHorse(h,dt);continue}
@@ -848,7 +852,7 @@ function placeHorses(dt=0){
       h.motion='idle';h.activity=handler?'Água e manejo':'Aguardando manejo no piquete';
       if(handler){
         const goal=-Math.atan2(handler.y-h.y,handler.x-h.x);
-        h.heading+=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading))*(1-Math.exp(-dt*4));
+        h.heading=motion.turnToward(h.heading||0,goal,dt,1.8);
       }
       continue;
     }
@@ -1362,8 +1366,7 @@ function animateFarmers(dt){
         const target=patient||f.targetBuilding;
         if(target){
           const goal=Math.atan2(target.y-f.y,target.x-f.x);
-          const turn=Math.atan2(Math.sin(goal-f.visualHeading),Math.cos(goal-f.visualHeading));
-          f.visualHeading+=turn*(1-Math.exp(-maxDt*6));
+          f.visualHeading=motion.turnToward(f.visualHeading??goal,goal,maxDt,2.4);
         }
       }
       f.wait-=maxDt;f.moving=false;
@@ -1424,11 +1427,7 @@ function animateFarmers(dt){
         const bypassHeading=Math.atan2(sy-f.y,sx-f.x);
         f.x=sx;f.y=sy;
         f.heading=bypassHeading;
-        const deltaHeading=Math.atan2(
-          Math.sin(bypassHeading-(f.visualHeading??bypassHeading)),
-          Math.cos(bypassHeading-(f.visualHeading??bypassHeading)));
-        f.visualHeading=(f.visualHeading??bypassHeading)+
-          deltaHeading*Math.min(1,maxDt*8);
+        f.visualHeading=motion.turnToward(f.visualHeading??bypassHeading,bypassHeading,maxDt,3.1);
         f.gait=(f.gait||0)+step*2;
         f.motion='walk';f.moving=true;f.activity='Abrindo passagem';
         sideways=true;break;
@@ -1452,9 +1451,7 @@ function animateFarmers(dt){
     const heading=Math.atan2(dy,dx);
     if(!Number.isFinite(f.visualHeading))f.visualHeading=heading;
     else{
-      const turn=Math.atan2(Math.sin(heading-f.visualHeading),
-        Math.cos(heading-f.visualHeading));
-      f.visualHeading+=turn*Math.min(1,maxDt*8);
+      f.visualHeading=motion.turnToward(f.visualHeading,heading,maxDt,3.1);
     }
     f.heading=heading;
     f.x=nx;f.y=ny;
@@ -2514,4 +2511,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=0992"></script></body></html>
+</script><script type="module" src="./world3d.js?v=0993"></script></body></html>
