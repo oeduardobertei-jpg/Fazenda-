@@ -1168,7 +1168,14 @@ function animateFarmers(dt){
            !clearWalkSegment(f.o,f.x,f.y,sx,sy))continue;
         if(farmers.some(other=>other!==f&&other.o===f.o&&
           Math.hypot(sx-other.x,sy-other.y)<2.15))continue;
-        f.x=sx;f.y=sy;f.heading=Math.atan2(sy-f.y+dy*.001,sx-f.x+dx*.001);
+        const bypassHeading=Math.atan2(sy-f.y,sx-f.x);
+        f.x=sx;f.y=sy;
+        f.heading=bypassHeading;
+        const deltaHeading=Math.atan2(
+          Math.sin(bypassHeading-(f.visualHeading??bypassHeading)),
+          Math.cos(bypassHeading-(f.visualHeading??bypassHeading)));
+        f.visualHeading=(f.visualHeading??bypassHeading)+
+          deltaHeading*Math.min(1,maxDt*8);
         f.gait=(f.gait||0)+step*2;
         f.motion='walk';f.moving=true;f.activity='Abrindo passagem';
         sideways=true;break;
