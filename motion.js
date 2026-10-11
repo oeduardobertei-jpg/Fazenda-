@@ -62,7 +62,7 @@
       neck:-.10-graze*1.34+care*.10+Math.sin(time*.65+entity.id)*.035*(1-walk),
       head:-.08-graze*.26+Math.sin(time*1.1)*.025,
       tail:-.12+Math.sin(time*.8+entity.id)*(.11+care*.08),
-      bodyBob:Math.sin(phase*2)*.016*walk,
+      bodyBob:Math.sin(phase*2)*.016*walk,neckDrop:graze*.22,
       legs:[0,Math.PI,Math.PI/2,Math.PI*1.5].map((offset,i)=>
         legPose(phase+offset,walk,.73,.75,1.43,i<2?-1:1))
     };

@@ -1139,7 +1139,7 @@ function sync(s){
     if(mesh.userData.body)mesh.userData.body.position.y=pose.bodyBob;
     if(mesh.userData.neck){
       mesh.userData.neck.rotation.z=pose.neck;
-      mesh.userData.neck.position.y=2.58+pose.bodyBob;
+      mesh.userData.neck.position.y=2.58+pose.bodyBob-pose.neckDrop;
     }
     if(mesh.userData.head)mesh.userData.head.rotation.z=pose.head;
     if(mesh.userData.tail)

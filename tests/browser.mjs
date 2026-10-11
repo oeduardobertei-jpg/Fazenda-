@@ -255,11 +255,11 @@ try{
   assert.ok(advanced>10,'economia deve continuar após alternar modos/restaurar WebGL');
   await page.waitForFunction(()=>{
     const s=window.FazendaVivaBridge.state();
-    return s.horses.some(h=>h.o===s.owners[0]&&h.homeReturns>0);
+    return s.horses.some(h=>h.o===s.owners[0]&&h.excursions>0);
   },null,{timeout:30000});
   await page.waitForFunction(()=>{
     const s=window.FazendaVivaBridge.state();
-    return s.horses.some(h=>h.o===s.owners[0]&&h.pastureStage==='campo'&&Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>30);
+    return s.horses.some(h=>h.o===s.owners[0]&&h.pastureStage==='campo'&&h.motion==='graze'&&Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>30);
   },null,{timeout:30000});
   await page.locator('#manageQuick').click();await page.locator('#tab-cavalos').click();
   await page.locator('[data-mgaction="watchPasture"]').click();

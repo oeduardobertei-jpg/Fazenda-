@@ -323,7 +323,7 @@ try{
   assert.ok(maxHorseStep<1.3,'circulação não pode teletransportar animais na mesma fazenda');
   assert.ok(fenceCrossings>=10,'saídas e retornos pelo portão precisam acontecer');
   for(const o of get().owners)assert.ok([...horseSpans.values()].some(h=>h.owner===o&&h.max>30),'cavalos precisam explorar os campos de '+o.name);
-  assert.ok(get().horses.filter(h=>h.homeReturns>0).length>=5,'pastoreio deve incluir retorno à água e ao manejo');
+  assert.ok(get().horses.filter(h=>h.excursions>0).length>=5,'pastoreio deve incluir retorno à água e ao manejo');
   assert.ok(joinedRuralEvent,'participação em evento rural não foi exercitada');
   assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
   assert.ok(roadMiddle>10,'trechos centrais de trilha devem ser utilizados');
@@ -479,7 +479,7 @@ try{
     tarefas:get().farmers.reduce((sum,f)=>sum+(f.tasksDone||0),0),
     caminhos:get().trails.length,distanciaMinimaCavalos:+minHorse.toFixed(2),
     intersecoesDeCaminhos:trailIntersections,
-    estadosCavalos:[...horseStates],estadosTrabalhadores:[...workerStates]
+    portoes:fenceCrossings,maxPasso:+maxHorseStep.toFixed(3),excursões:get().horses.reduce((n,h)=>n+(h.excursions||0),0),estadosCavalos:[...horseStates],estadosTrabalhadores:[...workerStates]
   }));
 }finally{
   for(const [k,v]of old)if(v===undefined)delete globalThis[k];else globalThis[k]=v;
