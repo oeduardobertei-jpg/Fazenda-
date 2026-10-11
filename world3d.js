@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.1 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.2 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -478,36 +478,34 @@ const equinePart=(parent,name,color)=>sculptedPart(parent,name,color);
 const humanPart=(parent,name,color)=>sculptedPart(parent,name,color,true);
 
 function makeHorse(h){
-  const group=new THREE.Group(),coat=mat(h.coat||0x81553d);
+  const group=new THREE.Group(),rig=motion.horseRig;
   contactShadow(group,2.7,1.20);
-  const part=(parent,w,y,d,x,py,z)=>{
-    const mesh=new THREE.Mesh(sharedBox(w,y,d),coat);
-    mesh.position.set(x,py,z);parent.add(mesh);return mesh;
-  };
   const body=new THREE.Group();group.add(body);
   equinePart(body,'body',h.coat);group.userData.body=body;
   const neckPivot=new THREE.Group();
-  neckPivot.position.set(1.36,2.58,0);group.add(neckPivot);
+  neckPivot.position.set(rig.neckX,rig.neckY,0);group.add(neckPivot);
   equinePart(neckPivot,'neck',h.coat);
   equinePart(neckPivot,'mane',0x382d27);
-  const headPivot=new THREE.Group();headPivot.position.set(1.02,1.35,0);
+  const headPivot=new THREE.Group();headPivot.position.set(rig.headX,rig.headY,0);
   neckPivot.add(headPivot);equinePart(headPivot,'head',h.coat);
-  const muzzle=equinePart(headPivot,'muzzle',0x716454);group.userData.muzzle=muzzle;
+  equinePart(headPivot,'forelock',0x382d27);
+  const muzzle=equinePart(headPivot,'muzzle',0x635349);group.userData.muzzle=muzzle;
   for(const side of [-1,1]){
-    box(headPivot,.105,.08,.045,.24,.18,side*.263,0x211d19);
-    box(headPivot,.038,.025,.047,.22,.20,side*.265,0xf5e9d5);
-    box(headPivot,.08,.045,.035,1.25,-.34,side*.18,0x292522);
-    const earPivot=new THREE.Group();earPivot.position.set(-.055,.35,side*.18);
+    box(headPivot,.105,.08,.045,.18,.13,side*.286,0x211d19);
+    box(headPivot,.025,.022,.047,.16,.15,side*.289,0xf5e9d5);
+    box(headPivot,.075,.045,.032,1.13,-.50,side*.226,0x292522);
+    box(headPivot,.17,.018,.025,1.07,-.67,side*.18,0x3d302a);
+    const earPivot=new THREE.Group();earPivot.position.set(-.06,.33,side*.18);
     earPivot.rotation.x=side*.14;headPivot.add(earPivot);
     equinePart(earPivot,'ear',h.coat);
   }
   // Lista acompanha a face superior do nariz, em vez de uma placa lateral.
   if(h.id%3===1){
-    for(const [x,y,z,w,height,d,angle] of [[.33,.30,0,.15,.018,.16,-.6],[.68,.01,0,.51,.018,.085,-.65]])
+    for(const [x,y,z,w,height,d,angle] of [[.29,.24,0,.15,.018,.14,-.62],[.68,-.08,0,.48,.018,.075,-.66]])
       box(headPivot,w,height,d,x,y,z,0xe5d7bf).rotation.z=angle;
   }
   const legs=[],knees=[],hooves=[];
-  for(const x of [-1.24,1.22])for(const z of [-.45,.45]){
+  for(const x of rig.legXs)for(const z of [-rig.legZ,rig.legZ]){
     const pivot=new THREE.Group();pivot.position.set(x,1.55,z);group.add(pivot);
     equinePart(pivot,x<0?'hindLeg':'foreLeg',h.coat);
     const knee=new THREE.Group();knee.position.set(0,-.73,0);pivot.add(knee);
@@ -516,7 +514,7 @@ function makeHorse(h){
     const hoof=equinePart(knee,'hoof',0x332d27);hoof.position.y=-.75;hooves.push(hoof);
     batchStaticMeshes(knee);legs.push(pivot);knees.push(knee);
   }
-  const tailPivot=new THREE.Group();tailPivot.position.set(-1.93,2.65,0);group.add(tailPivot);
+  const tailPivot=new THREE.Group();tailPivot.position.set(rig.tailX,rig.tailY,0);group.add(tailPivot);
   equinePart(tailPivot,'tail',0x382d27);
   batchCharacter(body);batchCharacter(neckPivot);batchCharacter(headPivot,[muzzle]);
   // Sinal de trato: flutua acima do animal somente durante/recentemente
@@ -1179,7 +1177,7 @@ function sync(s){
     if(mesh.userData.body)mesh.userData.body.position.y=pose.bodyBob;
     if(mesh.userData.neck){
       mesh.userData.neck.rotation.z=pose.neck;
-      mesh.userData.neck.position.y=2.58+pose.bodyBob-pose.neckDrop;
+      mesh.userData.neck.position.y=motion.horseRig.neckY+pose.bodyBob-pose.neckDrop;
     }
     if(mesh.userData.head)mesh.userData.head.rotation.z=pose.head;
     if(mesh.userData.tail)
