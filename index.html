@@ -105,6 +105,8 @@ const boundTrait=v=>Math.max(25,Math.min(99,Math.round(v)));
 function geneticRating(g){
   return Math.round(g.velocidade*.35+g.resistencia*.40+g.temperamento*.25);
 }
+// Praça de exposições fora dos cinco lotes.
+const fairground={x:-65,y:212};
 function makeHorse(o){
   const id=++horseSerial,q=45+Math.floor(rnd()*45);
   const breed=breeds[Math.floor(rnd()*breeds.length)];
@@ -168,7 +170,8 @@ function placement(o,type,x,y){
     phase:i*2,heading:0,visualHeading:0,wait:0,moving:false,motion:'idle',gait:0,animTime:0,
     color:['#4d8182','#9e774d','#c5a25a'][i]});
 }});
-for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;if(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;
+for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;
+  if(x>-114&&x<-16&&y>165&&y<263)continue; // clareira do centro ruralif(owners.some(o=>Math.hypot(x-o.x,y-o.y)<139))continue;
   if(Math.abs(x-140)<18||Math.abs(x+140)<18||Math.abs(y-140)<17)continue;
   // Corredores de acesso às fazendas, açudes e lavouras não podem nascer dentro das árvores.
   if(owners.some(o=>o.x<-100?x>o.x+115&&x<-130&&Math.abs(y-o.y)<11:
@@ -229,6 +232,39 @@ function screen(x,y){const s=Math.min(W/300,H/260)*zoom;return{x:W/2+(x-panX)*s,
     const barW=Math.max(12,w*.80);
     rect(p.x-barW/2,p.y+h/2+3,barW,Math.max(3,s*.7),'#413b2b');
     rect(p.x-barW/2,p.y+h/2+3,barW*progress/100,Math.max(3,s*.7),'#e7ca70');
+  }
+}
+function drawFairground(){
+  const s=Math.min(W/300,H/260)*zoom;
+  const p=screen(fairground.x,fairground.y);
+  if(p.x<-135*s||p.x>W+135*s||p.y<-100*s||p.y>H+100*s)return;
+  drawRoad(-65,140,-65,183,6);
+  ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s*.67);
+  rect(-37,-25,74,50,'#a5ae79');
+  rect(-32,-20,64,40,'#bba67c');
+  rect(-30,-18,60,36,'#d1bb8e');
+  const accent=ruralEvent?.id==='feira'?'#a95b3e':
+    ruralEvent?.id==='safra'?'#d4b35b':
+    ruralEvent?.id==='insumos'?'#538e87':'#7b9e60';
+  for(const [x,z] of [[-19,-10],[8,-10],[-19,9],[8,9]]){
+    rect(x,z,12,9,ruralEvent?accent:'#9b8a6c');
+    rect(x+1,z+1,10,3,ruralEvent?'#ead6ab':'#b2a27b');
+    for(const px of [x,x+12])rect(px,z+2,.65,8,'#785e43');
+  }
+  rect(-10,-25,20,5,'#8b704d');
+  rect(-8,-23,16,3,ruralEvent?'#f2d78e':'#c1af82');
+  rect(-30,19,60,1.5,'#8b7550');
+  rect(-30,-20,1.5,40,'#8b7550');
+  rect(28,-20,1.5,40,'#8b7550');
+  rect(-3,14,6,2.5,'#619fa6');
+  ctx.restore();
+  if(zoom>=.46){
+    ctx.textAlign='center';
+    ctx.font='bold '+Math.max(10,Math.min(18,2.1*s))+'px system-ui';
+    ctx.strokeStyle='#254732';ctx.lineWidth=3;
+    const title=ruralEvent?'🎪 '+ruralEvent.name:'🏛️ Centro Rural';
+    ctx.strokeText(title,p.x,p.y-19*s);
+    ctx.fillStyle='#fff1ce';ctx.fillText(title,p.x,p.y-19*s);
   }
 }
 function drawLandscape(){const s=Math.min(W/300,H/260)*zoom;for(const field of fields){let p=screen(field.x,field.y),w=field.w*s,h=field.h*s*.67;rect(p.x-w/2,p.y-h/2,w,h,'#b4a36c');for(let i=1;i<8;i++){ctx.strokeStyle=i%2?'#68884a':'#d4bf7a';ctx.lineWidth=Math.max(1,s*.9);ctx.beginPath();ctx.moveTo(p.x-w/2+i*w/8,p.y-h/2);ctx.lineTo(p.x-w/2+i*w/8,p.y+h/2);ctx.stroke()}}for(const lake of ponds){let p=screen(lake.x,lake.y);ctx.fillStyle='#5d9ba0';ctx.beginPath();ctx.ellipse(p.x,p.y,lake.rx*s,lake.ry*s*.67,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#c1c792';ctx.lineWidth=2;ctx.stroke()}}function drawTree(t){let p=screen(t.x,t.y),s=Math.min(W/300,H/260)*zoom*t.s;rect(p.x-1*s,p.y,2*s,5*s,'#755338');ctx.fillStyle='#467a41';ctx.beginPath();ctx.arc(p.x,p.y-2*s,4*s,0,Math.PI*2);ctx.fill();ctx.fillStyle='#689951';ctx.beginPath();ctx.arc(p.x-1*s,p.y-3*s,2.5*s,0,Math.PI*2);ctx.fill()}
@@ -299,6 +335,7 @@ function render(){
     else{let x=o.x<0?-140:140;drawRoad(o.x,o.y,x,o.y,7);drawRoad(x,o.y,x,140,7)}
   }
   drawLandscape();
+  drawFairground();
   // Trilhas compactadas em três camadas, como no renderizador 3D.
   // Margem de terra, centro de areia e duas marcas de passagem.
   for(const t of farmTrails()){
@@ -1249,6 +1286,7 @@ function managementContent(tab){
       statCard('🐎','Índice equestre',price(marketIndex('horse')))+
       statCard('🌾','Índice agrícola',price(marketIndex('grain')))+
       '</div><h4>🌾 Agenda regional</h4>'+activity+
+      '<button type="button" class="mgAction" data-mgaction="visitFair">📍 Visitar Centro Rural no mapa</button>'+
       '<h4>🐎 Negociações entre cabanhas</h4>'+
       (regionalHorseOffers().length?
         regionalHorseOffers().map(offer=>{
@@ -1326,6 +1364,12 @@ $('manageBody').onclick=e=>{
   const index=Number(button.dataset.index||0),action=button.dataset.mgaction;
   if(action==='buyHorse'){
     $('buyhorse').onclick();renderManagement(true);return;
+  }
+  if(action==='visitFair'){
+    panX=fairground.x;panY=fairground.y;zoom=2.25;overview=false;
+    $('map').textContent='🗺️ Mapa';
+    $('status').textContent='🏛️ Visitando o Centro Rural.';
+    closeManagement();return;
   }
   if(action==='buyRegional'){
     buyRegionalHorse(Number(button.dataset.id||0));renderManagement(true);return;
@@ -1620,7 +1664,7 @@ $('visitFarm').onclick=()=>{
 $('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;$('panel').hidden=true;$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 window.FazendaVivaBridge={
-  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory}),
+  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground}),
   mode:(active)=>{mode3D=!!active;document.getElementById('renderStatus').textContent=active?'🌄 3D ativo':'🗺️ 2D compatível'}
 };
 setTimeout(()=>{
