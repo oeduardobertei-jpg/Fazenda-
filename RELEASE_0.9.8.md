@@ -85,6 +85,13 @@ https://github.com/oeduardobertei-jpg/Fazenda-/actions/runs/38108137191.
 A rodada após os ajustes visuais também passou (incluindo pixels Canvas e aproximação dos animais):
 https://github.com/oeduardobertei-jpg/Fazenda-/actions/runs/38108431659.
 
+A execução final do código também passou, com mensagens/rótulos corrigidos,
+27 capturas, cinco nomes regionais livres dos controles e funcionários próximos:
+https://github.com/oeduardobertei-jpg/Fazenda-/actions/runs/38108826947.
+Código testado: `52295cbabdf7c60d881f241640651d41a3d446ce`.
+A documentação posterior não altera esse código. Recuperação de contexto
+confirmada, simulação até o dia 81 após recuperação, zero erros JavaScript.
+
 ## Evidência de navegador e inspeção visual
 
 Chromium real com WebGL2/SwiftShader, viewports 320×568, 360×640, 390×844,
@@ -109,7 +116,7 @@ mesmas 261→201 chamadas. Seus FPS de software variaram de aproximadamente 3 a
 16,9 nas viewports da 0.9.8: diagnóstico curto do runner, sem equivalência com
 um telefone ou prova de FPS sustentado.
 
-A inspeção humana das capturas conferiu legibilidade, cortes dos painéis,
+A inspeção visual das capturas pelo assistente conferiu legibilidade, cortes dos painéis,
 composição, estradas e silhuetas. Ela encontrou problemas que as simulações
 não detectaram: solo do piquete encobrindo os cavalos no Canvas e orientação
 sobre a cena em paisagem. Ambos foram corrigidos; um teste lê os pixels do

@@ -255,7 +255,7 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 
 **Navegador real e inspeção visual:** Chromium/WebGL2 com SwiftShader aprovou cinco viewports, seis abas de gestão, pausa/guia, câmera, pinça por toque, cancelamento de gesto, normal/econômico, trocas 2D↔3D, pixels do cavalo no Canvas e recuperação real de contexto. Foram inspecionadas capturas da interface, visão local/regional e animais próximos. Comparação 390×844, DPR 1,2: 261→201 chamadas de desenho (−23%); 137.909→144.977 triângulos (+5%). Ver evidências e limites em `RELEASE_0.9.8.md`.
 
-**Transparência:** geometria Three.js em Node, navegador com GPU por software e inspeção humana de capturas são verificações distintas. Nenhuma equivale a Android físico. Naturalidade em movimento, temperatura/consumo e FPS no aparelho continuam pendentes.
+**Transparência:** geometria Three.js em Node, navegador com GPU por software e inspeção visual de capturas são verificações distintas. Nenhuma equivale a Android físico. Naturalidade em movimento, temperatura/consumo e FPS no aparelho continuam pendentes.
 
 ## Controles
 
