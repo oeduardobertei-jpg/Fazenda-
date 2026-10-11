@@ -16,7 +16,7 @@ As capturas da 0.9.9.1 mostraram cavalos com pescoço excessivamente alto/estrei
 - Articulações anatômicas compartilhadas entre Canvas e Three.js; pastoreio ajustado à nova cabeça, mantendo focinho e cascos acima do solo.
 - Mantidos manejo, circulação, comércio, economia e o visual dos trabalhadores.
 
-**Verificação em andamento:** testes Node passaram; a revisão WebGL e a inspeção das capturas serão registradas em `RELEASE_0.9.9.2.md`. A aprovação visual do usuário permanece necessária.
+**Verificação:** `npm test` e Chromium/WebGL2 por software passaram em cinco viewports. Capturas comparativas de perfil/frente/pasto e cenas 2D/3D foram inspecionadas. Corrigidos o vão da crina e a lista interrompida encontrados na primeira inspeção. Mantidas 165 chamadas na cena inicial, com +0,56% de triângulos. Ver `RELEASE_0.9.9.2.md`; avaliação visual e desempenho no Android físico continuam pendentes.
 
 ## 0.9.9.1 — revisão dos personagens
 

@@ -91,7 +91,7 @@ Escopo ampliado por solicitação do usuário após as capturas Android da 0.9.8
 **Série incremental 0.9.9.1 → 1.0 — direção aprovada pelo usuário**
 - **0.9.9.1:** anatomia/silhueta dos cavalos e dos NPCs, continuidade visual 2D/3D, captura comparativa dos construtores de produção e orçamento gráfico.
 - **Verificação da 0.9.9.1:** smoke e geometria locais, Chromium/WebGL2 por software em cinco viewports e inspeção das capturas finais aprovados. Orçamento inicial 192→165 chamadas (+4% triângulos); ajustes de repouso e versão inteira no HUD. Android físico pendente. Ver `RELEASE_0.9.9.1.md`.
-- **0.9.9.2:** revisão adicional da anatomia equina após capturas Android: pescoço/cabeça, dorso/garupa, membros e silhueta de frente. Mantidos os fazendeiros. Validação WebGL e aprovação visual ainda em andamento.
+- **0.9.9.2:** revisão adicional da anatomia equina após capturas Android: pescoço/cabeça, dorso/garupa, membros e silhueta de frente. Mantidos os fazendeiros. Testes Node e Chromium/WebGL2 por software passaram em cinco viewports; capturas finais inspecionadas, 165 chamadas e 152.533 triângulos na cena inicial de 390×844. Aprovação visual e desempenho Android físico ainda pendentes.
 - **Próxima etapa:** refinar passadas, giros, descanso e gestos de manejo após avaliar a nova aparência.
 - **Etapas seguintes:** integrar personagens à arte das propriedades, revisar usabilidade mobile e balanceamento. Corrigir regressões antes de ampliar escopo.
 - Cada etapa deve ter link testável, testes automatizados e inspeção visual descritos separadamente. A numeração não substitui os critérios de aceitação.
