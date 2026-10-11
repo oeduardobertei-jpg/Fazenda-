@@ -500,10 +500,7 @@ function makeHorse(h){
     equinePart(earPivot,'ear',h.coat);
   }
   // Lista acompanha a face superior do nariz, em vez de uma placa lateral.
-  if(h.id%3===1){
-    for(const [x,y,z,w,height,d,angle] of [[.29,.24,0,.15,.018,.14,-.62],[.68,-.08,0,.48,.018,.075,-.66]])
-      box(headPivot,w,height,d,x,y,z,0xe5d7bf).rotation.z=angle;
-  }
+  if(h.id%3===1)equinePart(headPivot,'blaze',0xe5d7bf);
   const legs=[],knees=[],hooves=[];
   for(const x of rig.legXs)for(const z of [-rig.legZ,rig.legZ]){
     const pivot=new THREE.Group();pivot.position.set(x,1.55,z);group.add(pivot);

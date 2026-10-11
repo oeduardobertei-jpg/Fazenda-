@@ -4,6 +4,20 @@
   'use strict';
   const TAU=Math.PI*2;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const neckForm=[[-.08,-.32,.51,.42],[.00,-.02,.54,.42],[.14,.31,.49,.35],
+    [.30,.61,.40,.29],[.46,.88,.31,.25],[.63,1.08,.23,.22],[.76,1.15,.15,.19]];
+  const headForm=[[-.14,.04,.15,.19],[.03,.02,.30,.27],[.24,-.04,.33,.29],
+    [.45,-.18,.28,.25],[.68,-.35,.22,.22],[.88,-.48,.18,.21],[1.05,-.53,.16,.20]];
+  // Seguir a superfície real mantém crina/lista ligadas à anatomia em todos
+  // os ângulos. O centro fica ligeiramente dentro da pele, sem faixas soltas.
+  function surfaceTrace(rings,indices,radius,width,inset){
+    return indices.map((i,j)=>{
+      const [x,y,r]=rings[i],prev=rings[Math.max(0,i-1)],next=rings[Math.min(rings.length-1,i+1)];
+      const dx=next[0]-prev[0],dy=next[1]-prev[1],len=Math.hypot(dx,dy)||1;
+      const taper=j===indices.length-1?.55:1;
+      return [x-dy/len*(r-inset),y+dx/len*(r-inset),radius*taper,width*taper];
+    });
+  }
   // Secções da mesma anatomia nos dois renderizadores: centro X/altura,
   // raio vertical e largura. Os anéis acompanham a curva de cada volume.
   const horseForm=Object.freeze({
@@ -13,16 +27,14 @@
       [.40,2.35,.65,.65],[.77,2.40,.72,.64],[1.08,2.28,.63,.52],
       [1.35,2.15,.45,.35],[1.48,2.15,.14,.18]],
     // Base muscular ligada ao peito; a crista arqueia até a nuca.
-    neck:[[-.08,-.32,.51,.42],[.00,-.02,.54,.42],[.14,.31,.49,.35],
-      [.30,.61,.40,.29],[.46,.88,.31,.25],[.63,1.08,.23,.22],[.76,1.15,.15,.19]],
+    neck:neckForm,
     // Mandíbula distinta do chanfro: cabeça encorpada e focinho inclinado.
-    head:[[-.14,.04,.15,.19],[.03,.02,.30,.27],[.24,-.04,.33,.29],
-      [.45,-.18,.28,.25],[.68,-.35,.22,.22],[.88,-.48,.18,.21],[1.05,-.53,.16,.20]],
+    head:headForm,
     muzzle:[[.98,-.51,.17,.22],[1.12,-.54,.18,.23],[1.22,-.54,.13,.20]],
     ear:[[0,0,.09,.08],[-.025,.13,.065,.06],[.01,.29,.008,.012]],
-    mane:[[-.50,.01,.075,.09],[-.42,.34,.075,.09],[-.27,.64,.07,.085],
-      [-.10,.90,.065,.08],[.10,1.13,.06,.075],[.31,1.28,.055,.065],[.57,1.32,.035,.055]],
-    forelock:[[-.12,.27,.075,.10],[.06,.29,.075,.11],[.25,.17,.035,.08]],
+    mane:surfaceTrace(neckForm,[1,2,3,4,5,6],.045,.085,.012),
+    forelock:surfaceTrace(headForm,[0,1,2],.032,.075,.012),
+    blaze:surfaceTrace(headForm,[2,3,4,5,6],.009,.060,.002),
     tail:[[0,0,.10,.11],[-.15,-.20,.14,.14],[-.29,-.57,.17,.18],
       [-.34,-.99,.17,.17],[-.28,-1.37,.10,.12],[-.15,-1.59,.025,.035]],
     hindLeg:[[-.05,.62,.26,.27],[-.08,.31,.28,.25],[.03,.02,.21,.18],

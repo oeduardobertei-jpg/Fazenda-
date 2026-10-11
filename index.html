@@ -516,11 +516,7 @@ function drawHorseSprite(h){
     const eye=head(.18,.13,side*.286);addBox(eye.x,eye.y,eye.z,.105,.08,.045,'#211d19');
     const nostril=head(1.13,-.50,side*.226);addBox(nostril.x,nostril.y,nostril.z,.075,.045,.032,'#292522',pose.neck+pose.head);
   }
-  if(h.id%3===1){
-    for(const [x,y,w,height,d,angle] of [[.29,.24,.15,.018,.14,-.62],[.68,-.08,.48,.018,.075,-.66]]){
-      const v=head(x,y,0);addBox(v.x,v.y,v.z,w,height,d,'#e5d7bf',pose.neck+pose.head+angle);
-    }
-  }
+  if(h.id%3===1)addForm('blaze','#e5d7bf',head);
   addForm('tail','#382d27',(x,y,z)=>{const v=rotate(x,y,pose.tail);return {x:rig.tailX+v.x,y:rig.tailY+v.y,z}});
   for(let j=0;j<4;j++){
     const x=rig.legXs[j<2?0:1],z=j%2?rig.legZ:-rig.legZ,leg=pose.legs[j];
