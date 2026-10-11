@@ -143,7 +143,7 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 - **Gestão rural:** a aba Equipe indica para cada funcionário se ele está seguindo a rede de trilhas ou usando um desvio seguro pelo terreno.
 - **Cavalos mais legíveis:** novos volumes de peito e garupa, focinho, olhos, crina, orelhas e variações discretas de pelagem. A silhueta 2D também foi aprimorada para acompanhar o modelo tridimensional.
 - **Portões de fazenda:** pares de mourões físicos marcam cada entrada e foram alinhados às conexões viárias sem bloquear passagem.
-- **Regressões:** os testes automáticos verificam agora o uso predominante das trilhas pelos funcionários e a ausência de edifícios cortados pelas rotas. Um teste prolongado simulado alcançou o **dia 2.131**, com **64 instalações**, **1.383 tarefas realizadas**, **111 segmentos internos** e **zero colisões de trilhas com prédios** detectadas nas amostras.
+- **Regressões:** os testes automáticos verificam agora o uso predominante das trilhas pelos funcionários e a ausência de edifícios cortados pelas rotas. Um teste prolongado simulado alcançou o **dia 2.131**, com **63 instalações**, **1.383 tarefas realizadas**, **111 segmentos internos** e **zero colisões de trilhas com prédios** detectadas nas amostras.
 
 **Limite e próximo passo:** a animação continua procedural e low-poly. Falta conferir o resultado diretamente em um Android com WebGL real. Os testes não provam ausência total de artefatos de renderização; cobrem geometria lógica e renderizador Three.js simulado.
 
@@ -182,7 +182,7 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 #### Testes
 - Smoke de simulação valida todas as estruturas já existentes, as rotas dos NPCs, a reprodução, genética, transação real entre dois proprietários, crédito/débito de caixa, estoque de animais e proteção contra compra duplicada.
 - Teste 3D simulado valida a orientação das estradas, o aparecimento das tendas de evento, a regeneração quando o evento muda, o cache de objetos sem alteração e as lavouras instanciadas.
-- **Simulação prolongada aprovada:** dia **3.146**, **64 instalações**, **1.940 serviços de trabalhadores** e **zero travessias de trilhas por dentro dos edifícios detectadas nas amostras**.
+- **Simulação prolongada aprovada:** dia **3.146**, **63 instalações**, **1.940 serviços de trabalhadores** e **zero travessias de trilhas por dentro dos edifícios detectadas nas amostras**.
 
 **Ainda pendente antes da 1.0:** validar a aparência e o desempenho em WebGL no Android real, ampliar a coerência visual das outras estruturas, aprimorar as animações dos cavalos/NPCs, equilibrar o comércio autônomo de longo prazo e consolidar uma experiência estável e intuitiva. Os testes simulados não substituem revisão visual mobile.
 
@@ -250,7 +250,7 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 - **Acessibilidade:** foco visível, teclas de navegação entre abas, fechamento por Escape e contenção do foco na gestão. A gestão continua pausando o mundo.
 - **QA corrigido e ampliado:** o smoke 0.9.7 imprimia PASS e depois falhava por um timer fora do ambiente simulado. O harness agora isola os timers; há testes de poses e matrizes/buffers com Three.js real, além do teste WebGL/Chromium e capturas em cinco viewports no CI.
 
-**Validação local:** simulação e renderizador simulado passaram; poses/articulações e geometria Three.js real passaram. Na simulação amostrada: dia 1.221, 64 instalações, 15 trabalhadores, 759 serviços, zero interseções de trilhas com edifícios e distância mínima entre cavalos de 6,06 unidades. Em geometria real: 15 malhas para a sede detalhada; casco apoiado em y=0,420 e focinho em pasto em y≈0,539.
+**Validação local:** simulação e renderizador simulado passaram; poses/articulações e geometria Three.js real passaram. Na simulação amostrada: dia 1.231, 63 instalações, 15 trabalhadores, 882 serviços, zero interseções de trilhas com edifícios e distância mínima entre cavalos de 6,02 unidades. Em geometria real: 15 malhas para a sede detalhada; casco apoiado em y=0,420 e focinho em pasto em y≈0,539.
 
 **Transparência:** geometria real em Node não é renderização WebGL. O teste `browser.mjs` usa Chromium/WebGL2 com SwiftShader (GPU por software), capturas e medidas reais do renderizador; só deve ser declarado aprovado depois de executado. Android físico, temperatura/consumo e FPS no aparelho continuam pendentes.
 

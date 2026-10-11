@@ -7,7 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 
-const root=fileURLToPath(new URL('..',import.meta.url));
+const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const output=resolve(root,'qa-artifacts');mkdirSync(output,{recursive:true});
 const baseline=resolve(output,'baseline');mkdirSync(baseline,{recursive:true});
 const baselineRef=process.env.FAZENDA_BASELINE_REF||'8f28cad65071b063487ce18934d75817ad990e51';
@@ -43,8 +43,16 @@ async function open(width,height,route='/'){
     request=>request.fulfill({path:resolve(root,'node_modules/three/build/three.module.js'),
       contentType:'text/javascript',headers:{'Access-Control-Allow-Origin':'*'}}));
   await page.goto(url+route);
-  await page.waitForFunction(()=>window.FazendaViva3DReady&&
-    document.getElementById('renderMode').textContent.includes('2D'),{timeout:20000});
+  try{
+    await page.waitForFunction(()=>window.FazendaViva3DReady&&
+      document.getElementById('renderMode').textContent.includes('2D'),null,{timeout:20000});
+  }catch(error){
+    await page.screenshot({path:resolve(output,`failed-start-${width}x${height}.png`)});
+    writeFileSync(resolve(output,'failed-start.json'),JSON.stringify({
+      url:page.url(),text:await page.locator('body').innerText(),errors
+    },null,2));
+    throw error;
+  }
   await page.evaluate(()=>{
     const bridge=window.FazendaVivaBridge,original=bridge.reportPerformance;
     window.__qaSamples=[];
@@ -53,7 +61,7 @@ async function open(width,height,route='/'){
   return {context,page};
 }
 async function measurements(page){
-  await page.waitForFunction(()=>window.__qaSamples.some(s=>s.mode==='3D'&&s.calls>0),{timeout:15000});
+  await page.waitForFunction(()=>window.__qaSamples.some(s=>s.mode==='3D'&&s.calls>0),null,{timeout:15000});
   return page.evaluate(()=>{
     const samples=window.__qaSamples.filter(s=>s.mode==='3D'&&s.calls>0);
     return {samples:samples.length,calls:Math.max(...samples.map(s=>s.calls)),
@@ -68,6 +76,7 @@ try{
   const before=await measurements(basePage);
   await basePage.screenshot({path:resolve(output,'0.9.7-portrait.png')});
   results.push({version:'0.9.7',viewport:'390x844',...before});
+  console.log('BASELINE',JSON.stringify(results.at(-1)));
   await baseContext.close();
 
   for(const [width,height] of [[390,844],[320,568],[360,640],[844,390],[1365,900]]){
@@ -81,6 +90,7 @@ try{
     const after=await measurements(page);
     assert.ok(after.calls<300,'orçamento inicial: menos de 300 chamadas na visão local');
     if(width===390)assert.ok(after.calls<before.calls*.8,'redução real de chamadas com geometria estática fundida');
+    console.log('RENDER',width+'x'+height,JSON.stringify(after));
     await page.screenshot({path:resolve(output,`0.9.8-world-${width}x${height}.png`)});
     const bounds=await page.evaluate(()=>{
       const ids=['hud','economy','topTools','bottom','zoomTools'];
@@ -124,6 +134,34 @@ try{
     await page.mouse.down();await page.mouse.move(width*.45+28,height*.55,{steps:4});await page.mouse.up();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget),null,'arrasto encerra acompanhamento');
     await page.locator('#focus').click();
+    if(width===390){
+      const cdp=await context.newCDPSession(page);
+      const touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{
+        type,touchPoints:points.map(([x,y,id])=>({x,y,id,radiusX:4,radiusY:4,force:1}))
+      });
+      const startZoom=await page.evaluate(()=>window.FazendaVivaBridge.state().zoom);
+      await touch('touchStart',[[150,440,1],[230,440,2]]);
+      await touch('touchMove',[[130,440,1],[250,440,2]]);
+      await touch('touchMove',[[110,440,1],[270,440,2]]);
+      await touch('touchCancel',[]);
+      const pinched=await page.evaluate(()=>window.FazendaVivaBridge.state().zoom);
+      assert.ok(pinched>startZoom,'pinça real deve aproximar a câmera');
+      const startPan=await page.evaluate(()=>window.FazendaVivaBridge.state().panX);
+      await touch('touchStart',[[180,440,3]]);
+      await touch('touchMove',[[210,440,3]]);
+      await touch('touchEnd',[]);
+      assert.notEqual(await page.evaluate(()=>window.FazendaVivaBridge.state().panX),startPan,
+        'arrasto deve funcionar após cancelamento de gesto');
+      await cdp.detach();
+      await page.locator('#focus').click();
+      await page.locator('#toggle').click();
+      await page.locator('#panel summary').click();
+      await page.locator('#graphicsMode').click();
+      assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().lowGraphics),true);
+      await page.locator('#graphicsMode').click();
+      assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().lowGraphics),false);
+      await page.locator('#panelClose').click();
+    }
     for(let i=0;i<3;i++){
       await page.locator('#renderMode').click();
       assert.ok((await page.locator('#renderMode').innerText()).includes('3D'));
@@ -148,7 +186,8 @@ try{
     extension.loseContext();
     setTimeout(()=>extension.restoreContext(),600);
   });
-  await page.waitForFunction(()=>document.getElementById('renderMode').textContent.includes('2D'),{timeout:15000});
+  await page.waitForFunction(()=>document.getElementById('renderMode').textContent.includes('3D'),null,{timeout:15000});
+  await page.waitForFunction(()=>document.getElementById('renderMode').textContent.includes('2D'),null,{timeout:15000});
   await page.waitForTimeout(800);
   assert.equal(await page.locator('#error').isVisible(),false);
   await page.locator('#speed').click();await page.locator('#speed').click();

@@ -198,7 +198,7 @@ try{
   ui.get('graphicsMode').onclick();
   assert.equal(get().lowGraphics,false,'modo normal');
   ui.get('speed').onclick();ui.get('speed').onclick(); // 8x
-  let ms=performance.now(),overlap=0,outside=0,maxSite=0,minHorse=1e9;
+  let ms=Math.max(performance.now(),guideTime),overlap=0,outside=0,maxSite=0,minHorse=1e9;
   let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
   const horseStates=new Set(),workerStates=new Set();
   let joinedRuralEvent=false;

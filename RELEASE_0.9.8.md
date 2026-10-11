@@ -66,9 +66,9 @@ só, para declarar as cinco fazendas visualmente concluídas para a 1.0.
 | motion.mjs | Poses puras, apoio e transições | PASS |
 | geometry3d.mjs | Geometria/matrizes/buffers oficiais Three.js, renderizador substituído | PASS |
 
-A simulação amostrada alcançou dia 1.221, 64 instalações, 15 trabalhadores,
-759 serviços e 103 segmentos internos. Nenhuma interseção de trilhas com prédios
-foi detectada nas amostras; distância mínima entre cavalos: 6,06 unidades.
+A simulação amostrada alcançou dia 1.231, 63 instalações, 15 trabalhadores,
+882 serviços e 107 segmentos internos. Nenhuma interseção de trilhas com prédios
+foi detectada nas amostras; distância mínima entre cavalos: 6,02 unidades.
 Esses resultados não são prova de ausência de todo defeito visual.
 
 Com matrizes reais: sede detalhada fundida em 15 malhas; cascos apoiados

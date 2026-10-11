@@ -1739,7 +1739,6 @@ function openManagement(){
   lastDialogFocus=document.activeElement;
   finishGuide();
   setPanel(false);
-  $('panel').hidden=true;
   manageTab='resumo';
   $('management').hidden=false;renderManagement(true);
   $('manageClose').focus?.();
@@ -2181,7 +2180,7 @@ $('viewWorkers').onclick=()=>{
   const f=team[viewedWorkerIndex%team.length];
   viewedWorkerIndex++;
   follow('worker',f,f.role);panX=f.x;panY=f.y;zoom=3.45;overview=false;
-  $('panel').hidden=true;$('map').textContent='🗺️ Mapa';
+  setPanel(false);$('map').textContent='🗺️ Mapa';
   $('status').textContent='👨‍🌾 '+f.role+' · '+(f.activity||'iniciando')+
     ' · '+(f.tasksDone||0)+' serviços concluídos. Toque novamente para o próximo trabalhador.';
 };
@@ -2189,7 +2188,7 @@ $('visitFarm').onclick=()=>{
   stopFollowing();visitIndex=(visitIndex+1)%owners.length;
   const o=owners[visitIndex];
   panX=o.x;panY=o.y;zoom=2.1;overview=false;
-  $('map').textContent='🗺️ Mapa';$('panel').hidden=true;
+  $('map').textContent='🗺️ Mapa';setPanel(false);
   $('status').textContent='🧭 '+o.name;
 };
 $('focus').onclick=()=>{stopFollowing();panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;stopFollowing();setPanel(false);updateSceneContext();$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
