@@ -70,6 +70,26 @@ try{
   expectAnchor(-200);
   expectAnchor(1420); // atravessa o limiar câmera oblíqua -> regional
   expectAnchor(-1200);
+  const beforePinch=bridge.projectedGroundAt(180,480);
+  const zoomBeforePinch=get().zoom;
+  const pointer=(pointerId,x,y)=>({pointerId,pointerType:'touch',
+    clientX:x,clientY:y,cancelable:true,preventDefault:noop});
+  game.callbacks.pointerdown(pointer(3,140,480));
+  game.callbacks.pointerdown(pointer(4,220,480));
+  game.callbacks.pointermove(pointer(3,122,480));
+  game.callbacks.pointermove(pointer(4,238,480));
+  assert.ok(get().zoom>zoomBeforePinch,'pinça de dois dedos deveria ampliar');
+  const afterPinch=bridge.projectedGroundAt(180,480);
+  assert.ok(Math.hypot(beforePinch.x-afterPinch.x,
+    beforePinch.y-afterPinch.y)<.8,
+    'pinça simétrica não deve arrastar o chão visivelmente');
+  game.callbacks.pointercancel(pointer(3,122,480));
+  const zoomAfterCancel=get().zoom;
+  game.callbacks.pointermove(pointer(4,238,500));
+  assert.equal(get().zoom,zoomAfterCancel,
+    'perder captura de um dedo não deve provocar salto de zoom');
+  game.callbacks.pointerup(pointer(4,238,500));
+  assert.equal(get().cameraGesture,false,'estado do gesto deve terminar');
   bridge.mode(false);
   ui.get('perfMode').onclick();
   assert.equal(ui.get('perfHud').hidden,false,'diagnóstico deve ser opcional');
