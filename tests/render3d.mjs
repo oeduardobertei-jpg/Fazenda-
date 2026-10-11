@@ -6,9 +6,10 @@ const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const source=world.slice(world.indexOf('/* Fazenda Viva'));
 assert.ok(source.startsWith('/* Fazenda Viva'));
 const meshes=[];
-let renders=0,frame;
+let renders=0,frame,modelsCreated=0;
 class Mock3D{
   constructor(...args){
+    modelsCreated++;
     this.args=args;this.geometry=args[0];this.material=args[1];
     this.children=[];this.userData={};this.style={};this.visible=true;
     this.domElement={style:{},addEventListener(){}};
@@ -99,7 +100,8 @@ const state={
     x1:-310,y1:-298,x2:-310,y2:-280,
     owner:owner.name,kind:'servico',w:2.5
   }],
-  trees:[],ponds:[],fields:[],panX:-315,panY:-280,zoom:3,
+  trees:[],ponds:[],fields:[{x:390,y:320,w:40,h:28}],
+  fairground:{x:-65,y:212},ruralEvent:null,panX:-315,panY:-280,zoom:3,
   lowGraphics:false
 };
 const previous=new Map();
@@ -138,10 +140,31 @@ try{
   state.lowGraphics=true;frame(280);
   state.zoom=.33;frame(320);
   assert.ok(renders>=7,'3D deve resistir a zoom e troca de qualidade');
+  assert.ok(meshes.some(m=>m.count===77&&m.matrices.length===77),
+    'lavouras instanciadas sem centenas de meshes soltos');
+  const beforeEvent=modelsCreated;
+  state.ruralEvent={id:'feira',name:'Feira regional de criadores',claimed:false};
+  frame(420);
+  assert.ok(modelsCreated-beforeEvent>45,
+    'feira deve gerar tendas tridimensionais ao abrir');
+  const cached=modelsCreated;
+  frame(480);
+  assert.ok(modelsCreated-cached<12,
+    'tendas devem permanecer em cache quando evento não muda');
+  state.ruralEvent={id:'insumos',name:'Central de suprimentos',claimed:false};
+  const beforeSecond=modelsCreated;
+  frame(540);
+  assert.ok(modelsCreated-beforeSecond>45,
+    'mudanças econômicas devem atualizar os estandes 3D');
+  state.lowGraphics=false;
+  frame(600);
+  assert.ok(renders>=10,'eventos e troca de qualidade não devem parar renderização');
+
   assert.ok(!ui.get('renderStatus').textContent.includes('indisponível'),
     'renderizador não pode desativar por erro');
   console.log('PASS world3d',JSON.stringify({
     frames:renders,instanced:meshes.length,
+    crops:'instanced',fairground:'event-responsive',
     diagonals:diagonals.length,
     horse:'idle/walk/graze',worker:'walk/work',roadRotations:'OK'
   }));
