@@ -86,7 +86,14 @@ Escopo ampliado por solicitação do usuário após as capturas Android da 0.9.8
 
 **Verificação:** regressões locais e Chromium/WebGL2 por software passaram em cinco viewports. Inspeção manual de capturas 2D/3D realizada. Incluídos manejo contínuo do plantel inicial, passagem individual pela porteira, encontros sem bloqueio persistente e colisão contínua em quinas. Cena inicial: 201→192 chamadas, com +0,6% de triângulos. Ver `RELEASE_0.9.9.md`; Android físico permanece pendente.
 
-**Congelamento para a 1.0 após esta revisão:** correção de defeitos críticos, teste em celulares reais, orçamento de performance e aprovação visual do usuário. As capturas da 0.9.8 comprovam execução no aparelho, mas não medem FPS/temperatura nem validam a nova 0.9.9.
+**Congelamento para a 1.0 após as revisões incrementais:** correção de defeitos críticos, teste em celulares reais, orçamento de performance e aprovação visual do usuário. As capturas da 0.9.8 comprovam execução no aparelho, mas não medem FPS/temperatura nem validam a nova 0.9.9.
+
+**Série incremental 0.9.9.1 → 1.0 — direção aprovada pelo usuário**
+- **0.9.9.1:** anatomia/silhueta dos cavalos e dos NPCs, continuidade visual 2D/3D, captura comparativa dos construtores de produção e orçamento gráfico.
+- **Verificação da 0.9.9.1:** smoke e geometria locais, Chromium/WebGL2 por software em cinco viewports e inspeção das capturas finais aprovados. Orçamento inicial 192→165 chamadas (+4% triângulos); ajustes de repouso e versão inteira no HUD. Android físico pendente. Ver `RELEASE_0.9.9.1.md`.
+- **0.9.9.2 (proposta):** refinar passadas, giros, descanso e gestos de manejo após avaliar a aparência da primeira etapa.
+- **Etapas seguintes:** integrar personagens à arte das propriedades, revisar usabilidade mobile e balanceamento. Corrigir regressões antes de ampliar escopo.
+- Cada etapa deve ter link testável, testes automatizados e inspeção visual descritos separadamente. A numeração não substitui os critérios de aceitação.
 
 **1.0 — lançamento**  
 Somente quando os critérios acima forem cumpridos/explicitamente revisados.
