@@ -8,12 +8,13 @@ assert.ok(source.startsWith('/* Fazenda Viva'));
 const meshes=[];
 let renders=0,frame,modelsCreated=0;
 const pixelRatios=[];
+let rendererDom=null;
 class Mock3D{
   constructor(...args){
     modelsCreated++;
     this.args=args;this.geometry=args[0];this.material=args[1];
     this.children=[];this.userData={};this.style={};this.visible=true;
-    this.domElement={style:{},addEventListener(){}};
+    this.domElement={style:{},listeners:{},addEventListener(type,fn){this.listeners[type]=fn}};
     this.position={x:0,y:0,z:0,set:(x,y,z)=>{
       Object.assign(this.position,{x,y,z});
     }};
@@ -29,7 +30,7 @@ class Mock3D{
   remove(item){this.children=this.children.filter(c=>c!==item)}
   setAttribute(){}
   computeVertexNormals(){}
-  setPixelRatio(value){pixelRatios.push(value)}
+  setPixelRatio(value){pixelRatios.push(value);rendererDom=this.domElement}
   setSize(){}
   setClearColor(){}
   updateProjectionMatrix(){}
@@ -192,6 +193,20 @@ try{
   staleFrame(20100);
   assert.equal(renders,restarted,'RAF anterior não pode duplicar desenhos após voltar ao 3D');
   assert.ok(renders>beforeStop,'volta ao 3D deve retomar o renderizador');
+  assert.equal(typeof rendererDom.listeners.webglcontextlost,'function',
+    'deve inscrever-se à perda de contexto WebGL');
+  let prevented=false;
+  rendererDom.listeners.webglcontextlost({preventDefault(){prevented=true}});
+  assert.ok(prevented,'interrupção WebGL precisa chamar preventDefault');
+  const stoppedAt=renders;
+  frame(20200);
+  assert.equal(renders,stoppedAt,
+    'desenho não deve continuar após perder WebGL');
+  rendererDom.listeners.webglcontextrestored();
+  frame(20300);
+  assert.ok(renders>stoppedAt,
+    'renderização deve reiniciar após restauração do contexto');
+
 
   assert.ok(!ui.get('renderStatus').textContent.includes('indisponível'),
     'renderizador não pode desativar por erro');
