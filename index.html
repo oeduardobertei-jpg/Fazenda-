@@ -426,7 +426,10 @@ function drawRoad(x1,y1,x2,y2,width=9){
 // Silhuetas 2D usam os mesmos heading/gait/motion usados nos modelos Three.js.
 function drawHorseSprite(h){
   const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom*(horseAge(h)<1?.64:horseAge(h)<2?.82:1);
-  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-h.heading);ctx.scale(s,s*.67);
+  ctx.save();
+  ctx.fillStyle='#35523655';ctx.beginPath();
+  ctx.ellipse(p.x,p.y+s*.70,s*2.4,s*.72,0,0,Math.PI*2);ctx.fill();
+  ctx.translate(p.x,p.y);ctx.rotate(-h.heading);ctx.scale(s,s*.67);
   const movement=h.motion==='walk'?Math.sin(h.gait):0;
   const grazing=h.motion==='graze';
   // Pelagem, peito e garupa seguem a mesma silhueta low-poly do modelo 3D.
@@ -448,6 +451,10 @@ function drawHorseSprite(h){
 }
 function drawWorkerSprite(f){
   const p=screen(f.x,f.y),s=Math.min(W/300,H/260)*zoom;
+  ctx.save();
+  ctx.fillStyle='#2a3a2b50';ctx.beginPath();
+  ctx.ellipse(p.x,p.y+s*.34,s*.83,s*.34,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
   ctx.save();ctx.translate(p.x,p.y);
   ctx.rotate(f.visualHeading??f.heading??0);ctx.scale(s,s*.67);
   const walk=f.motion==='walk'?Math.sin(f.gait)*.28:0;
@@ -464,6 +471,20 @@ function drawWorkerSprite(f){
     f.role==='agricultor'?'#987044':f.role==='tratador'?'#6b9ca5':'#dbbd79');
   ctx.restore();
   if(f.motion==='work'&&zoom>1.45){
+    // Trabalho legível no 2D, usando a mesma fase procedural das ferramentas 3D.
+    const phase=(f.animTime||0)*2.8,
+      hue=f.role==='tratador'?'#9ed1d6':
+        f.role==='agricultor'?'#d7cc8a':'#e8dbb8';
+    ctx.save();ctx.fillStyle=hue;
+    for(let k=0;k<3;k++){
+      const travel=(phase*.18+k*.31)%1,
+        size=Math.max(1,s*.24*(1-travel));
+      ctx.beginPath();
+      ctx.arc(p.x+s*(1.4+(k-1)*.40),
+        p.y-s*(2.2+travel*2.25),size,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
     ctx.font='bold '+Math.min(19,Math.max(10,3.3*s))+'px sans-serif';
     ctx.textAlign='center';
     ctx.fillText(f.role==='tratador'?'🐎':f.role==='agricultor'?'🌾':'📋',
