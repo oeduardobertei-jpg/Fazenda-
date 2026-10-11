@@ -204,7 +204,13 @@ try{
   const player=get().owners[0];
   const stable=get().buildings.find(b=>b.o===player&&b.type==='stable');
   stable.tier=3;
+  const frozenDay=get().day;
+  for(let k=0;k<40;k++){ms+=50;step(ms)}
+  assert.equal(get().day,frozenDay,'jogo deve pausar durante gestão mobile');
+  ui.get('manageClose').onclick();
   for(let k=0;k<25;k++){ms+=50;step(ms)}
+  ui.get('manageOpen').onclick();
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
   const originalHerd=get().horses.filter(h=>h.o===player).length;
   const cashBefore=player.cash;
   ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'breedHorse'}})}});
