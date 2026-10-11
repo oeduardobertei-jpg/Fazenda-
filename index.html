@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.6</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.7</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#17271c;color:#fff;font:14px system-ui;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#hud{position:fixed;top:10px;left:10px;right:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;pointer-events:none}.pill{background:#152d25e8;border:1px solid #7a9877;border-radius:12px;padding:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#bottom{position:fixed;bottom:12px;left:8px;right:8px;display:flex;gap:5px}button{background:#254d38;color:white;border:1px solid #93b58c;border-radius:9px;padding:12px 6px;flex:1;font:inherit}#panel{position:fixed;bottom:76px;left:8px;right:8px;background:#183628f2;border:1px solid #7a9877;border-radius:14px;padding:12px;max-height:50dvh;overflow:auto}#panel[hidden]{display:none}#actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}#status{position:fixed;top:102px;left:8px;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none;transition:opacity .4s}#error{position:fixed;top:35%;left:12px;right:12px;background:#4a2828;border:2px solid orange;border-radius:12px;padding:15px}#error[hidden]{display:none}@media(max-width:450px){button{font-size:12px;padding:11px 3px}.pill{font-size:11px}}#game{position:fixed;inset:0;z-index:0}
 #hud,#status,#economy{z-index:5}
 #bottom{z-index:6}
@@ -46,7 +46,7 @@
 @media(max-width:450px){#management{bottom:73px;max-height:79dvh}#manageBody{padding:8px 10px 14px}
 #manageBody .mgValue{font-size:16px}#management .manageHead strong{font-size:15px}}
 </style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.9.6</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Sua cabanha · Construção e gestão</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button" style="display:block;width:100%;margin-top:7px">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" style="display:block;width:100%;margin-top:7px" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Menu</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-label="Gestão da cabanha" aria-modal="true" role="dialog" hidden>
+<canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.9.7</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Sua cabanha · Construção e gestão</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button" style="display:block;width:100%;margin-top:7px">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" style="display:block;width:100%;margin-top:7px" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Menu</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-label="Gestão da cabanha" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong>📊 Gestão da cabanha · ⏸</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" aria-label="Seções da gestão">
 <button data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -146,13 +146,22 @@ function makeHorse(o){
     breed,coat:coats[Math.floor(rnd()*coats.length)],genetics,
     sex:id%2?'femea':'macho',age:3+Math.floor(rnd()*4),bornDay:day,
     motherId:null,fatherId:null,quality:geneticRating(genetics),
-    phase:rnd()*7,offset:rnd()*6,x:o.x,y:o.y,heading:0,motion:'idle',gait:0
+    care:66+Math.floor(rnd()*24),careServices:0,lastCareDay:day,
+    phase:rnd()*7,offset:rnd()*6,x:o.x,y:o.y,heading:0,motion:'idle',gait:0,
+    interacting:false,careEffectUntil:-1
   };
 }
 function horseAge(h){return (h.age||0)+Math.floor(Math.max(0,day-(h.bornDay||1))/365)}
+// 0.9.7 — Bem-estar do animal: influencia valor, produção e interação física.
+function horseCare(h){return Math.max(0,Math.min(100,Number(h.care??72)))}
+function herdCare(o){
+  const herd=horses.filter(h=>h.o===o);
+  return herd.length?Math.round(herd.reduce((n,h)=>n+horseCare(h),0)/herd.length):0;
+}
 function horseSalePrice(h){
   const maturity=horseAge(h)<2?.64:horseAge(h)<3?.83:1;
-  return Math.min(2400,Math.round((650+h.quality*16)*Math.min(1.7,marketIndex('horse'))*maturity));
+  return Math.min(2400,Math.round((650+h.quality*16)*
+    Math.min(1.7,marketIndex('horse'))*maturity*(.82+horseCare(h)*.0018)));
 }function isBuilt(b){return b.status!=='building'}
 function activeSite(o){return buildings.find(b=>b.o===o&&(b.status==='building'||b.status==='upgrading'))}
 function capacity(o){return buildings.filter(b=>b.o===o&&b.type==='stable'&&isBuilt(b)).reduce((n,b)=>n+2*(b.tier||1),0)}function insideFarm(o,x,y,w,h){
@@ -1092,7 +1101,9 @@ function finances(o){
     cost+=({house:9,stable:32,barn:45,paddock:17}[b.type]||0)*tier;
   }
   const herd=horses.filter(h=>h.o===o);
-  gross+=herd.reduce((sum,h)=>sum+Math.round(h.quality*.95*marketIndex('horse')*(horseAge(h)<2?.12:horseAge(h)<3?.60:1)),0);
+  gross+=herd.reduce((sum,h)=>sum+Math.round(h.quality*.95*
+    marketIndex('horse')*(horseAge(h)<2?.12:horseAge(h)<3?.60:1)*
+    (.70+horseCare(h)*.003)),0);
   cost+=herd.length*22;
   // Trabalho feito no mapa melhora a operação real, não apenas a animação:
   // tratadores elevam a receita equestre; agricultores ajudam a produção;
@@ -1172,6 +1183,8 @@ function processBirths(){
     }
     foal.genetics=genetics;
     foal.quality=geneticRating(genetics);
+    foal.care=Math.min(100,Math.round(horseCare(mother)*.70+30));
+    foal.lastCareDay=day;foal.careServices=0;
     foal.breed=mother.breed===pending.fatherBreed?mother.breed:
       (rnd()<.5?mother.breed:pending.fatherBreed);
     foal.coat=rnd()<.5?mother.coat:pending.fatherCoat;
@@ -1659,6 +1672,13 @@ function tick(){
   updateRuralEvent();
   processBirths();
   processRegionalHorseTrades();
+  for(const horse of horses){
+    // Manejo acompanha o calendário: baias existentes amortecem o desgaste,
+    // mas é o tratador que efetivamente recupera os cuidados.
+    const stables=buildings.filter(b=>b.o===horse.o&&b.type==='stable'&&isBuilt(b));
+    const shelter=Math.min(.28,stables.reduce((n,b)=>n+(b.tier||1)*.035,0));
+    horse.care=Math.max(15,Math.min(100,horseCare(horse)-(.86-shelter)));
+  }
   market.grain=Math.max(.75,Math.min(1.35,market.grain+(rnd()-.5)*.12));
   market.horse=Math.max(.8,Math.min(1.4,market.horse+(rnd()-.5)*.1));
   for(const o of owners){
@@ -1952,4 +1972,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=096"></script></body></html>
+</script><script type="module" src="./world3d.js?v=097"></script></body></html>
