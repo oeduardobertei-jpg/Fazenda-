@@ -38,4 +38,4 @@ button:hover{background:linear-gradient(#49664b,#36543d)}button:active{transform
 #observeTools>div:last-child{display:flex;gap:6px}#observeTools button{flex:1;font-size:11px;min-height:44px}#observeExit{background:linear-gradient(#d9d3a4,#b6c08c);color:#293e2d}
 body.observing #hud,body.observing #economy,body.observing #growthHud,body.observing #topTools,body.observing #bottom,body.observing #status,body.observing #sceneContext,body.observing #renderStatus,body.observing #perfHud{display:none!important}
 body.observing #zoomTools{opacity:.72}body.observing #zoomTools:hover{opacity:1}
-@media(max-width:359px){#hud #date{font-size:9px}#hud .brand{font-size:8.5px}#economy{font-size:9px}#growthDetail{font-size:9px}}
+@media(max-width:359px){#hud{grid-template-columns:55% 45%}#hud #date{font-size:9px}#hud .brand{font-size:8.5px}#economy{font-size:9px}#growthDetail{font-size:9px}}
