@@ -191,9 +191,11 @@ try{
       const audio=await page.evaluate(()=>window.FazendaVivaBridge.state().audio);
       assert.equal(audio.unlocked,true,'áudio desbloqueia após gesto real');
       assert.equal(audio.state,'running');
+      await page.locator('#manageClose').click();
       await page.locator('#soundToggle').click();
       assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().audio.enabled),false);
       await page.locator('#soundToggle').click();
+      await page.locator('#manageQuick').click();
       await page.locator('#tab-ambiente').click();
       await page.locator('#masterVolume').evaluate(el=>{el.value='24';el.dispatchEvent(new Event('input',{bubbles:true}))});
       await page.locator('#ambientVolume').evaluate(el=>{el.value='38';el.dispatchEvent(new Event('input',{bubbles:true}))});
