@@ -58,7 +58,7 @@ let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,lowGraphics=false,paused=false,speed=1
  {id:'insumos',name:'Central de suprimentos',horseFactor:1,grainFactor:1,costFactor:1.10,price:280},
  {id:'mutirao',name:'Mutirão de melhorias rurais',horseFactor:1,grainFactor:1,costFactor:1,price:200}
 ];
-let ruralEvent=null,nextRuralEventDay=101;
+let ruralEvent=null,nextRuralEventDay=101,ruralEventIndex=0;
 const ruralEventHistory=[];
 function updateRuralEvent(){
  if(ruralEvent&&day>=ruralEvent.endsAt){
@@ -67,7 +67,7 @@ function updateRuralEvent(){
    ruralEvent=null;
  }
  if(!ruralEvent&&day>=nextRuralEventDay){
-   const kind=ruralEvents[Math.floor(rnd()*ruralEvents.length)];
+   const kind=ruralEvents[ruralEventIndex++%ruralEvents.length];
    ruralEvent={...kind,startDay:day,endsAt:day+135,claimed:false};
    nextRuralEventDay=day+160+Math.floor(rnd()*9)*5;
    $('news').textContent='📣 Evento regional: '+kind.name+'. Veja Gestão → Mercado.';
