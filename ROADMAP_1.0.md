@@ -42,6 +42,14 @@
 - Mercado permite visitar cada propriedade diretamente.
 - Os critérios de segurança visual dependem ainda de inspeção manual no celular: não estão declarados como concluídos.
 
+**0.9.6 — revisão técnica mobile**
+- Zoom e pan projetados com geometria da câmera atual, sem depender do frame anterior de Three.js.
+- Rotação do ângulo local/regional testada mantendo um ponto do terreno sob o cursor.
+- DPR responsivo a intervalos de quadros demorados e monitor opt-in de FPS/draw calls.
+- Zero loops RAF paralelos quando o usuário alterna 2D/3D; fallback e tentativa de restauração WebGL.
+- A floresta antiga não invade mais a clareira nem as glebas das cinco fazendas.
+- A revisão da 0.9.6 foi validada por simulações, **não** por testes visuais/medição de FPS do Android real.
+
 ## Portões de versão
 
 **0.9.4 — circuito de criadores e marco regional**  
@@ -52,7 +60,8 @@ Genética detalhada, trocas reais de cavalos, Centro Rural visível e primeiro b
 **Ainda pendentes:** verificar realismo das animações no aparelho e ajustar microcolisões ou artefatos que dependam do ângulo da câmera.
 
 **0.9.6 — câmera, desempenho e QA Android**  
-Prova de longo prazo, câmera sem travas, revisão de LOD, fallback WebGL, redução de travessias/artefatos e ajuste do layout.
+**Entregue em código e testes automatizados; QA Android real pendente.** Projeção matemática ancorada da câmera oblíqua durante pinça, controle por múltiplos dedos, LOD por edifício, DPR WebGL adaptativo, indicador FPS opt-in, proteção contra render loops duplicados e recuperação de contexto. Corrigida geração de árvores externas que antes invadia as cinco fazendas devido a um comentário malformado.  
+**Ainda aberto:** medir FPS e calor/consumo no telefone, conferir visual dos controles, inspecionar espaçamento de overlays nos formatos retrato/paisagem e validar estabilidade após múltiplas trocas WebGL reais.
 
 **0.9.7 — equilíbrio e tarefas de alto valor**  
 Criação seletiva mais significativa, escolhas econômicas, negociações e tarefas do manejo realmente visíveis.
