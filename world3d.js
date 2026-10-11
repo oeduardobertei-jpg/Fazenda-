@@ -140,6 +140,29 @@ function batchStaticMeshes(group){
   }
   return group;
 }
+// Personagens: cores por vértice permitem reunir roupa/rosto/acabamentos
+// num desenho por articulação sem eliminar a paleta nem os pivôs móveis.
+let characterMaterial=null;
+function batchCharacter(group,keep=[]){
+  if(!THREE.BufferGeometry.prototype.getAttribute)return group;
+  const meshes=group.children.filter(m=>m.isMesh&&!m.isInstancedMesh&&!m.material.transparent&&!m.children.length&&!keep.includes(m));
+  if(meshes.length<2)return group;
+  const positions=[],normals=[],colors=[];
+  for(const mesh of meshes){
+    mesh.updateMatrix();
+    const geo=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone();geo.applyMatrix4(mesh.matrix);
+    const point=geo.getAttribute('position').array,normal=geo.getAttribute('normal').array,color=mesh.material.color;
+    positions.push(...point);normals.push(...normal);
+    for(let j=0;j<point.length;j+=3)colors.push(color.r,color.g,color.b);
+    geo.dispose();group.remove(mesh);disposeTransientGroup(mesh);
+  }
+  const geometry=new THREE.BufferGeometry();geometry.__fvTransient=true;
+  for(const [name,data] of [['position',positions],['normal',normals],['color',colors]])
+    geometry.setAttribute(name,new THREE.Float32BufferAttribute(data,3));
+  geometry.computeBoundingSphere();
+  if(!characterMaterial)characterMaterial=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+  group.add(new THREE.Mesh(geometry,characterMaterial));return group;
+}
 function ellipse(parent,x,z,rx,rz,color,elevation=.09) {
   // Paisagem em níveis físicos distintos: evita z-fighting (triângulos/radiais nos açudes).
   const m=new THREE.Mesh(new THREE.CircleGeometry(1,48),mat(color));
@@ -495,7 +518,7 @@ function makeHorse(h){
   }
   const tailPivot=new THREE.Group();tailPivot.position.set(-1.93,2.65,0);group.add(tailPivot);
   equinePart(tailPivot,'tail',0x382d27);
-  batchStaticMeshes(body);batchStaticMeshes(neckPivot);batchStaticMeshes(headPivot);
+  batchCharacter(body);batchCharacter(neckPivot);batchCharacter(headPivot,[muzzle]);
   // Sinal de trato: flutua acima do animal somente durante/recentemente
   // após o serviço realizado por um trabalhador desta mesma fazenda.
   const careFx=new THREE.Group();
@@ -540,7 +563,7 @@ function makeWorker(f){
     cylinder(arm,.127,.125,.085,.01,-.45,0,0xd6c7ad,8);
     const elbow=new THREE.Group();elbow.position.set(0,-.49,0);arm.add(elbow);
     humanPart(elbow,'forearm',look.skin);humanPart(elbow,'hand',look.skin);
-    batchStaticMeshes(arm);batchStaticMeshes(elbow);arms.push(arm);elbows.push(elbow);
+    batchCharacter(arm);batchCharacter(elbow);arms.push(arm);elbows.push(elbow);
   }
   humanPart(upper,'torso',look.shirt);
   cylinder(upper,.14,.16,.30,0,2.49,0,look.skin,8);
@@ -575,7 +598,7 @@ function makeWorker(f){
     box(tool,.40,.50,.07,.20,.13,.14,0xe4d8ba);
     box(tool,.15,.075,.08,.20,.40,.16,0x888f85);
   }
-  batchStaticMeshes(upper);batchStaticMeshes(tool);
+  batchCharacter(upper);batchCharacter(tool);
   group.userData.upper=upper;group.userData.elbows=elbows;
   // Ação localizada no equipamento que o trabalhador está operando.
   // Quando a tarefa termina, os elementos somem. Não há efeitos em idle.

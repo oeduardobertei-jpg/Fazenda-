@@ -102,8 +102,15 @@ try{
           pose:{walk:0,graze:i===2?1:0,care:0}};
         const roles=['tratador','agricultor','administrador'];
         const model=i<3?models.makeHorse(horse):models.makeWorker({id:i,role:roles[i-3],color:['#658481','#ad8c57','#718267'][i-3]});
-        if(i===2){const pose=window.FazendaVivaMotion.horse(horse);model.userData.neck.rotation.z=pose.neck;
-          model.userData.neck.position.y=2.58-pose.neckDrop;model.userData.head.rotation.z=pose.head}
+        const entity=i<3?horse:{role:roles[i-3],motion:'idle',gait:0,animTime:0};
+        const pose=i<3?window.FazendaVivaMotion.horse(entity):window.FazendaVivaMotion.worker(entity);
+        model.userData.legs.forEach((leg,j)=>{leg.rotation.z=pose.legs[j].hip;
+          model.userData.knees[j].rotation.z=pose.legs[j].knee;
+          (model.userData.hooves||model.userData.boots)[j].rotation.z=-(pose.legs[j].hip+pose.legs[j].knee)});
+        if(i<3){model.userData.neck.rotation.z=pose.neck;
+          model.userData.neck.position.y=2.58-pose.neckDrop;model.userData.head.rotation.z=pose.head;model.userData.tail.rotation.z=pose.tail}
+        else{model.userData.arms.forEach((arm,j)=>{arm.rotation.z=pose.arms[j];
+          if(model.userData.elbows)model.userData.elbows[j].rotation.z=pose.elbows[j]})}
         scene.add(model);
         const camera=new Three.OrthographicCamera(-3.7,3.7,3.7*height/width,-3.7*height/width,.1,100);
         camera.position.set(i===0?0:i===1?12:8,5,i===0?12:i===1?0:12);camera.lookAt(0,1.9,0);
@@ -128,9 +135,9 @@ try{
     await page.locator('#guideSkip').click();
     await page.locator('#pause').click();
     const after=await measurements(page);
+    console.log('RENDER',width+'x'+height,JSON.stringify(after));
     assert.ok(after.calls<300,'orçamento inicial: menos de 300 chamadas na visão local');
     if(width===390)assert.ok(after.calls<=before.calls*1.10,'nova anatomia deve preservar o orçamento de chamadas da 0.9.9');
-    console.log('RENDER',width+'x'+height,JSON.stringify(after));
     await page.screenshot({path:resolve(output,`0.9.9.1-world-${width}x${height}.png`)});
     const bounds=await page.evaluate(()=>{
       const ids=['hud','economy','topTools','bottom','zoomTools'];

@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Baixar repositório e referência 0.9.8
+      - name: Baixar repositório e referência 0.9.9
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
