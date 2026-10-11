@@ -14,6 +14,8 @@ A versão mantém partidas novas a cada abertura, sem salvamento automático. Pa
 - Anatomia e poses compartilhadas entre Canvas e Three.js. Geometrias reutilizadas e peças estáticas fundidas por material.
 - Pastoreio, manejo, economia, transferências e partidas novas continuam como na 0.9.9.
 
+**Verificação:** `npm test` e Chromium/WebGL2 por software passaram em cinco viewports. Capturas comparativas e cenas 2D/3D foram inspecionadas. Chamadas iniciais: 192→165 (−14,1%), com +4,0% de triângulos; esses números não medem FPS no Android.
+
 A sequência **0.9.9.1, 0.9.9.2…** será feita em etapas pequenas e testáveis. O visual continua estilizado e procedural; a 1.0 depende dos critérios do roadmap, incluindo revisão no celular. Ver `RELEASE_0.9.9.1.md`.
 
 ## 0.9.9 — cavalos em campo e Centro Rural
