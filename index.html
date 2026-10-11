@@ -196,7 +196,99 @@ for(let i=0;i<1400;i++){let x=rnd()*1230-615,y=rnd()*1140-570;
   if(fields.some(f=>Math.abs(x-f.x)<f.w/2+8&&Math.abs(y-f.y)<f.h/2+8))continue;
   if(ponds.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1.5))continue;
   trees.push({x,y,s:.6+rnd()*.95})}function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
-function screen(x,y){const s=Math.min(W/300,H/260)*zoom;return{x:W/2+(x-panX)*s,y:H/2+(y-panY)*s*.67}}function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}function poly(points,c){ctx.fillStyle=c;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()}function drawBuilding(b){
+function screen(x,y){const s=Math.min(W/300,H/260)*zoom;return{x:W/2+(x-panX)*s,y:H/2+(y-panY)*s*.67}}function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}function poly(points,c){ctx.fillStyle=c;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()}// 0.9.5 — cada detalhe rural tem UMA posição física compartilhada entre os
+// renderizadores. É recalculado apenas se edifícios/caminhos mudarem.
+let ranchDecorSites=[],ranchDecorTrails=null,ranchDecorStamp='';
+function ruralHash(n){
+  const a=Math.sin(n*79.341+32.719)*43758.5453;
+  return a-Math.floor(a);
+}
+function distanceToRoad(x,y,t){
+  const dx=t.x2-t.x1,dy=t.y2-t.y1,
+    len=dx*dx+dy*dy||1;
+  const factor=Math.max(0,Math.min(1,
+    ((x-t.x1)*dx+(y-t.y1)*dy)/len));
+  return Math.hypot(x-t.x1-factor*dx,y-t.y1-factor*dy);
+}
+function farmLandscaping(){
+  const trails=farmTrails();
+  const stamp=buildings.map(b=>
+    [b.x,b.y,b.w,b.h,b.status].join(':')).join('|');
+  if(ranchDecorTrails===trails&&ranchDecorStamp===stamp)return ranchDecorSites;
+  ranchDecorStamp=stamp;ranchDecorTrails=trails;
+  const sites=[];
+  for(let oi=0;oi<owners.length;oi++){
+    const o=owners[oi],roads=trails.filter(t=>t.owner===o.name);
+    let placed=0;
+    for(let k=0;k<125&&placed<36;k++){
+      // Distribuição orgânica determinística; clareiras e silhuetas distintas.
+      const angle=ruralHash(oi*119+k*17.7)*Math.PI*2;
+      const radius=21+Math.sqrt(ruralHash(oi*71+k*13.4+21))*80;
+      const x=o.x+Math.cos(angle)*radius,
+        y=o.y+Math.sin(angle)*radius;
+      const pattern=(oi*3+k*7)%13;
+      const kind=pattern===0||pattern===9?'arvore':
+        pattern===4||pattern===11?'feno':
+        pattern===2||pattern===6?'flores':
+        pattern===8?'pedra':'arbusto';
+      const r=kind==='arvore'?4.4:kind==='feno'?2.2:kind==='pedra'?1.9:1.6;
+      if(!insideFarm(o,x,y,r*2.3,r*2.3))continue;
+      if(buildings.some(b=>b.o===o&&
+        Math.abs(x-b.x)<b.w/2+r+3.2&&
+        Math.abs(y-b.y)<b.h/2+r+3.2))continue;
+      if(roads.some(t=>distanceToRoad(x,y,t)<(t.w||2.5)*.5+r+1.5))continue;
+      if(ponds.some(p=>((x-p.x)/(p.rx+r+2))**2+
+        ((y-p.y)/(p.ry+r+2))**2<1))continue;
+      if(sites.some(p=>p.o===o&&Math.hypot(p.x-x,p.y-y)<
+        r+(p.kind==='arvore'?4.4:1.6)+2))continue;
+      const scale=.82+ruralHash(oi*37+k*19.3)*.56;
+      sites.push({o,x,y,kind,scale,
+        variant:(oi*17+k*11)%5,
+        // Quase todas as cores vêm do perfil regional e do bioma.
+        color:o.style.leaf});
+      placed++;
+    }
+  }
+  ranchDecorSites=sites;
+  return ranchDecorSites;
+}
+function drawRanchDecor(){
+  const s=Math.min(W/300,H/260)*zoom;
+  if(s<.18)return;
+  for(const prop of farmLandscaping()){
+    const p=screen(prop.x,prop.y);
+    if(p.x<-30||p.x>W+30||p.y<-30||p.y>H+30)continue;
+    const t=s*prop.scale;
+    if(prop.kind==='arvore'){
+      ctx.fillStyle='#5e4c35';
+      ctx.fillRect(p.x-t*.30,p.y-t*1.9,t*.62,t*3.8);
+      ctx.fillStyle='#'+prop.color.toString(16).padStart(6,'0');
+      ctx.beginPath();ctx.arc(p.x,p.y-t*2.1,t*2.3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#9cb875';
+      ctx.beginPath();ctx.arc(p.x-t*.65,p.y-t*2.8,t*.93,0,Math.PI*2);ctx.fill();
+    }else if(prop.kind==='feno'){
+      ctx.fillStyle='#917044';ctx.fillRect(p.x-t*1.6,p.y-t*.5,t*3.2,t*1.6);
+      ctx.fillStyle='#ccb574';ctx.fillRect(p.x-t*1.3,p.y-t*.87,t*2.6,t*1.2);
+      ctx.fillStyle='#e6d18d';ctx.fillRect(p.x-t*.98,p.y-t*.75,t*1.96,t*.22);
+    }else if(prop.kind==='arbusto'){
+      ctx.fillStyle='#'+prop.color.toString(16).padStart(6,'0');
+      for(const [dx,dy,r] of [[-.8,0,.9],[.5,-.15,1.15],[1.4,.35,.65]]){
+        ctx.beginPath();ctx.arc(p.x+dx*t,p.y+dy*t,r*t,0,Math.PI*2);ctx.fill();
+      }
+    }else if(prop.kind==='flores'){
+      ctx.fillStyle='#6b9b51';ctx.beginPath();ctx.arc(p.x,p.y,t*1.15,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=prop.variant%2?'#dfb865':'#e4b4aa';
+      for(let j=0;j<3;j++){
+        const a=j*2.1;ctx.beginPath();
+        ctx.arc(p.x+Math.cos(a)*t*.65,p.y+Math.sin(a)*t*.55,t*.23,0,Math.PI*2);ctx.fill();
+      }
+    }else{
+      ctx.fillStyle='#8c8a78';ctx.beginPath();
+      ctx.ellipse(p.x,p.y,t*1.3,t*.57,0,0,Math.PI*2);ctx.fill();
+    }
+  }
+}
+function drawBuilding(b){
   const p=screen(b.x,b.y),s=Math.min(W/300,H/260)*zoom,w=b.w*s,h=b.h*s*.67;
   const x=p.x-w/2,y=p.y-h/2;
   const progress=Math.max(0,Math.min(100,b.progress??100));
@@ -413,6 +505,7 @@ function render(){
       }
     }
   }
+  drawRanchDecor();
   for(const o of owners){
     let p=screen(o.x,o.y);
     if(p.x<-180||p.x>W+180||p.y<-180||p.y>H+180)continue;
@@ -1721,7 +1814,7 @@ $('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=fal
 
 window.FazendaVivaBridge={
   state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
-    regionalOffers:regionalHorseOffers()}),
+    regionalOffers:regionalHorseOffers(),ranchDecor:farmLandscaping()}),
   mode:(active)=>{mode3D=!!active;document.getElementById('renderStatus').textContent=active?'🌄 3D ativo':'🗺️ 2D compatível'}
 };
 setTimeout(()=>{
