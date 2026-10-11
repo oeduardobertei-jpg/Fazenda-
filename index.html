@@ -1548,6 +1548,7 @@ function managementContent(tab){
       statCard('💰','Patrimônio',brl(asset.total))+
       statCard('📈','Lucro por ciclo',(e.net>=0?'+':'')+brl(e.net))+
       statCard('🐎','Cavalos',hs.length+'/'+capacity(o))+
+      statCard('💚','Cuidado do plantel',herdCare(o)+'/100')+
       statCard('🏅','Classificação',place+'º de '+owners.length)+
       '</div><h4>🏆 '+level.name+' · Nível '+level.level+'</h4>'+
       '<div class="mgCard"><div class="mgLine"><span>Reputação rural</span><strong>'+reputation+' pontos</strong></div>'+
@@ -1588,6 +1589,13 @@ function managementContent(tab){
           '<p class="mgSmall">'+(mother?.name||'Égua')+' · dia '+p.dueDay+
           ' ('+Math.max(0,p.dueDay-day)+' dias restantes)</p></div>';
       }).join(''):'')+
+      (careJournal.some(t=>t.o===o)?
+        '<h4>📒 Diário de manejo</h4>'+
+        careJournal.filter(t=>t.o===o).slice(0,5).map(t=>
+          '<div class="mgLine"><span>Dia '+t.day+' · '+t.horseName+
+          ' · '+(t.kind==='escovacao'?'Escovação':'Alimentação')+
+          (t.ration?' 🌾':'')+'</span><strong>+'+t.careGained+
+          ' cuidado</strong></div>').join(''):'')+
       hs.map((h,i)=>'<div class="mgRow"><strong>🐴 '+h.name+'</strong>'+
         '<div class="mgSmall">'+h.breed+' · '+(h.sex==='femea'?'Fêmea':'Macho')+
         ' · '+horseAge(h)+' anos'+(horseAge(h)<1?' (potro)':'')+
@@ -2123,7 +2131,8 @@ $('perfMode').onclick=()=>{
 window.FazendaVivaBridge={
   state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
     regionalOffers:regionalHorseOffers(),ranchDecor:farmLandscaping(),
-    cameraGesture:pointers.size>0,careMean:owners.map(herdCare)}),
+    cameraGesture:pointers.size>0,careMean:owners.map(herdCare),
+    careJournal}),
   projectedGroundAt:(x,y,z)=>cameraGroundAt(x,y,z),
   reportPerformance,
   mode:(active)=>{
