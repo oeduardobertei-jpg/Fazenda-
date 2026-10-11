@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.5 — arquitetura regional, microvegetação compartilhada e vida rural em 3D.
+/* Fazenda Viva 0.9.6 — câmera ancorada e diagnóstico/adaptação leve de desempenho WebGL.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -20,7 +20,37 @@ let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
 const modelsByBuilding=new Map();
 let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
 let workerLabels=[],last3DWorkersShown=0,appliedLowGraphics=null;
-let smoothCenter=new THREE.Vector3(), cameraInitialized=false,lastFrameAt=0;
+let smoothCenter=new THREE.Vector3(),cameraInitialized=false,lastFrameAt=0;
+let renderGeneration=0,contextInterrupted=false;
+let resolutionScale=1,appliedDpr=0,frameTotal=0,frameCount=0;
+let slowWindows=0,fastWindows=0,lastFrameReport=0,frameWindowTime=0;
+function applyAdaptiveResolution(isEco=false,force=false){
+  if(!renderer)return;
+  const cap=innerWidth<=620?(isEco?.85:1.2):(isEco?1:1.5);
+  const requested=Math.max(.62,Math.min(devicePixelRatio||1,cap*resolutionScale));
+  if(force||!appliedDpr||Math.abs(requested-appliedDpr)>.035){
+    renderer.setPixelRatio(requested);
+    renderer.setSize(innerWidth,innerHeight);
+    appliedDpr=requested;
+  }
+}
+function recordFrameTime(delta){
+  // O intervalo inclui limitação de FPS, mas descarta abas em segundo plano.
+  if(delta<6||delta>180)return;
+  frameTotal+=delta;frameCount++;
+  if(frameCount<32)return;
+  const mean=frameTotal/frameCount;
+  frameCount=0;frameTotal=0;
+  slowWindows=mean>52?slowWindows+1:0;
+  fastWindows=mean<38?fastWindows+1:0;
+  if(slowWindows>=3){
+    resolutionScale=Math.max(.70,Math.round((resolutionScale-.10)*100)/100);
+    slowWindows=0;fastWindows=0;
+  }else if(fastWindows>=8){
+    resolutionScale=Math.min(1,Math.round((resolutionScale+.05)*100)/100);
+    fastWindows=0;
+  }
+}
 const groundRay=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0), groundHit=new THREE.Vector3();
 let labelLayer, labelNodes = [], fairLabel=null, lastFairStamp='', lastRanchDecor=null, lastDecorEco=null;
 const colors = {
@@ -423,11 +453,15 @@ function makeWorker(f){
   }
   box(group,1.35,1.45,.80,0,1.92,0,shirt);
   box(group,.50,.44,.45,0,2.73,0,skin);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.56,8,6),mat(skin));
+  const headGeometry=new THREE.SphereGeometry(.56,8,6);
+  headGeometry.__fvTransient=true;
+  const head=new THREE.Mesh(headGeometry,mat(skin));
   head.position.set(0,3.10,0);group.add(head);
   const hatColor=f.role==='tratador'?0x7393a0:
     f.role==='agricultor'?0xc7ad70:0x6f806a;
-  const brim=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.12,10),mat(hatColor));
+  const brimGeometry=new THREE.CylinderGeometry(.85,.85,.12,10);
+  brimGeometry.__fvTransient=true;
+  const brim=new THREE.Mesh(brimGeometry,mat(hatColor));
   brim.position.set(0,3.50,0);group.add(brim);
   cylinder(group,.44,.55,.51,0,3.75,0,hatColor,9);
   // Peito/frente na direção +X, para combinar com o rumo no Canvas.
@@ -971,7 +1005,9 @@ function sync(s){
     modelsByBuilding.set(b,{model,version});
   }
   if(horseLayer.children.length!==s.horses.length){
-    for(const child of [...horseLayer.children])horseLayer.remove(child);
+    for(const child of [...horseLayer.children]){
+      horseLayer.remove(child);disposeTransientGroup(child);
+    }
     for(const h of s.horses)horseLayer.add(makeHorse(h));
   }
   s.horses.forEach((h,i)=>{
@@ -999,7 +1035,9 @@ function sync(s){
       mesh.userData.tail.rotation.z=-.18+Math.sin(h.phase*.48+h.id)*.14;
   });
   if(workerLayer.children.length!==s.farmers.length){
-    for(const child of [...workerLayer.children])workerLayer.remove(child);
+    for(const child of [...workerLayer.children]){
+      workerLayer.remove(child);disposeTransientGroup(child);
+    }
     for(const f of s.farmers)workerLayer.add(makeWorker(f));
   }
   workerLayer.visible=s.zoom>.47;
@@ -1091,21 +1129,25 @@ function updateLabels(s){
     if(el.textContent!==label)el.textContent=label;
   }
 }
-function animate(now=0){
-  if(!enabled)return;
-  requestAnimationFrame(animate);
-  if(now>0&&now-lastFrameAt<(innerWidth<=620?(appliedLowGraphics?45:32):(appliedLowGraphics?30:16)))return;
+function animate(now=0,generation=renderGeneration){
+  if(!enabled||generation!==renderGeneration)return;
+  requestAnimationFrame(next=>animate(next,generation));
+  const interval=innerWidth<=620?(appliedLowGraphics?45:32):
+    (appliedLowGraphics?30:16);
+  if(now>0&&now-lastFrameAt<interval)return;
+  const elapsed=lastFrameAt>0?now-lastFrameAt:0;
   if(now>0)lastFrameAt=now;
+  recordFrameTime(elapsed);
   try{
     const s=api.state(),zoom=s.zoom;
     if(appliedLowGraphics!==!!s.lowGraphics){
       appliedLowGraphics=!!s.lowGraphics;
-      const maxDpr=innerWidth<=620?(appliedLowGraphics?.85:1.2):(appliedLowGraphics?1:1.5);
-      renderer.setPixelRatio(Math.min(devicePixelRatio||1,maxDpr));
-      renderer.setSize(innerWidth,innerHeight);
-      // Alternar o LOD não precisa reiniciar o renderizador WebGL.
+      // Trocar qualidade não reinicia o contexto gráfico nem perde a câmera.
       detailMode=null;
-    }
+      resolutionScale=1;
+      slowWindows=0;fastWindows=0;
+      applyAdaptiveResolution(appliedLowGraphics,true);
+    }else applyAdaptiveResolution(!!s.lowGraphics);
     const scale=Math.min(innerWidth/300,innerHeight/260)*zoom;
     const hw=innerWidth/(2*scale),hh=innerHeight/(2*scale);
     camera.left=-hw;camera.right=hw;camera.top=hh;camera.bottom=-hh;camera.updateProjectionMatrix();
@@ -1114,8 +1156,10 @@ function animate(now=0){
     // Saltos grandes de localização são instantâneos (não parecem câmera travada).
     if(!cameraInitialized){smoothCenter.set(s.panX,0,s.panY);cameraInitialized=true}
     const jump=Math.hypot(s.panX-smoothCenter.x,s.panY-smoothCenter.z);
-    if(jump>140){smoothCenter.set(s.panX,0,s.panY)}
-    else{
+    if(jump>140||s.cameraGesture){
+      // Enquanto o usuário arrasta, câmera e projeção do toque são a mesma.
+      smoothCenter.set(s.panX,0,s.panY);
+    }else{
       smoothCenter.x+=(s.panX-smoothCenter.x)*.32;
       smoothCenter.z+=(s.panY-smoothCenter.z)*.32;
     }
@@ -1129,6 +1173,14 @@ function animate(now=0){
     sync(s);
     renderer.render(scene,camera);
     updateLabels(s);
+    if(now-lastFrameReport>=900||!lastFrameReport){
+      const perf=renderer.info?.render;
+      if(api.reportPerformance)api.reportPerformance({
+        mode:'3D',fps:elapsed>5?1000/elapsed:0,dpr:appliedDpr,
+        calls:perf?.calls||0,triangles:perf?.triangles||0
+      });
+      lastFrameReport=now;
+    }
   }catch(e){
     stop('3D indisponível: '+e.message);
     return;
@@ -1142,7 +1194,7 @@ api.groundAt=(clientX,clientY)=>{
   return hit?{x:hit.x,y:hit.z}:null;
 };
 function stop(reason){
-  enabled=false;
+  enabled=false;renderGeneration++;
   if(renderer)renderer.domElement.style.display='none';
   if(labelLayer)labelLayer.style.display='none';
   api.mode(false);
@@ -1150,15 +1202,19 @@ function stop(reason){
   if(reason){fail.style.display='block';fail.textContent=reason+' · Modo 2D preservado.'}
 }
 function start(){
-  if(!renderer||!scene||!labelLayer){fail.textContent='Three.js não inicializou; o modo 2D continua disponível.';return}
+  if(!renderer||!scene||!labelLayer||contextInterrupted){
+    fail.textContent='Three.js não inicializou ou o contexto está indisponível; modo 2D preservado.';return
+  }
   if(enabled)return;
-  enabled=true;lastFrameAt=0;renderer.domElement.style.display='block';
+  enabled=true;lastFrameAt=0;cameraInitialized=false;
+  const thisLoop=++renderGeneration;
+  renderer.domElement.style.display='block';
   labelLayer.style.display='block';
   api.mode(true);
   btn.textContent='🗺️ Modo 2D';
   fail.textContent='🌄 Three.js ativo';
   fail.style.display='none';
-  requestAnimationFrame(animate);
+  requestAnimationFrame(now=>animate(now,thisLoop));
 }
 function init(){
   const fresh=document.createElement('canvas');
@@ -1169,8 +1225,18 @@ function init(){
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.domElement.style.cssText='position:fixed;inset:0;width:100vw;height:100dvh;pointer-events:none;z-index:0;';
   document.body.insertBefore(renderer.domElement,document.getElementById('hud'));
-  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();stop('Contexto gráfico interrompido')});
-  window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight)});
+  renderer.domElement.addEventListener('webglcontextlost',e=>{
+    e.preventDefault();contextInterrupted=true;
+    stop('Contexto WebGL interrompido');
+  });
+  renderer.domElement.addEventListener('webglcontextrestored',()=>{
+    contextInterrupted=false;detailMode=null;appliedDpr=0;
+    lastTrailObject=null;lastRanchDecor=null;lastFairStamp='';
+    start();
+  });
+  window.addEventListener('resize',()=>{
+    if(renderer)applyAdaptiveResolution(!!appliedLowGraphics,true);
+  });
   scene=new THREE.Scene();scene.background=new THREE.Color(colors.grass);scene.fog=new THREE.Fog(colors.grass,1500,2600);
   camera=new THREE.OrthographicCamera(-100,100,100,-100,.1,2400);
   scene.add(new THREE.HemisphereLight(0xe4f3fa,0x50664b,2.05));
