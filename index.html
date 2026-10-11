@@ -1035,6 +1035,7 @@ const workerJobs={
   tratador:'Tratando animais',agricultor:'Organizando produção',
   administrador:'Administrando a cabanha'
 };
+const careJournal=[];
 function chooseFarmerTarget(f){
   const wanted={tratador:['stable','paddock'],
     agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
