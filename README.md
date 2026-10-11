@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.5
+# Fazenda Viva — versão 0.9.6
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=095
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=096
 
 ## Novidades da série 0.8
 
@@ -204,6 +204,23 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 
 **Limite atual:** a animação de cavalos e trabalhadores é procedural e estilizada, não tem rig profissional importado de Blender. É necessário conferir visualmente a 0.9.5 no celular antes de avançar com ajustes finos da 0.9.6.
 
+### 0.9.6 — Câmera Android, estabilidade WebGL e performance mensurável
+
+Esta etapa é uma revisão de robustez e performance, para reduzir o risco de uma 1.0 visualmente bonita mas instável em aparelhos móveis.
+
+- **Pinça 3D exata:** a conversão entre pixel e coordenada do chão é calculada a partir da orientação da câmera ortográfica e do zoom atual, sem depender do raycast de um quadro já ultrapassado. O ponto abaixo da pinça se mantém ancorado inclusive na transição entre vista local oblíqua e mapa regional.
+- **Arrasto sincronizado:** durante o gesto de toque, a câmera usa imediatamente a posição de controle; a suavização é retomada quando o gesto termina. O mouse no desktop e o gesto de pinça no Android compartilham a mesma regra de coordenadas; o Canvas 2D mantém a sua projeção própria.
+- **Segurança de pointer events:** ao perder ou cancelar um dedo da pinça, a distância anterior é descartada, evitando saltos de zoom.
+- **DPR adaptativo:** o motor 3D mede os intervalos entre quadros visíveis e, quando o dispositivo demora para renderizar, reduz a resolução interna em passos discretos, respeitando piso de qualidade. Após estabilidade sustentada, recupera a resolução gradualmente. A velocidade de dias simulados **não é alterada**.
+- **Diagnóstico opcional:** em `☰ Menu → 📉 Diagnóstico de FPS`, mostra FPS aproximado, densidade de pixels do renderizador e quantidade de chamadas/triângulos 3D. Não envia telemetria para servidores; o indicador é apenas local e pode ser ocultado.
+- **Menos trabalho gráfico:** o detalhe arquitetônico de alto custo agora depende da distância de **cada construção** até a câmera, e não da aproximação global; objetos mais distantes continuam presentes em versão simplificada.
+- **Ciclo WebGL único:** interromper/reiniciar o modo 3D invalida callbacks antigos de `requestAnimationFrame`, impedindo múltiplos renderizadores simultâneos. Perda de contexto WebGL aciona fallback 2D e há tentativa de retorno ao 3D quando o contexto é restaurado.
+- **Memória:** modelos de cavalos/trabalhadores removidos quando o plantel muda têm geometrias transitórias liberadas, sem descartar geometrias reutilizadas.
+- **Correção de árvores invasoras:** encontrado erro real de concatenação de comentário na geração da floresta antiga: uma verificação de exclusão de árvores das cinco propriedades havia sido comentada acidentalmente. A proteção foi restaurada, e o smoke agora verifica que nenhuma árvore antiga invade as cinco glebas ou o Centro Rural.
+- **QA reforçado:** a simulação automatizada verifica projeção ancorada fora do centro, transição de inclinação, pinça com dois dedos, cancelamento de ponteiro, painel FPS e afastamento da mata antiga; o teste 3D simulado verifica DPR adaptativo, interrupção de render loop duplicado e recuperação após perda do contexto.
+
+**O que não foi verificado:** não foi executado WebGL real em Android nesta sessão; não existe, ainda, medição oficial do FPS do aparelho do usuário. O FPS exposto pelo jogo serve para orientar o ajuste visual. O modo 2D continua disponível.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -213,6 +230,7 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 - **Mapa:** visão de toda a região.
 - **Visitar outra fazenda:** navegar entre as propriedades pelo painel.
 - **☰ Menu:** acessar a construção, opções gráficas e o botão `📊 Gestão da cabanha`.
+- **📉 Diagnóstico de FPS:** no menu, liga/desliga indicadores locais de desempenho e resolução; não afeta a simulação.
 - **Construir:** selecionar uma estrutura e tocar em terreno válido.
 - **Gestão da cabanha:** consultar balanço econômico simulado, cavalos, trabalhadores, mercado regional e objetivos; toque em `✕` para voltar ao mapa.
 - **Comprar cavalo:** precisa de recursos e capacidade nas cocheiras.
@@ -244,6 +262,6 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.9.3 — agenda regional, mercado ativo, reprodução com pedigree básico e negociação equina; concluída no código, pendente QA Android;
 0.9.4 — genética com três aptidões, compra regional real, Centro Rural e um novo beauty-pass 2D/3D; validada em simulação, QA Android pendente;
 0.9.5 — identidades regionais, 180 props sem sobreposição, atividades visíveis e visita às fazendas; implementado em código, faltam QA visual Android e refinamento fino da câmera;
-0.9.6 — estabilidade de longo prazo, acesso dos NPCs, desempenho e verificação visual mobile;
+0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
 0.9.7–0.9.9 — refinamento sistêmico, interface, QA e candidato ao lançamento;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.
