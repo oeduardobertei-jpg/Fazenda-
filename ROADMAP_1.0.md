@@ -77,7 +77,7 @@ Genética detalhada, trocas reais de cavalos, Centro Rural visível e primeiro b
 **Pendente:** validar naturalidade das interações à distância, da animação da cabeça e dos indicadores de bem-estar em dispositivo real; avaliar necessidade de simplificar ainda mais o HUD.
 
 **0.9.8 — integração e interface final**  
-**Implementação em revisão.** HUD compacto, acesso direto à gestão, guia opcional, acompanhamento contínuo, cancelamento explícito de construção, rotas públicas compartilhadas e poses procedurais com transições/joelhos. Correções de contato com o terreno e redução de chamadas pela fusão das peças estáticas.
+**Implementação preparada para testes públicos da 0.9.8.** HUD compacto, acesso direto à gestão, guia opcional, acompanhamento contínuo, cancelamento explícito de construção, rotas públicas compartilhadas e poses procedurais com transições/joelhos. Correções de contato com o terreno e redução de chamadas pela fusão das peças estáticas.
 
 **Verificação:** smoke, renderizador simulado, poses e geometria oficial Three.js passaram localmente. Chromium/WebGL por software passou em cinco viewports, incluindo toque e recuperação de contexto. Capturas foram inspecionadas; corrigidos o encobrimento no Canvas e mensagens sobre a cena. Chamadas iniciais: 261→201 (−23%), com +5% de triângulos. Ainda é obrigatório inspecionar a naturalidade visual e medir desempenho no Android físico. Ver `RELEASE_0.9.8.md`.
 

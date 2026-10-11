@@ -1,8 +1,10 @@
-# Fazenda Viva — versão 0.9.8 (em preparação)
+# Fazenda Viva — versão 0.9.8 (para testes)
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar (versão publicada; a 0.9.8 está em revisão):** https://oeduardobertei-jpg.github.io/Fazenda-/?v=097
+**Testar a 0.9.8:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=098
+
+A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.8**. Os critérios de Android físico da 1.0 continuam pendentes.
 
 ## Novidades da série 0.8
 
@@ -307,6 +309,6 @@ Execute `npm ci` e `npm test` (simulação, renderizador simulado, poses e geome
 0.9.5 — identidades regionais, 180 props sem sobreposição, atividades visíveis e visita às fazendas; implementado em código, faltam QA visual Android e refinamento fino da câmera;
 0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
 0.9.7 — manejo animal real, histórico de cuidados, bem-estar econômico, metas e correção de bloqueios de trabalhadores; implementado e testado em simulação, pendente inspeção Android;
-0.9.8 — candidata em revisão: integração/interface, poses e contato implementados; testes Chromium/WebGL e inspeção de capturas executados, Android físico pendente;
+0.9.8 — candidata para testes públicos: integração/interface, poses e contato implementados; testes Chromium/WebGL e inspeção de capturas executados, Android físico pendente;
 0.9.9 — candidato à 1.0, orçamento de performance e testes em celulares reais;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.

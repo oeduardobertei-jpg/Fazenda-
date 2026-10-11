@@ -1,7 +1,9 @@
 # Fazenda Viva — avaliação e entrega 0.9.8
 
 Base: `8f28cad65071b063487ce18934d75817ad990e51` (0.9.7).
-Estado: candidata 0.9.8 em revisão no PR #1; a publicação principal permanece na 0.9.7.
+Estado: candidata 0.9.8 preparada para testes públicos, com integração pelo PR #1.
+Link de teste: https://oeduardobertei-jpg.github.io/Fazenda-/?v=098.
+O HUD deve mostrar 0.9.8; os critérios de Android físico permanecem abertos.
 
 ## Avaliação do projeto
 
