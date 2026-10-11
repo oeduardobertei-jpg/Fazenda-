@@ -84,6 +84,8 @@ Genética detalhada, trocas reais de cavalos, Centro Rural visível e primeiro b
 **0.9.9 — revisão equina e autonomia de pastoreio**
 Escopo ampliado por solicitação do usuário após as capturas Android da 0.9.8: anatomia compartilhada 2D/3D, circulação pelos campos da própria fazenda, porteiras físicas, retorno para manejo e Centro Rural com acesso direto ao mercado. Os testes devem cobrir trajetórias contínuas, respeito às cercas, retorno dos animais e conservação das transações, além das regressões anteriores.
 
+**Verificação:** regressões locais e Chromium/WebGL2 por software passaram em cinco viewports. Inspeção manual de capturas 2D/3D realizada. Incluídos manejo contínuo do plantel inicial, passagem individual pela porteira, encontros sem bloqueio persistente e colisão contínua em quinas. Cena inicial: 201→192 chamadas, com +0,6% de triângulos. Ver `RELEASE_0.9.9.md`; Android físico permanece pendente.
+
 **Congelamento para a 1.0 após esta revisão:** correção de defeitos críticos, teste em celulares reais, orçamento de performance e aprovação visual do usuário. As capturas da 0.9.8 comprovam execução no aparelho, mas não medem FPS/temperatura nem validam a nova 0.9.9.
 
 **1.0 — lançamento**  
