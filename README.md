@@ -1,10 +1,20 @@
-# Fazenda Viva — versão 0.9.9 (para testes)
+# Fazenda Viva — versão 0.9.9.1 (para testes)
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Testar a 0.9.9:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=099
+**Testar a 0.9.9.1:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=0991
 
-A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.9**. Os critérios de Android físico da 1.0 continuam pendentes.
+A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.9.1**. Os critérios de Android físico da 1.0 continuam pendentes.
+
+## 0.9.9.1 — revisão dos personagens
+
+- Cavalos com volumes mais contínuos e iluminação suave, peito/garupa/pescoço redesenhados, pernas afiladas, orelhas pontudas e focinho arredondado. Crina, cauda e marcas de pelagem preservadas.
+- NPCs com silhueta humana ereta nos dois modos: ombros, cintura, rosto, chapéu, mangas, antebraços e botas. Paletas de pele e cabelo determinísticas por personagem.
+- Cotovelos articulados e postura de trabalho; balde, enxada e prancheta acompanham a mão.
+- Anatomia e poses compartilhadas entre Canvas e Three.js. Geometrias reutilizadas e peças estáticas fundidas por material.
+- Pastoreio, manejo, economia, transferências e partidas novas continuam como na 0.9.9.
+
+A sequência **0.9.9.1, 0.9.9.2…** será feita em etapas pequenas e testáveis. O visual continua estilizado e procedural; a 1.0 depende dos critérios do roadmap, incluindo revisão no celular. Ver `RELEASE_0.9.9.1.md`.
 
 ## 0.9.9 — cavalos em campo e Centro Rural
 
@@ -16,7 +26,7 @@ A versão mantém partidas novas a cada abertura, sem salvamento automático. Pa
 - O **Centro Rural é um único espaço regional permanente**. Seu subtítulo muda conforme o evento: mostra equina, contrato agrícola, suprimentos ou mutirão. As quatro bancas ganham produtos e comerciantes, e tocar no terreno do Centro abre **Gestão → Mercado**, inclusive entre eventos.
 - Sem novo salvamento automático, necessidades de NPCs, clima ou ciclo dia/noite.
 
-A série 0.9.9 foi ampliada a pedido do usuário após inspeção das capturas da 0.9.8. O congelamento para a 1.0 ocorre após esta revisão visual e de comportamento; a numeração não declara concluídos os critérios mobile.
+A série 0.9.9 foi ampliada a pedido do usuário após inspeção das capturas da 0.9.8. O congelamento para a 1.0 ocorre após as etapas incrementais de revisão visual e de comportamento; a numeração não declara concluídos os critérios mobile.
 
 ## Novidades da série 0.8
 
@@ -323,5 +333,7 @@ Execute `npm ci` e `npm test` (simulação, renderizador simulado, poses e geome
 0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
 0.9.7 — manejo animal real, histórico de cuidados, bem-estar econômico, metas e correção de bloqueios de trabalhadores; implementado e testado em simulação, pendente inspeção Android;
 0.9.8 — candidata para testes públicos: integração/interface, poses e contato implementados; testes Chromium/WebGL e inspeção de capturas executados, Android físico pendente;
-0.9.9 — revisão equina e pastoreio autônomo; congelamento e validação da 1.0 após estes ajustes;
+0.9.9 — revisão equina e pastoreio autônomo;
+0.9.9.1 — remodelagem de cavalos e NPCs em 2D/3D;
+0.9.9.2 em diante — animações, integração visual e critérios mobile, por etapas verificáveis;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.

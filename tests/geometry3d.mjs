@@ -41,6 +41,11 @@ try{
     if(obj.userData.building===building)houseModel=obj;
   });
   assert.ok(horseModel&&workerModel&&houseModel,'modelos devem existir');
+  assert.equal(workerModel.userData.elbows.length,2,'dois cotovelos articulados');
+  assert.ok(workerModel.userData.upper,'tronco deve permitir postura de trabalho');
+  let indexed=0;
+  scene.traverse(obj=>{if(obj.isMesh&&obj.geometry.index)indexed++});
+  assert.ok(indexed>15,'volumes compartilhados devem usar vértices indexados para iluminação suave');
   assert.ok(houseModel.children.length<22,'peças estáticas devem ser fundidas por material');
   let lowest=Infinity,highest=0;
   for(let i=0;i<64;i++){
@@ -62,6 +67,10 @@ try{
   assert.ok(muzzle.min.y>=.40&&muzzle.min.y<.90,'focinho deve alcançar o capim sem atravessar o chão');
   const shadow=horseModel.children.find(m=>m.material?.transparent);
   assert.ok(shadow.getWorldPosition(new Three.Vector3()).y>.40,'sombra deve ficar acima do piquete');
+  worker.motion='work';
+  for(let i=0;i<90;i++){motion.blend(worker,1/60);frame(now+=40)}
+  assert.ok(workerModel.userData.elbows[1].rotation.z>.6,'mão deve levantar o instrumento ao trabalhar');
+  assert.ok(workerModel.userData.upper.rotation.z<-.10,'agricultor deve inclinar o tronco no trabalho');
   console.log('PASS geometria Three.js real',JSON.stringify({
     houseMeshes:houseModel.children.length,hoofFloor:+lowest.toFixed(3),
     muzzleHeight:+muzzle.min.y.toFixed(3),webgl:false

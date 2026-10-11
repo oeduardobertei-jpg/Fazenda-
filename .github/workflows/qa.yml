@@ -46,6 +46,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fazenda-viva-qa-0.9.9
+          name: fazenda-viva-qa-0.9.9.1
           path: qa-artifacts/
           retention-days: 14

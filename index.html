@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.1</title>
 <style>
 :root{color-scheme:dark;--ink:#f8f1dd;--muted:#c4d1ba;--panel:#17392ded;--edge:#739477;--gold:#dfc18a;--top:calc(10px + env(safe-area-inset-top,0px));--base:calc(10px + env(safe-area-inset-bottom,0px));--side:12px}
 *{box-sizing:border-box}body{margin:0;background:#1b3528;color:var(--ink);font:14px/1.45 system-ui,sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#game{position:fixed;inset:0;z-index:0}
@@ -16,7 +16,7 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 @media(max-height:500px) and (min-width:600px){#hud{width:390px;grid-template-columns:1fr 1fr}#economy{top:calc(var(--top) + 80px)}#topTools{top:var(--top);right:var(--side);left:auto}#renderStatus{top:calc(var(--top) + 109px)}#zoomTools{top:55%}#panel,#management{left:var(--side);transform:none;width:min(470px,calc(100vw - 84px));bottom:calc(var(--base) + 77px)}#welcome{max-height:calc(100dvh - var(--base) - var(--top) - 85px);overflow:auto;padding:16px}#welcome h2{font-size:21px}#welcome p{font-size:12px}#welcome .welcomeActions{margin-top:10px}}
 @media(prefers-reduced-motion:reduce){#status{transition:none}}
 </style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
+<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.1</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong id="manageTitle">Gestão da cabanha · tempo pausado</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" role="tablist" aria-label="Seções da gestão">
 <button id="tab-resumo" role="tab" aria-controls="manageBody" data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -30,7 +30,7 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 </section><div id="sceneContext" hidden><span id="contextText"></span><button id="contextCancel" type="button">Encerrar</button></div>
 <section id="welcome" role="dialog" aria-labelledby="guideTitle"><div class="eyebrow">Campos do Sul · Fazenda Viva</div><div id="guideProgress">GUIA · 1 DE 3</div><h2 id="guideTitle">Sua cabanha, viva.</h2><p id="guideText">Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.</p><p id="guideHint">A partida começa no dia 1 a cada abertura. Não há salvamento automático.</p><div class="welcomeActions"><button id="guideSkip" type="button">Explorar agora</button><button id="guideNext" type="button">Próximo →</button></div></section>
 <div id="error" hidden></div>
-<script src="./motion.js?v=099"></script>
+<script src="./motion.js?v=0991"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
 const motion=window.FazendaVivaMotion;
@@ -453,57 +453,77 @@ function drawRoad(x1,y1,x2,y2,width=9){
   ctx.setLineDash([7*s,13*s]);ctx.stroke();ctx.setLineDash([]);
 }
 // Silhuetas 2D usam os mesmos heading/gait/motion usados nos modelos Three.js.
-const horseCanvasForms={};
+const spriteForms=new Map();
+function spriteGeometry(p,s,heading){
+  const faces=[],cos=Math.cos(heading),sin=Math.sin(heading);
+  const rotate=(x,y,angle)=>({x:x*Math.cos(angle)-y*Math.sin(angle),y:x*Math.sin(angle)+y*Math.cos(angle)});
+  const project=(x,height,z)=>{
+    const wx=x*cos+z*sin,wy=-x*sin+z*cos;
+    return {x:p.x+wx*s,y:p.y+(wy*.67-height*.82)*s,depth:wy*.82+height*.67};
+  };
+  const shade=(color,factor)=>{
+    const rgb=parseInt(color.replace('#',''),16);
+    return '#'+[rgb>>16&255,rgb>>8&255,rgb&255].map(v=>Math.min(255,Math.round(v*factor)).toString(16).padStart(2,'0')).join('');
+  };
+  function addForm(name,color,transform,worker=false){
+    const key=(worker?'worker/':'horse/')+name;
+    if(!spriteForms.has(key))spriteForms.set(key,motion.volume((worker?motion.workerForm:motion.horseForm)[name]));
+    const form=spriteForms.get(key),world=form.vertices.map(([x,y,z])=>transform(x,y,z));
+    const points=world.map(v=>project(v.x,v.y,v.z));
+    for(const face of form.faces){
+      const [a,b,c]=face.map(i=>world[i]),u={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},v={x:c.x-a.x,y:c.y-a.y,z:c.z-a.z};
+      const nx=u.y*v.z-u.z*v.y,ny=u.z*v.x-u.x*v.z,nz=u.x*v.y-u.y*v.x,len=Math.hypot(nx,ny,nz)||1;
+      const light=(ny*.82-(nx*cos+nz*sin)*.3-(-nx*sin+nz*cos)*.35)/len;
+      faces.push({points:face.map(i=>points[i]),color:shade(color,.83+Math.max(0,light)*.25)});
+    }
+  }
+  function addBox(x,y,z,w,height,d,color,angle=0){
+    const points=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(([xx,yy,zz])=>{
+      const v=rotate(xx*w/2,yy*height/2,angle);return project(x+v.x,y+v.y,z+zz*d/2);
+    });
+    for(const face of [[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]])
+      faces.push({points:face.map(i=>points[i]),color});
+  }
+  function draw(){
+    faces.sort((a,b)=>a.points.reduce((n,v)=>n+v.depth,0)/a.points.length-b.points.reduce((n,v)=>n+v.depth,0)/b.points.length);
+    for(const face of faces)poly(face.points.map(v=>[v.x,v.y]),face.color);
+  }
+  return {addForm,addBox,rotate,draw};
+}
 function drawHorseSprite(h){
   const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom*(horseAge(h)<1?.64:horseAge(h)<2?.82:1);
   ctx.save();
   ctx.fillStyle='#35523655';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.70,s*2.4,s*.72,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
-  const pose=motion.horse(h),faces=[],heading=h.heading||0;
-  const rotate=(x,y,angle)=>({x:x*Math.cos(angle)-y*Math.sin(angle),y:x*Math.sin(angle)+y*Math.cos(angle)});
-  const project=(x,height,z)=>{
-    const wx=x*Math.cos(heading)+z*Math.sin(heading),wy=-x*Math.sin(heading)+z*Math.cos(heading);
-    return {x:p.x+wx*s,y:p.y+(wy*.67-height*.82)*s,depth:wy*.82+height*.67};
-  };
-  const colorShade=(color,factor)=>{
-    const rgb=parseInt(color.replace('#',''),16);
-    return '#'+[rgb>>16&255,rgb>>8&255,rgb&255].map(v=>Math.min(255,Math.round(v*factor)).toString(16).padStart(2,'0')).join('');
-  };
-  const addForm=(name,color,transform)=>{
-    const form=horseCanvasForms[name]||(horseCanvasForms[name]=motion.volume(motion.horseForm[name]));
-    const points=form.vertices.map(([x,y,z])=>{const v=transform(x,y,z);return project(v.x,v.y,v.z)});
-    form.faces.forEach((face,j)=>faces.push({points:face.map(i=>points[i]),color:colorShade(color,.80+(j%8)*.029)}));
-  };
-  const addBox=(x,y,z,w,height,d,color,angle=0)=>{
-    const points=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(([xx,yy,zz])=>{
-      const v=rotate(xx*w/2,yy*height/2,angle);return project(x+v.x,y+v.y,z+zz*d/2);
-    });
-    for(const face of [[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]])
-      faces.push({points:face.map(i=>points[i]),color});
-  };
+  const pose=motion.horse(h),model=spriteGeometry(p,s,h.heading||0);
+  const {addForm,addBox,rotate}=model;
   addForm('body',h.coat,(x,y,z)=>({x,y:y+pose.bodyBob,z}));
   const neck=(x,y,z)=>{const v=rotate(x,y,pose.neck);return {x:1.36+v.x,y:2.58+pose.bodyBob-pose.neckDrop+v.y,z}};
   const head=(x,y,z)=>{const v=rotate(x,y,pose.head);return neck(1.02+v.x,1.35+v.y,z)};
   addForm('neck',h.coat,neck);addForm('mane','#382d27',neck);addForm('head',h.coat,head);
-  const muzzle=head(1.22,-.37,0);addBox(muzzle.x,muzzle.y,0,.36,.29,.45,'#837363',pose.neck+pose.head-.2);
+  addForm('muzzle','#716454',head);
   for(const side of [-1,1]){
-    const ear=head(-.03,.56,side*.2);addBox(ear.x,ear.y,ear.z,.15,.44,.15,h.coat,pose.neck+pose.head-.22);
-    const eye=head(.30,.20,side*.3);addBox(eye.x,eye.y,eye.z,.105,.11,.065,'#211d19');
+    addForm('ear',h.coat,(x,y,z)=>head(x-.055,y+.35,z+side*.18));
+    const eye=head(.24,.18,side*.263);addBox(eye.x,eye.y,eye.z,.105,.08,.045,'#211d19');
   }
-  if(h.id%3===1){const stripe=head(.56,.02,.272);addBox(stripe.x,stripe.y,stripe.z,.11,.40,.025,'#e5d7bf',pose.neck+pose.head+.49);}
+  if(h.id%3===1){
+    for(const [x,y,w,height,d,angle] of [[.33,.30,.15,.018,.16,-.6],[.68,.01,.51,.018,.085,-.65]]){
+      const v=head(x,y,0);addBox(v.x,v.y,v.z,w,height,d,'#e5d7bf',pose.neck+pose.head+angle);
+    }
+  }
   addForm('tail','#382d27',(x,y,z)=>{const v=rotate(x,y,pose.tail);return {x:-1.93+v.x,y:2.65+v.y,z}});
   for(let j=0;j<4;j++){
     const x=j<2?-1.24:1.22,z=j%2? .45:-.45,leg=pose.legs[j];
-    const upper=rotate(0,-.365,leg.hip);addBox(x+upper.x,1.55+upper.y,z,.30,.73,.29,h.coat,leg.hip);
-    const knee=rotate(0,-.73,leg.hip),lower=rotate(0,-.375,leg.hip+leg.knee);
-    addBox(x+knee.x+lower.x,1.55+knee.y+lower.y,z,.17,.75,.18,h.coat,leg.hip+leg.knee);
-    if(h.id%4===0){const sock=rotate(0,-.60,leg.hip+leg.knee);addBox(x+knee.x+sock.x,1.55+knee.y+sock.y,z,.19,.20,.20,'#d7ccb8',leg.hip+leg.knee);}
-    const foot=rotate(0,-.75,leg.hip+leg.knee);
-    addBox(x+knee.x+foot.x+.035,1.55+knee.y+foot.y,z,.31,.24,.29,'#332d27');
+    const upper=(xx,y,zz)=>{const v=rotate(xx,y,leg.hip);return {x:x+v.x,y:1.55+v.y,z:z+zz}};
+    const lower=(xx,y,zz)=>{const v=rotate(xx,y,leg.knee);return upper(v.x,v.y-.73,zz)};
+    addForm(j<2?'hindLeg':'foreLeg',h.coat,upper);
+    addForm('shin',h.coat,lower);
+    if(h.id%4===0){const v=lower(0,-.59,0);addBox(v.x,v.y,v.z,.19,.19,.20,'#d7ccb8',leg.hip+leg.knee);}
+    const knee=upper(0,-.73,0);
+    addForm('hoof','#332d27',(xx,y,zz)=>{const v=rotate(0,-.75,leg.hip+leg.knee);return {x:knee.x+v.x+xx,y:knee.y+v.y+y,z:z+zz}});
   }
-  faces.sort((a,b)=>a.points.reduce((n,v)=>n+v.depth,0)/a.points.length-b.points.reduce((n,v)=>n+v.depth,0)/b.points.length);
-  for(const face of faces)poly(face.points.map(v=>[v.x,v.y]),face.color);
+  model.draw();
   const fresh=h.interacting||(h.careEffectUntil??-1)>h.phase;
   if(fresh&&zoom>1.45){
     // Ações sincronizadas com o modelo 3D: tratador presente ou cuidado recém
@@ -531,22 +551,38 @@ function drawWorkerSprite(f){
   ctx.fillStyle='#2a3a2b50';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.34,s*.83,s*.34,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
-  ctx.save();ctx.translate(p.x,p.y);
-  ctx.scale(s,s*.67);ctx.rotate(f.visualHeading??f.heading??0);
-  const pose=motion.worker(f);
-  const walk=Math.sin(f.gait||0)*pose.walk*.28;
-  rect(-1,-.6,1.8,1.2,f.color);
-  rect(-1.38,-.63,.55,.42,'#50483c');
-  rect(-1.38,.21,.55,.42,'#50483c');
-  rect(-1.38+walk,-.6,.38,.35,'#342f2b');
-  rect(-1.38-walk,.27,.38,.35,'#342f2b');
-  // Chapéu, rosto e instrumento de trabalho do personagem.
-  rect(.75,-.44,.64,.88,'#d3a17d');
-  ctx.fillStyle='#cfb276';ctx.beginPath();ctx.arc(1.12,0,.66,0,Math.PI*2);ctx.fill();
-  rect(1.35,-.18,.20,.34,'#896345');
-  rect(.05,.64,.75,.3,
-    f.role==='agricultor'?'#987044':f.role==='tratador'?'#6b9ca5':'#dbbd79');
-  ctx.restore();
+  const pose=motion.worker(f),look=motion.workerLook(f);
+  const model=spriteGeometry(p,s,-(f.visualHeading??f.heading??0)),{addForm,addBox,rotate}=model;
+  const upper=(x,y,z)=>{const v=rotate(x,y,pose.lean);return {x:v.x,y:v.y,z}};
+  addForm('torso',look.shirt,upper,true);addForm('head',look.skin,upper,true);
+  const detail=(x,y,z,w,height,d,color)=>{const v=upper(x,y,z);addBox(v.x,v.y,v.z,w,height,d,color,pose.lean)};
+  detail(0,2.48,0,.28,.28,.28,look.skin);
+  // Chapéu e rosto conservam altura, frente e paleta do modelo 3D.
+  detail(0,3.30,0,1.35,.075,1.10,look.hat);detail(0,3.45,0,.69,.31,.65,look.hat);
+  detail(0,3.33,0,.78,.055,.72,'#5c4936');
+  detail(.31,2.98,0,.16,.13,.15,look.skin);
+  for(const side of [-1,1])detail(.26,3.09,side*.17,.047,.047,.047,'#332b25');
+  if(look.beard)detail(.25,2.77,0,.075,.17,.27,look.hair);
+  detail(.29,1.87,0,.024,.78,.04,'#ced0b9');detail(0,1.26,0,.58,.10,.67,'#594330');
+  for(let j=0;j<2;j++){
+    const sign=j?1:-1,leg=pose.legs[j];
+    const thigh=(x,y,z)=>{const v=rotate(x,y,leg.hip);return {x:v.x,y:1.13+v.y,z:sign*.23+z}};
+    const shin=(x,y,z)=>{const v=rotate(x,y,leg.knee);return thigh(v.x,v.y-.51,z)};
+    addForm('thigh',look.pants,thigh,true);addForm('shin',look.pants,shin,true);
+    const knee=thigh(0,-.51,0),foot=rotate(0,-.52,leg.hip+leg.knee);
+    addForm('boot','#493b30',(x,y,z)=>({x:knee.x+foot.x+x,y:knee.y+foot.y+y,z:sign*.23+z}),true);
+    const angle=pose.arms[j]+(j?pose.tool:0);
+    const sleeve=(x,y,z)=>{const v=rotate(x,y,angle);return upper(v.x,2.23+v.y,sign*.47+z)};
+    const arm=(x,y,z)=>{const v=rotate(x,y,pose.elbows[j]);return sleeve(v.x,v.y-.49,z)};
+    addForm('sleeve',look.shirt,sleeve,true);addForm('forearm',look.skin,arm,true);addForm('hand',look.skin,arm,true);
+    if(j){
+      const tool=(x,y,z,w,h,d,color)=>{const v=rotate(x+.04,y-.59,pose.tool),point=arm(v.x,v.y,z);addBox(point.x,point.y,point.z,w,h,d,color,pose.lean+angle+pose.elbows[j]+pose.tool)};
+      if(f.role==='tratador'){tool(.10,-.36,.12,.48,.45,.48,'#668b92');tool(.10,.08,.12,.33,.055,.055,'#bdc4ba')}
+      else if(f.role==='agricultor'){tool(.18,.12,.05,.095,1.64,.095,'#a77f4e');tool(.28,-.67,.05,.45,.065,.27,'#758481')}
+      else{tool(.20,.12,.10,.48,.63,.065,'#8e683e');tool(.20,.13,.14,.40,.50,.07,'#e4d8ba')}
+    }
+  }
+  model.draw();
   if(f.motion==='work'&&zoom>1.45){
     // Trabalho legível no 2D, usando a mesma fase procedural das ferramentas 3D.
     const phase=(f.animTime||0)*2.8,
@@ -630,7 +666,7 @@ function render(){
     ctx.fillStyle='#eff5c4';ctx.fillText(o.style.label,p.x,p.y+16);
   }
 }}
-// 0.9.9 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
+// 0.9.9.1 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
 let horseSlotsKey='',horseSlots=new Map();
 const animalObstacles=new Map();let animalDecor=null;
 function syncAnimalObstacles(){
@@ -2468,4 +2504,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=099"></script></body></html>
+</script><script type="module" src="./world3d.js?v=0991"></script></body></html>

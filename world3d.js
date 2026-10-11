@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.1 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -432,18 +432,28 @@ function contactShadow(parent,rx,rz){
 // Os pivôs ficam na articulação, não no centro das caixas. A fase da passada
 // vem da distância realmente percorrida na simulação (mesma fonte do 2D).
 const equineGeometries=new Map();
-function equinePart(parent,name,color){
-  let geometry=equineGeometries.get(name);
+function sculptedPart(parent,name,color,worker=false){
+  const key=(worker?'worker/':'horse/')+name;
+  let geometry=equineGeometries.get(key);
   if(!geometry){
-    const form=motion.volume(motion.horseForm[name]),data=[];
-    for(const face of form.faces)for(let j=1;j<face.length-1;j++)
-      for(const index of [face[0],face[j],face[j+1]])data.push(...form.vertices[index]);
+    const form=motion.volume((worker?motion.workerForm:motion.horseForm)[name]);
     geometry=new THREE.BufferGeometry();
-    geometry.setAttribute('position',new THREE.Float32BufferAttribute(data,3));
-    geometry.computeVertexNormals();equineGeometries.set(name,geometry);
+    const indices=[];
+    for(const face of form.faces)for(let j=1;j<face.length-1;j++)
+      indices.push(face[0],face[j],face[j+1]);
+    if(geometry.setIndex){
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(form.vertices.flat(),3));
+      geometry.setIndex(indices);
+    }else{
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(indices.flatMap(i=>form.vertices[i]),3));
+    }
+    geometry.computeVertexNormals();equineGeometries.set(key,geometry);
   }
   const mesh=new THREE.Mesh(geometry,mat(color));parent.add(mesh);return mesh;
 }
+const equinePart=(parent,name,color)=>sculptedPart(parent,name,color);
+const humanPart=(parent,name,color)=>sculptedPart(parent,name,color,true);
+
 function makeHorse(h){
   const group=new THREE.Group(),coat=mat(h.coat||0x81553d);
   contactShadow(group,2.7,1.20);
@@ -459,28 +469,29 @@ function makeHorse(h){
   equinePart(neckPivot,'mane',0x382d27);
   const headPivot=new THREE.Group();headPivot.position.set(1.02,1.35,0);
   neckPivot.add(headPivot);equinePart(headPivot,'head',h.coat);
-  const muzzle=box(headPivot,.36,.29,.45,1.22,-.37,0,0x837363);
-  muzzle.rotation.z=-.20;group.userData.muzzle=muzzle;
+  const muzzle=equinePart(headPivot,'muzzle',0x716454);group.userData.muzzle=muzzle;
   for(const side of [-1,1]){
-    box(headPivot,.105,.11,.065,.30,.20,side*.30,0x211d19);
-    box(headPivot,.10,.07,.06,1.31,-.34,side*.23,0x292522);
-    // Orelhas afiladas, separadas do focinho, com interior rosado.
-    const ear=box(headPivot,.15,.44,.15,-.03,.56,side*.20,h.coat);
-    ear.rotation.z=-.22;ear.rotation.x=side*.14;
-    box(headPivot,.065,.28,.03,-.005,.59,side*.275,0xa88673).rotation.z=-.22;
+    box(headPivot,.105,.08,.045,.24,.18,side*.263,0x211d19);
+    box(headPivot,.038,.025,.047,.22,.20,side*.265,0xf5e9d5);
+    box(headPivot,.08,.045,.035,1.25,-.34,side*.18,0x292522);
+    const earPivot=new THREE.Group();earPivot.position.set(-.055,.35,side*.18);
+    earPivot.rotation.x=side*.14;headPivot.add(earPivot);
+    equinePart(earPivot,'ear',h.coat);
   }
-  if(h.id%3===1)box(headPivot,.11,.40,.025,.56,.02,.272,0xe5d7bf).rotation.z=.49;
+  // Lista acompanha a face superior do nariz, em vez de uma placa lateral.
+  if(h.id%3===1){
+    for(const [x,y,z,w,height,d,angle] of [[.33,.30,0,.15,.018,.16,-.6],[.68,.01,0,.51,.018,.085,-.65]])
+      box(headPivot,w,height,d,x,y,z,0xe5d7bf).rotation.z=angle;
+  }
   const legs=[],knees=[],hooves=[];
-  if(!horseBodyGeometry)horseBodyGeometry=new THREE.IcosahedronGeometry(1,1);
   for(const x of [-1.24,1.22])for(const z of [-.45,.45]){
     const pivot=new THREE.Group();pivot.position.set(x,1.55,z);group.add(pivot);
-    const thigh=new THREE.Mesh(horseBodyGeometry,coat);
-    thigh.position.set(0,-.30,0);thigh.scale.set(x<0?.24:.19,.46,.20);pivot.add(thigh);
+    equinePart(pivot,x<0?'hindLeg':'foreLeg',h.coat);
     const knee=new THREE.Group();knee.position.set(0,-.73,0);pivot.add(knee);
-    part(knee,.17,.75,.18,0,-.375,0);
-    if(h.id%4===0)box(knee,.19,.20,.20,0,-.60,0,0xd7ccb8);
-    hooves.push(box(knee,.31,.24,.29,0,-.75,0,0x332d27));
-    legs.push(pivot);knees.push(knee);
+    equinePart(knee,'shin',h.coat);
+    if(h.id%4===0)cylinder(knee,.095,.105,.19,0,-.59,0,0xd7ccb8,8);
+    const hoof=equinePart(knee,'hoof',0x332d27);hoof.position.y=-.75;hooves.push(hoof);
+    batchStaticMeshes(knee);legs.push(pivot);knees.push(knee);
   }
   const tailPivot=new THREE.Group();tailPivot.position.set(-1.93,2.65,0);group.add(tailPivot);
   equinePart(tailPivot,'tail',0x382d27);
@@ -513,54 +524,59 @@ function makeHorse(h){
   group.userData.tail=tailPivot;
   return group;
 }
-let horseBodyGeometry=null;
 function makeWorker(f){
-  const group=new THREE.Group(),skin=0xd6a17d,shirt=f.color||'#759389';
+  const group=new THREE.Group(),look=motion.workerLook(f);
   contactShadow(group,.75,.48);
-  const legs=[],knees=[],boots=[],arms=[];
+  const upper=new THREE.Group();group.add(upper);
+  const legs=[],knees=[],boots=[],arms=[],elbows=[];
   for(const sign of [-1,1]){
-    const leg=new THREE.Group();
-    leg.position.set(0,1.13,sign*.28);
-    group.add(leg);
-    box(leg,.33,.51,.34,0,-.255,0,0x4e5045);
+    const leg=new THREE.Group();leg.position.set(0,1.13,sign*.23);group.add(leg);
+    humanPart(leg,'thigh',look.pants);
     const knee=new THREE.Group();knee.position.set(0,-.51,0);leg.add(knee);
-    box(knee,.29,.52,.30,0,-.26,0,0x4e5045);
-    boots.push(box(knee,.57,.22,.38,0,-.52,0,0x514237));
+    humanPart(knee,'shin',look.pants);const boot=humanPart(knee,'boot',0x493b30);boot.position.y=-.52;boots.push(boot);
     legs.push(leg);knees.push(knee);
-    const arm=new THREE.Group();
-    arm.position.set(0,2.25,sign*.62);group.add(arm);
-    box(arm,.29,1.02,.32,0,-.50,0,shirt);
-    box(arm,.27,.30,.30,0,-1.08,0,skin);
-    arms.push(arm);
+    const arm=new THREE.Group();arm.position.set(0,2.23,sign*.47);upper.add(arm);
+    humanPart(arm,'sleeve',look.shirt);
+    cylinder(arm,.127,.125,.085,.01,-.45,0,0xd6c7ad,8);
+    const elbow=new THREE.Group();elbow.position.set(0,-.49,0);arm.add(elbow);
+    humanPart(elbow,'forearm',look.skin);humanPart(elbow,'hand',look.skin);
+    batchStaticMeshes(arm);batchStaticMeshes(elbow);arms.push(arm);elbows.push(elbow);
   }
-  box(group,.74,1.26,1.02,0,1.79,0,shirt);
-  box(group,.50,.44,.45,0,2.73,0,skin);
-  const headGeometry=new THREE.SphereGeometry(.56,8,6);
-  headGeometry.__fvTransient=true;
-  const head=new THREE.Mesh(headGeometry,mat(skin));
-  head.position.set(0,3.10,0);group.add(head);
-  const hatColor=f.role==='tratador'?0x7393a0:
-    f.role==='agricultor'?0xc7ad70:0x6f806a;
-  const brimGeometry=new THREE.CylinderGeometry(.85,.85,.12,10);
-  brimGeometry.__fvTransient=true;
-  const brim=new THREE.Mesh(brimGeometry,mat(hatColor));
-  brim.position.set(0,3.50,0);group.add(brim);
-  cylinder(group,.44,.55,.51,0,3.75,0,hatColor,9);
-  // Peito/frente na direção +X, para combinar com o rumo no Canvas.
-  box(group,.12,.36,.40,.42,2.05,0,0xe2d0a3);
-  box(group,.20,.15,.24,.52,3.07,0,skin);
-  const tool=new THREE.Group();tool.position.set(0,-.95,0);arms[1].add(tool);
+  humanPart(upper,'torso',look.shirt);
+  cylinder(upper,.14,.16,.30,0,2.49,0,look.skin,8);
+  humanPart(upper,'head',look.skin);
+  box(upper,.16,.13,.15,.31,2.98,0,look.skin); // Nariz e olhos no rumo real.
+  for(const side of [-1,1]){
+    box(upper,.047,.047,.047,.26,3.09,side*.17,0x332b25);
+    box(upper,.055,.022,.082,.25,3.17,side*.17,look.hair);
+  }
+  if(look.beard)box(upper,.075,.17,.27,.25,2.77,0,look.hair);
+  box(upper,.035,.025,.15,.29,2.86,0,0x805240);
+  const brim=cylinder(upper,.63,.63,.075,0,3.29,0,look.hat,12);
+  brim.scale.set(1.12,1,.88);
+  cylinder(upper,.30,.39,.31,0,3.45,0,look.hat,10);
+  cylinder(upper,.39,.39,.055,0,3.33,0,0x5c4936,10);
+  // Gola, abertura da camisa e cinto: poucos detalhes legíveis no zoom próximo.
+  for(const side of [-1,1])box(upper,.065,.20,.18,.21,2.29,side*.17,0xd8cfb5).rotation.x=side*.5;
+  box(upper,.024,.78,.04,.29,1.87,0,0xced0b9);
+  for(const y of [1.65,1.91,2.12])box(upper,.03,.045,.05,.31,y,0,0xd4c8a8);
+  cylinder(upper,.29,.29,.10,0,1.26,0,0x594330,10).scale.z=1.16;
+  box(upper,.025,.10,.14,.29,1.26,0,0xbe9e64);
+  const tool=new THREE.Group();tool.position.set(.04,-.59,0);elbows[1].add(tool);
   if(f.role==='tratador'){
-    cylinder(tool,.36,.28,.57,.10,-.48,.12,0x668b92,9);
-    box(tool,.09,.31,.09,.10,-.04,.12,0xbdc4ba);
-    box(tool,.42,.10,.10,.10,.11,.12,0xbdc4ba);
+    cylinder(tool,.27,.21,.45,.10,-.36,.12,0x668b92,9);
+    box(tool,.055,.22,.055,.10,-.04,.12,0xbdc4ba);
+    box(tool,.33,.055,.055,.10,.08,.12,0xbdc4ba);
   }else if(f.role==='agricultor'){
-    box(tool,.13,1.95,.13,.18,.12,.05,0xa77f4e);
-    box(tool,.59,.10,.34,.28,-.87,.05,0x758481);
+    box(tool,.095,1.64,.095,.18,.12,.05,0xa77f4e);
+    box(tool,.45,.065,.27,.28,-.67,.05,0x758481);
   }else{
-    box(tool,.72,.86,.10,.36,.19,.13,0x8e683e);
-    box(tool,.59,.67,.12,.36,.20,.20,0xe4d8ba);
+    box(tool,.48,.63,.065,.20,.12,.10,0x8e683e);
+    box(tool,.40,.50,.07,.20,.13,.14,0xe4d8ba);
+    box(tool,.15,.075,.08,.20,.40,.16,0x888f85);
   }
+  batchStaticMeshes(upper);batchStaticMeshes(tool);
+  group.userData.upper=upper;group.userData.elbows=elbows;
   // Ação localizada no equipamento que o trabalhador está operando.
   // Quando a tarefa termina, os elementos somem. Não há efeitos em idle.
   const workFx=new THREE.Group();
@@ -1180,8 +1196,11 @@ function sync(s){
       if(knees[k])knees[k].rotation.z=pose.legs[k].knee;
       if(character.userData.boots?.[k])character.userData.boots[k].rotation.z=-(pose.legs[k].hip+pose.legs[k].knee);
     }
-    for(let k=0;k<arms.length;k++)
+    if(character.userData.upper)character.userData.upper.rotation.z=pose.lean;
+    for(let k=0;k<arms.length;k++){
       arms[k].rotation.z=pose.arms[k]+(k===1?pose.tool:0);
+      if(character.userData.elbows?.[k])character.userData.elbows[k].rotation.z=pose.elbows[k];
+    }
     const tool=character.userData.tool;
     if(tool){
       tool.rotation.z=pose.tool;
