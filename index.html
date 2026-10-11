@@ -999,13 +999,16 @@ function farmWalkingRoute(o,sx,sy,tx,ty){
   fallback.viaRoad=false;
   return fallback;
 }
-const workerJobs={tratador:'Tratando animais',agricultor:'Organizando produção',administrador:'Administrando a cabanha'};
+const workerJobs={
+  tratador:'Tratando animais',agricultor:'Organizando produção',
+  administrador:'Administrando a cabanha'
+};
 function chooseFarmerTarget(f){
-  const wanted={tratador:['stable','paddock'],agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
+  const wanted={tratador:['stable','paddock'],
+    agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
   let list=buildings.filter(b=>b.o===f.o&&wanted.includes(b.type)&&isBuilt(b));
   if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
   if(!list.length){f.route=[];f.activity='Aguardando instalações';return}
-  // Varia alvo e ponto de atendimento para não formar filas na mesma porta.
   const offset=f.id%list.length;
   for(let k=0;k<list.length;k++){
     const b=list[(k+offset+Math.floor(rnd()*list.length))%list.length];
@@ -1014,14 +1017,34 @@ function chooseFarmerTarget(f){
       {x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
       {x:b.x,y:b.y+b.h/2+gap},{x:b.x,y:b.y-b.h/2-gap}
     ].filter(p=>workerSafe(f.o,p.x,p.y,2.4));
-    goals.sort((a,b)=>Math.hypot(a.x-f.x,a.y-f.y)-Math.hypot(b.x-f.x,b.y-f.y));
+    goals.sort((p,q)=>Math.hypot(p.x-f.x,p.y-f.y)-Math.hypot(q.x-f.x,q.y-f.y));
     for(const target of goals){
       const route=farmWalkingRoute(f.o,f.x,f.y,target.x,target.y);
       if(!route.length)continue;
       f.route=route;f.routeIndex=0;f.tx=target.x;f.ty=target.y;
       f.pathMode=route.viaRoad?'rede':'terreno';
-      f.activity='Indo trabalhar';f.task=workerJobs[f.role];
-      f.targetType=b.type;f.moving=true;return;
+      f.targetBuilding=b;f.targetHorseId=null;f.serviceKind=null;
+      if(f.role==='tratador'){
+        // Manejo real em torno das cocheiras e piquetes, sem atravessar cercas.
+        // Priorizar necessidade do animal, com distância limitada à instalação.
+        const herd=horses.filter(h=>h.o===f.o);
+        const nearby=herd.map(h=>({h,
+          distance:Math.hypot(h.x-b.x,h.y-b.y)}))
+          .filter(q=>q.distance<42)
+          .sort((p,q)=>horseCare(p.h)+p.distance*.35-
+            horseCare(q.h)-q.distance*.35);
+        if(nearby.length){
+          f.targetHorseId=nearby[0].h.id;
+          f.serviceKind=(f.tasksDone||0)%2?'escovacao':'alimentacao';
+          f.task=(f.serviceKind==='escovacao'?'Escovando ':'Alimentando ')+
+            nearby[0].h.name;
+        }else{
+          f.task='Limpando cocheira e cochos';
+          f.serviceKind='limpeza';
+        }
+      }else f.task=workerJobs[f.role];
+      f.activity='Indo trabalhar';f.targetType=b.type;
+      f.moving=true;return;
     }
   }
   f.route=[];f.wait=1.5;f.activity='Aguardando caminho livre';f.moving=false;
@@ -1031,6 +1054,22 @@ function completeWorkerJob(f){
   if(!f.o.work)f.o.work={tratador:0,agricultor:0,administrador:0};
   f.o.work[f.role]=Math.min(3,Number(f.o.work[f.role]||0)+.85);
   f.tasksDone=(f.tasksDone||0)+1;
+  if(f.targetBuilding&&f.targetBuilding.o===f.o){
+    f.targetBuilding.services=(f.targetBuilding.services||0)+1;
+    f.targetBuilding.lastServiceDay=day;
+  }
+  if(f.role==='tratador'){
+    const cared=horses.find(h=>h.id===f.targetHorseId&&h.o===f.o);
+    if(cared){
+      cared.care=Math.min(100,horseCare(cared)+14);
+      cared.careServices=(cared.careServices||0)+1;
+      cared.lastCareDay=day;
+      cared.careEffectUntil=cared.phase+2.3;
+      f.lastHorseName=cared.name;
+      f.lastCareKind=f.serviceKind;
+    }
+  }
+  f.targetHorseId=null;f.serviceKind=null;f.targetBuilding=null;
   f.working=false;f.activity='Serviço concluído';f.route=[];
 }
 function animateFarmers(dt){
