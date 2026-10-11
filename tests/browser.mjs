@@ -131,6 +131,7 @@ try{
       return Math.hypot(s.panX-h.x,s.panY-h.y);
     });
     assert.ok(followError<.001,'câmera deve acompanhar a posição real do animal');
+    await page.waitForFunction(()=>Number(getComputedStyle(document.getElementById('status')).opacity)<.01);
     if(width===390){
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
@@ -191,9 +192,28 @@ try{
     assert.equal(await page.locator('#error').isVisible(),false);
     if(width===390){
       await page.locator('#map').click();
+      await page.waitForFunction(()=>[...document.querySelectorAll('#sceneLabels > div')].slice(0,5)
+        .every(el=>el.style.display==='block'));
+      const labelsClear=await page.evaluate(()=>{
+        const z=document.getElementById('zoomTools').getBoundingClientRect();
+        return [...document.querySelectorAll('#sceneLabels > div')].slice(0,5).every(el=>{
+          const r=el.getBoundingClientRect();
+          return r.left>=0&&r.right<=innerWidth&&
+            (r.right<=z.left||r.left>=z.right||r.bottom<=z.top||r.top>=z.bottom);
+        });
+      });
+      assert.ok(labelsClear,'nomes das fazendas não podem cobrir controles de zoom');
       await page.screenshot({path:resolve(output,'0.9.8-regional-3d.png')});
       assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().owners.length),5);
       await page.locator('#focus').click();
+      await page.locator('#toggle').click();
+      await page.locator('#viewWorkers').click();
+      await page.locator('#pause').click();
+      for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
+      await page.screenshot({path:resolve(output,'0.9.8-worker-close-3d.png')});
+      await page.locator('#renderMode').click();
+      await page.screenshot({path:resolve(output,'0.9.8-worker-close-2d.png')});
+      await page.locator('#renderMode').click();
     }
     results.push({version:'0.9.8',viewport:width+'x'+height,...after});
     await context.close();

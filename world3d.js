@@ -1181,14 +1181,22 @@ function sync(s){
 }
 function updateLabels(s){
   labelLayer.style.visibility=s.overlaysOpen?'hidden':'visible';
+  const zoomBounds=s.zoom<=1.13?document.getElementById('zoomTools')?.getBoundingClientRect?.():null;
   for(let i=0;i<s.owners.length;i++){
     const o=s.owners[i],label=labelNodes[i];
     // Em detalhes, liberar a paisagem das etiquetas das cabanhas.
     if(s.zoom>1.13){label.style.display='none';continue}
     const p=new THREE.Vector3(o.x,14,o.y-40).project(camera);
-    const x=(p.x*.5+.5)*innerWidth,y=(-p.y*.5+.5)*innerHeight;
+    const halfWidth=Math.min(110,o.name.length*3.8+10);
+    const projectedX=(p.x*.5+.5)*innerWidth;
+    const x=Math.max(halfWidth+12,Math.min(innerWidth-halfWidth-12,projectedX));
+    let y=(-p.y*.5+.5)*innerHeight;
+    // Na vista regional, os nomes também precisam liberar os botões de zoom.
+    if(zoomBounds&&x+halfWidth>zoomBounds.left-8&&x-halfWidth<zoomBounds.right+8&&
+       y+16>zoomBounds.top&&y-16<zoomBounds.bottom)y=zoomBounds.top-22;
     label.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';
-    label.style.display=x<0||x>innerWidth||y<95||y>innerHeight-55?'none':'block';
+    label.style.display=projectedX<-halfWidth||projectedX>innerWidth+halfWidth||
+      y<(innerWidth<=700?215:130)||y>innerHeight-105?'none':'block';
   }
   if(fairLabel){
     const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
@@ -1348,6 +1356,7 @@ function init(){
   const sun=new THREE.DirectionalLight(0xffe5b9,1.55);sun.position.set(-210,310,180);scene.add(sun);
   const s=api.state();drawWorld(s);
   labelLayer=document.createElement('div');
+  labelLayer.id='sceneLabels';
   labelLayer.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1';
   for(const o of s.owners){
     const el=document.createElement('div');el.textContent=o.name;

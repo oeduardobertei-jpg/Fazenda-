@@ -244,6 +244,7 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 - **Acompanhamento real:** localizar animais/funcionários ou acompanhar manejo mantém a câmera sobre o personagem em movimento. Arrastar ou tocar em Encerrar libera a câmera. O modo de construção também mostra uma faixa persistente com Cancelar.
 - **Uma fonte de poses (`motion.js`):** transições progressivas entre repouso, caminhada, pasto e trabalho; quatro apoios no passo do cavalo; pernas com joelhos e alvo de casco calculado por cinemática; ferramentas acompanham o braço. Canvas e Three.js usam a mesma pose e orientação lógica.
 - **Silhueta animal:** tronco, peito e garupa facetados; pescoço e cabeça articulados para levar o focinho ao capim. Os modelos continuam procedurais e estilizados, sem rig profissional importado.
+- **Profundidade no Canvas:** o chão do piquete é desenhado antes dos cavalos; a cerca frontal conserva a profundidade. Corrigido o encobrimento de animais na visão 2D. Mensagens liberam a faixa de acompanhamento e nomes regionais evitam os botões de zoom.
 - **Contato com o chão:** corrigidas sombras de cavalos/funcionários que ficavam escondidas sob as camadas do terreno. Cascos e botas mantêm orientação de apoio ao longo da passada.
 - **Estradas públicas compartilhadas:** Canvas passa a usar os mesmos acessos do Three.js, da estrada até a porteira. O traçado 2D anterior atravessava a sede e a cocheira.
 - **Menos chamadas gráficas:** partes estáticas de estruturas, tendas e cenário são fundidas por material. Articulações e vegetação instanciada continuam separadas; geometrias transitórias são liberadas na substituição.
@@ -252,7 +253,9 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 
 **Validação local:** simulação e renderizador simulado passaram; poses/articulações e geometria Three.js real passaram. Na simulação amostrada: dia 1.231, 63 instalações, 15 trabalhadores, 882 serviços, zero interseções de trilhas com edifícios e distância mínima entre cavalos de 6,02 unidades. Em geometria real: 15 malhas para a sede detalhada; casco apoiado em y=0,420 e focinho em pasto em y≈0,539.
 
-**Transparência:** geometria real em Node não é renderização WebGL. O teste `browser.mjs` usa Chromium/WebGL2 com SwiftShader (GPU por software), capturas e medidas reais do renderizador; só deve ser declarado aprovado depois de executado. Android físico, temperatura/consumo e FPS no aparelho continuam pendentes.
+**Navegador real e inspeção visual:** Chromium/WebGL2 com SwiftShader aprovou cinco viewports, seis abas de gestão, pausa/guia, câmera, pinça por toque, cancelamento de gesto, normal/econômico, trocas 2D↔3D, pixels do cavalo no Canvas e recuperação real de contexto. Foram inspecionadas capturas da interface, visão local/regional e animais próximos. Comparação 390×844, DPR 1,2: 261→201 chamadas de desenho (−23%); 137.909→144.977 triângulos (+5%). Ver evidências e limites em `RELEASE_0.9.8.md`.
+
+**Transparência:** geometria Three.js em Node, navegador com GPU por software e inspeção humana de capturas são verificações distintas. Nenhuma equivale a Android físico. Naturalidade em movimento, temperatura/consumo e FPS no aparelho continuam pendentes.
 
 ## Controles
 
@@ -304,6 +307,6 @@ Execute `npm ci` e `npm test` (simulação, renderizador simulado, poses e geome
 0.9.5 — identidades regionais, 180 props sem sobreposição, atividades visíveis e visita às fazendas; implementado em código, faltam QA visual Android e refinamento fino da câmera;
 0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
 0.9.7 — manejo animal real, histórico de cuidados, bem-estar econômico, metas e correção de bloqueios de trabalhadores; implementado e testado em simulação, pendente inspeção Android;
-0.9.8 — integração/interface, poses e contato com o terreno implementados; validação WebGL e revisão visual em andamento;
+0.9.8 — candidata em revisão: integração/interface, poses e contato implementados; testes Chromium/WebGL e inspeção de capturas executados, Android físico pendente;
 0.9.9 — candidato à 1.0, orçamento de performance e testes em celulares reais;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.

@@ -1,7 +1,7 @@
 # Fazenda Viva — avaliação e entrega 0.9.8
 
 Base: `8f28cad65071b063487ce18934d75817ad990e51` (0.9.7).
-Estado: implementação pronta para verificação de navegador e revisão visual.
+Estado: candidata 0.9.8 em revisão no PR #1; a publicação principal permanece na 0.9.7.
 
 ## Avaliação do projeto
 
@@ -21,6 +21,7 @@ Problemas encontrados e tratados nesta etapa:
 | Terreno | Sombras 3D em y≈0,145/0,165, sob parcelas/piquetes em y≈0,24–0,40 | Base dos personagens em y=0,42 e sombra acima do chão |
 | Animais | Pernas rígidas, passada diagonal e salto imediato para pasto; focinho alto | Quatro apoios, joelhos, alvo do casco e transições contínuas; cabeça articulada |
 | Direção | Canvas gira antes da projeção anisotrópica | Rotação no espaço do mundo, antes da projeção visual |
+| Profundidade Canvas | Fundo do piquete desenhado após os cavalos, escondendo-os | Solo antes dos personagens e cerca frontal ordenada pela profundidade |
 | Estradas | Canvas desenha acesso até a sede, cortando instalações | Estradas públicas compartilhadas até a porteira |
 | Funcionários | Ferramenta se movimenta separada do braço; trabalho conserva rumo da caminhada | Equipamento ligado ao braço e orientação para a tarefa/paciente |
 | Câmera | Comando “acompanhar” só centraliza uma vez | Acompanhamento contínuo cancelável por arrasto/botão |
@@ -49,9 +50,10 @@ só, para declarar as cinco fazendas visualmente concluídas para a 1.0.
 3. Interface, guia, acompanhamento e cancelamento — implementados.
 4. Fusão de peças estáticas sem alterar a distribuição — implementada.
 5. Regressões, poses e geometria Three.js oficial — aprovadas localmente.
-6. Chromium/WebGL2, capturas em cinco viewports e recuperação de contexto —
-   configurados no CI; resultado ainda deve ser registrado após execução.
-7. Inspeção visual das capturas e ajustes — pendente da geração das imagens.
+6. Chromium/WebGL2, cinco viewports, toque e recuperação de contexto — aprovados no CI.
+7. Inspeção visual das capturas — realizada; corrigidos o encobrimento no Canvas
+   e a mensagem central em paisagem. A faixa de acompanhamento foi liberada de
+   mensagens duplicadas e os nomes regionais foram afastados dos botões de zoom. Capturas próximas dos personagens acrescentadas.
 8. Android físico: naturalidade, toque, aquecimento e estabilidade prolongada —
    pendente; não substituível por emulação.
 
@@ -77,8 +79,43 @@ em y=0,420; focinho durante pasto em y≈0,539, acima do piquete.
 O Chromium local não conseguiu iniciar neste ambiente: criação de socket
 do processo recusada. A inspeção da página pública confirmou o fallback 2D;
 o navegador de inspeção também não conseguiu criar um contexto WebGL. Por isso,
-as capturas e medidas WebGL da nova versão são executadas em GitHub Actions,
-onde o resultado deve ser conferido antes de declará-las aprovadas.
+as capturas e medidas WebGL da nova versão foram executadas em GitHub Actions.
+A primeira execução completa aprovada está em:
+https://github.com/oeduardobertei-jpg/Fazenda-/actions/runs/38108137191.
+A rodada após os ajustes visuais também passou (incluindo pixels Canvas e aproximação dos animais):
+https://github.com/oeduardobertei-jpg/Fazenda-/actions/runs/38108431659.
+
+## Evidência de navegador e inspeção visual
+
+Chromium real com WebGL2/SwiftShader, viewports 320×568, 360×640, 390×844,
+844×390 e 1365×900. Passaram guia/pausa no dia 1, limites dos controles,
+as seis abas de gestão sem transbordo horizontal, cancelamento de construção,
+acompanhamento/arrasto, pinça por toque via CDP, cancelamento de gesto,
+normal/econômico, alternância 2D↔3D e perda/restauração de contexto.
+Nenhum erro JavaScript foi registrado na execução completa.
+
+Na primeira comparação, com câmera e DPR iguais (390×844, DPR 1,2):
+
+| Versão | Chamadas de desenho | Triângulos |
+| --- | ---: | ---: |
+| 0.9.7 | 261 | 137.909 |
+| 0.9.8 | 201 | 144.977 |
+
+Redução de chamadas: aproximadamente 23%. Os personagens articulados aumentam
+os triângulos em aproximadamente 5%. Não há conclusão de ganho de FPS baseada
+nisso; a primeira coleta era curta. O teste final descarta a leitura inicial e
+aguarda pelo menos três amostras subsequentes. A rodada seguinte confirmou as
+mesmas 261→201 chamadas. Seus FPS de software variaram de aproximadamente 3 a
+16,9 nas viewports da 0.9.8: diagnóstico curto do runner, sem equivalência com
+um telefone ou prova de FPS sustentado.
+
+A inspeção humana das capturas conferiu legibilidade, cortes dos painéis,
+composição, estradas e silhuetas. Ela encontrou problemas que as simulações
+não detectaram: solo do piquete encobrindo os cavalos no Canvas e orientação
+sobre a cena em paisagem. Ambos foram corrigidos; um teste lê os pixels do
+cavalo no Canvas para prevenir o retorno desse encobrimento. As imagens são
+quadros estáticos: naturalidade sustentada das animações e manejo ainda exigem
+observação em movimento no aparelho.
 
 ## Como reproduzir
 
@@ -103,7 +140,8 @@ de pelo menos 20% frente à base 0.9.7, com a mesma câmera. Isso não garante
 
 ## Próximas etapas até 1.0
 
-1. Revisar capturas em ângulos locais/regionais e registrar decisões de arte.
+1. Refinar enquadramento inicial e terreno: a clareira ainda domina a composição;
+   aumentar detalhes rurais dirigidos sem comprometer caminhos ou desempenho.
 2. Validar distâncias do manejo, silhueta de potros, retornos de pasto e
    encontros dos funcionários; ajustar comportamento quando o visual exigir.
 3. Fortalecer arquitetura/disposição própria de cada cabanha, além das cores,
@@ -113,3 +151,18 @@ de pelo menos 20% frente à base 0.9.7, com a mesma câmera. Isso não garante
 5. Na 0.9.9, congelar recursos, corrigir bloqueadores e calibrar economia longa.
 6. Declarar 1.0 somente depois de cumprir ou revisar explicitamente os portões
    do ROADMAP_1.0.md. Esta entrega não marca os critérios Android como concluídos.
+
+## Protocolo pendente de Android físico
+
+Registrar modelo, versão do Android/Chrome, resolução, modo gráfico e duração.
+Não marcar este protocolo como aprovado com o teste desktop emulado.
+
+| Sessão | Ações | Evidência esperada |
+| --- | --- | --- |
+| Retrato e paisagem | Abrir guia, seis abas de gestão, construir/cancelar e navegar | Capturas sem cortes de ações, textos legíveis e toque preciso |
+| Câmera | Alternar um/dois dedos, cancelar gesto, acompanhar animal/NPC, trocar 2D↔3D | Sem câmera presa, seleção acidental ou perda de controle |
+| Mundo vivo | Observar pasto, caminhada, trabalho e manejo próximos | Vídeo curto com apoios, distância de interação e ferramenta legíveis |
+| Sessão de 15 minutos por qualidade | Normal/econômico, expansão e visita às cinco propriedades, diagnóstico de FPS | FPS/tempo de frame e quedas anotados, sem erro JS/WebGL; registrar calor e consumo |
+
+Só depois desses registros decidir se o orçamento de geometria, resolução e
+LOD atende o aparelho de referência e fechar os portões mobile da 1.0.
