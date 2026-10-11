@@ -159,7 +159,7 @@ function capacity(o){return buildings.filter(b=>b.o===o&&b.type==='stable'&&isBu
   }
   return true;
 }
-function free(x,y,w,h,o){
+function free(x,y,w,h,o,spacing=8.4){
   if(Math.abs(x)+w/2>595||Math.abs(y)+h/2>555)return false;
   if(o&&!insideFarm(o,x,y,w,h))return false;
   for(const p of ponds){
@@ -168,10 +168,11 @@ function free(x,y,w,h,o){
   }
   if(buildings.some(b=>b.type==='paddock'&&Math.abs(x-b.x)<w/2+4.2&&Math.abs(y-(b.y-b.h/2-4.5))<h/2+7.5))return false;
   if(horses.some(animal=>Math.abs(x-animal.x)<w/2+3.5&&Math.abs(y-animal.y)<h/2+3.5))return false;
-  return !buildings.some(b=>Math.abs(x-b.x)<(w+b.w)/2+5&&Math.abs(y-b.y)<(h+b.h)/2+5);
+  if(horses.some(animal=>animal.homePoint&&Math.abs(x-animal.homePoint.x)<w/2+3.5&&Math.abs(y-animal.homePoint.y)<h/2+3.5))return false;
+  return !buildings.some(b=>Math.abs(x-b.x)<(w+b.w)/2+spacing&&Math.abs(y-b.y)<(h+b.h)/2+spacing);
 }
 function add(o,type,x,y,charge=true,asSite=false){
-  const d=defs[type];if(!d||!free(x,y,d.w,d.h,o)||(charge&&o.cash<d.cost))return false;
+  const d=defs[type];if(!d||!free(x,y,d.w,d.h,o,charge?8.4:5)||(charge&&o.cash<d.cost))return false;
   if(asSite&&activeSite(o))return false; // uma obra de cada vez por fazenda
   if(charge)o.cash-=d.cost;
   buildings.push({o,type,x,y,w:d.w,h:d.h,tier:1,status:asSite?'building':'complete',progress:asSite?0:100});
@@ -245,6 +246,10 @@ function farmLandscaping(){
       if(buildings.some(b=>b.o===o&&
         Math.abs(x-b.x)<b.w/2+r+3.2&&
         Math.abs(y-b.y)<b.h/2+r+3.2))continue;
+      if(buildings.some(b=>b.o===o&&b.type==='paddock'&&
+        Math.abs(x-b.x)<r+5&&Math.abs(y-(b.y-b.h/2-5.5))<r+7))continue;
+      if(horses.some(h=>h.o===o&&(Math.hypot(x-h.x,y-h.y)<r+3||
+        (h.homePoint&&Math.hypot(x-h.homePoint.x,y-h.homePoint.y)<r+3))))continue;
       if(roads.some(t=>distanceToRoad(x,y,t)<(t.w||2.5)*.5+r+1.5))continue;
       if(ponds.some(p=>((x-p.x)/(p.rx+r+2))**2+
         ((y-p.y)/(p.ry+r+2))**2<1))continue;
@@ -643,6 +648,12 @@ function paddockPassage(b){
   return [{x:b.x,y:b.y-b.h/2+3.0,home:true},
     {x:b.x,y:b.y-b.h/2-5.5,home:true}];
 }
+function horseGateBusy(h){
+  if(!h.homePaddock)return false;
+  const exit=paddockPassage(h.homePaddock).at(-1);
+  return horses.some(other=>other!==h&&other.homePaddock===h.homePaddock&&other.pastureRoute?.length&&
+    (other.pastureStage==='saindo'||other.pastureStage==='retornando'||Math.hypot(other.x-exit.x,other.y-exit.y)<12));
+}
 function setHorseRoute(h,route,stage){
   h.pastureRoute=route;h.pastureIndex=0;h.pastureStage=stage;h.blockedTime=0;
   h.activity=stage==='retornando'?'Voltando para água e manejo':stage==='saindo'?'Saindo pelo portão':'Caminhando pelo campo';
@@ -672,6 +683,7 @@ function fieldDestination(h,rest=false){
 }
 function returnHorseHome(h){
   if(h.pastureStage==='retornando'||h.pastureStage==='piquete')return;
+  if(horseGateBusy(h)){h.pastureWait=2;return}
   if(h.homePaddock&&Math.abs(h.x-h.homePaddock.x)<h.homePaddock.w/2-.35&&h.y<h.homePaddock.y+h.homePaddock.h/2-.35&&
     (h.y>=h.homePaddock.y-h.homePaddock.h/2+.35||(Math.abs(h.x-h.homePaddock.x)<2.8&&h.y>=h.homePaddock.y-h.homePaddock.h/2-5.6))){
     setHorseRoute(h,[paddockPassage(h.homePaddock)[0],{...h.homePoint,home:true}],'retornando');return;
@@ -681,6 +693,10 @@ function returnHorseHome(h){
   if(!route.length){h.pastureWait=2;return}
   if(h.homePaddock)route.push(...paddockPassage(h.homePaddock).slice(0,-1).reverse());
   route.push({...h.homePoint,home:true});setHorseRoute(h,route,'retornando');
+}
+function stepHorse(h,x,y,dt){
+  const goal=-Math.atan2(y-h.y,x-h.x),turn=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading));
+  h.heading+=turn*(1-Math.exp(-dt*9));h.x=x;h.y=y;
 }
 function movePastureHorse(h,dt){
   let remaining=dt*(2.5+(h.id%3)*.16),moved=0;
@@ -697,7 +713,21 @@ function movePastureHorse(h,dt){
       if(fieldSafe(h.o,h.x,h.y))for(const side of [h.id>blocker.id?1:-1,h.id>blocker.id?-1:1]){
         const sx=h.x-dy/d*step*side,sy=h.y+dx/d*step*side;
         if(!fieldSafe(h.o,sx,sy)||horses.some(other=>other!==h&&other.o===h.o&&Math.hypot(sx-other.x,sy-other.y)<5.7))continue;
-        h.x=sx;h.y=sy;moved+=step;remaining-=step;bypassed=true;break;
+        stepHorse(h,sx,sy,dt);moved+=step;remaining-=step;bypassed=true;break;
+      }
+      // Em corredores, o animal de ID maior procura uma saída lateral que
+      // aumente a distância do encontro; o outro mantém a prioridade.
+      if(!bypassed&&h.id>blocker.id&&fieldSafe(h.o,h.x,h.y)){
+        const away=Math.atan2(h.y-blocker.y,h.x-blocker.x),distance=Math.hypot(h.x-blocker.x,h.y-blocker.y);
+        let best=null;
+        for(const offset of [0,Math.PI/4,-Math.PI/4,Math.PI/2,-Math.PI/2]){
+          const x=h.x+Math.cos(away+offset)*step,y=h.y+Math.sin(away+offset)*step;
+          const separation=Math.hypot(x-blocker.x,y-blocker.y);
+          if(separation<distance+.03||!fieldSafe(h.o,x,y)||
+            horses.some(other=>other!==h&&other.o===h.o&&Math.hypot(x-other.x,y-other.y)<5.7))continue;
+          if(!best||separation>best.separation)best={x,y,separation};
+        }
+        if(best){stepHorse(h,best.x,best.y,dt);moved+=step;remaining-=step;bypassed=true}
       }
       if(!bypassed){
         if(h.blockedTime>7&&h.pastureStage==='saindo'){
@@ -710,12 +740,10 @@ function movePastureHorse(h,dt){
     }
     // Uma obra nova pode fechar a rota. Replanejar em campo antes de avançar.
     const atHome=!!p.home;
-    if(!atHome&&!fieldSafe(h.o,nx,ny,2.8)){
+    if(!atHome&&!fieldSafe(h.o,nx,ny,3.1)){
       h.pastureRoute=[];h.pastureWait=1;h.pastureStage='campo';break;
     }
-    h.blockedTime=0;h.x=nx;h.y=ny;moved+=step;remaining-=step;
-    const goal=-Math.atan2(dy,dx),turn=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading));
-    h.heading+=turn*(1-Math.exp(-dt*9));
+    h.blockedTime=0;stepHorse(h,nx,ny,dt);moved+=step;remaining-=step;
     if(step>=d-.001)h.pastureIndex++;
   }
   if(Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>18)h.outOnField=true;
@@ -770,16 +798,19 @@ function placeHorses(dt=0){
     if(handler&&h.pastureStage!=='piquete')returnHorseHome(h);
     if(h.pastureRoute?.length){movePastureHorse(h,dt);continue}
     h.pastureWait=Math.max(0,(h.pastureWait||0)-dt);
-    if(h.pastureStage==='piquete'&&handler){
-      h.motion='idle';h.activity='Água e manejo';
-      const goal=-Math.atan2(handler.y-h.y,handler.x-h.x);
-      h.heading+=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading))*(1-Math.exp(-dt*4));
+    if(h.pastureStage==='piquete'&&(handler||(h.homePaddock&&horseCare(h)<65))){
+      h.motion='idle';h.activity=handler?'Água e manejo':'Aguardando manejo no piquete';
+      if(handler){
+        const goal=-Math.atan2(handler.y-h.y,handler.x-h.x);
+        h.heading+=Math.atan2(Math.sin(goal-h.heading),Math.cos(goal-h.heading))*(1-Math.exp(-dt*4));
+      }
       continue;
     }
     h.motion=h.pastureStage==='campo'&&!h.resting?'graze':h.pastureWait>2?'idle':'graze';
     h.activity=h.pastureStage==='campo'?(h.resting?'Descansando no campo':'Pastando no campo'):(h.homePaddock?'No piquete':'Na área de manejo');
     if(h.pastureWait>0)continue;
     if(h.pastureStage==='campo'&&(handler||(h.fieldStops||0)>=2)){returnHorseHome(h);continue}
+    if(h.pastureStage==='piquete'&&horseGateBusy(h)){h.pastureWait=2;continue}
     const destination=fieldDestination(h,h.pastureStage==='campo'&&(h.fieldStops||0)%2===1);
     if(!destination){h.pastureWait=3;continue}
     const exit=h.pastureStage==='piquete'&&h.homePaddock?paddockPassage(h.homePaddock):[];
@@ -822,7 +853,8 @@ function nearestWalkable(grid,x,y,animal=false){
       if(ix<0||iy<0||ix>=NAV_N||iy>=NAV_N)continue;
       const idx=iy*NAV_N+ix;
       if(grid.blocked[idx])continue;
-      if(animal&&!clearWalkSegment(grid.o,x,y,grid.x0+ix*NAV_STEP,grid.y0+iy*NAV_STEP,true))continue;
+      if((animal||workerSafe(grid.o,x,y,2.0))&&
+        !clearWalkSegment(grid.o,x,y,grid.x0+ix*NAV_STEP,grid.y0+iy*NAV_STEP,animal))continue;
       const dist=(grid.x0+ix*NAV_STEP-x)**2+(grid.y0+iy*NAV_STEP-y)**2;
       if(dist<score){score=dist;best=idx}
     }
@@ -831,11 +863,33 @@ function nearestWalkable(grid,x,y,animal=false){
   return best;
 }
 function clearWalkSegment(o,ax,ay,bx,by,animal=false){
-  const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)/1.75));
-  for(let j=0;j<=n;j++){
-    const k=j/n,x=ax+(bx-ax)*k,y=ay+(by-ay)*k;
-    if(!(animal?fieldSafe:workerSafe)(o,x,y,animal?3.1:2.0))return false;
+  const margin=animal?3.1:2.0,safe=animal?fieldSafe:workerSafe;
+  if(!safe(o,ax,ay,margin)||!safe(o,bx,by,margin))return false;
+  // Interseção contínua: amostras espaçadas podiam perder uma quina curta.
+  // O movimento então rejeitava a rota que o planejador continuava escolhendo.
+  for(const b of buildings){
+    if(b.o!==o)continue;
+    let low=0,high=1,miss=false;
+    for(const [start,delta,center,half] of [[ax,bx-ax,b.x,b.w/2+margin],[ay,by-ay,b.y,b.h/2+margin]]){
+      const min=center-half+1e-6,max=center+half-1e-6;
+      if(Math.abs(delta)<1e-9){if(start<=min||start>=max){miss=true;break}}
+      else{
+        const t1=(min-start)/delta,t2=(max-start)/delta;
+        low=Math.max(low,Math.min(t1,t2));high=Math.min(high,Math.max(t1,t2));
+        if(low>=high){miss=true;break}
+      }
+    }
+    if(!miss&&low<high)return false;
   }
+  if(!animal)return true;
+  const distance=(x,y,rx=1,ry=rx)=>{
+    const dx=(bx-ax)/rx,dy=(by-ay)/ry,px=(x-ax)/rx,py=(y-ay)/ry;
+    const t=Math.max(0,Math.min(1,(px*dx+py*dy)/(dx*dx+dy*dy||1)));
+    return Math.hypot(px-dx*t,py-dy*t);
+  };
+  if(ponds.some(p=>distance(p.x,p.y,p.rx+margin,p.ry+margin)<1))return false;
+  if((animalObstacles.get(o)||[]).some(p=>distance(p.x,p.y)<
+    (p.kind==='arvore'?4.8:p.kind==='feno'?3.8:2.8)))return false;
   return true;
 }
 function farmRoute(o,sx,sy,tx,ty,animal=false){
@@ -1158,9 +1212,27 @@ function chooseFarmerTarget(f){
   let list=buildings.filter(b=>b.o===f.o&&wanted.includes(b.type)&&isBuilt(b));
   if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
   if(!list.length){f.route=[];f.activity='Aguardando instalações';return}
+  const patientsByBuilding=new Map();
+  if(f.role==='tratador'){
+    for(const b of list){
+      const points=[{x:b.x-b.w/2-4.4,y:b.y},{x:b.x+b.w/2+4.4,y:b.y},
+        {x:b.x,y:b.y+b.h/2+4.4},{x:b.x,y:b.y-b.h/2-4.4}]
+        .filter(p=>workerSafe(f.o,p.x,p.y,2.4));
+      const patients=horses.filter(h=>h.o===f.o&&
+        (horseCare(h)<65||(h.pastureStage==='piquete'&&horseCare(h)<85))&&
+        points.some(p=>Math.hypot(p.x-(h.homePoint?.x??h.x),p.y-(h.homePoint?.y??h.y))<13.0))
+        .sort((p,q)=>horseCare(p)-horseCare(q));
+      patientsByBuilding.set(b,patients);
+    }
+    // Necessidade real vem antes de um passeio aleatório entre instalações.
+    // Usar a área de manejo permite chamar pacientes que estão longe no campo.
+    list.sort((a,b)=>(patientsByBuilding.get(a)[0]?horseCare(patientsByBuilding.get(a)[0]):1000)-
+      (patientsByBuilding.get(b)[0]?horseCare(patientsByBuilding.get(b)[0]):1000)||
+      Math.hypot(a.x-f.x,a.y-f.y)-Math.hypot(b.x-f.x,b.y-f.y));
+  }
   const offset=f.id%list.length;
   for(let k=0;k<list.length;k++){
-    const b=list[(k+offset+Math.floor(rnd()*list.length))%list.length];
+    const b=f.role==='tratador'?list[k]:list[(k+offset+Math.floor(rnd()*list.length))%list.length];
     const gap=4.4;
     let goals=[
       {x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
@@ -1168,11 +1240,7 @@ function chooseFarmerTarget(f){
     ].filter(p=>workerSafe(f.o,p.x,p.y,2.4));
     // O tratador se dirige à lateral da cocheira/piquete mais próxima de
     // seu paciente, reduzindo o manejo a distância e evitando atravessar cercas.
-    const candidateHorses=f.role==='tratador'?
-      horses.filter(h=>h.o===f.o&&Math.hypot(h.x-b.x,h.y-b.y)<42&&
-        (h.pastureStage==='piquete'||horseCare(h)<65))
-        .sort((p,q)=>(horseCare(p)+Math.hypot(p.x-b.x,p.y-b.y)*.35)-
-          (horseCare(q)+Math.hypot(q.x-b.x,q.y-b.y)*.35)):[];
+    const candidateHorses=patientsByBuilding.get(b)||[];
     const patient=candidateHorses.find(h=>goals.some(p=>Math.hypot(p.x-(h.homePoint?.x??h.x),p.y-(h.homePoint?.y??h.y))<13.0));
     if(patient)goals=goals.filter(p=>Math.hypot(p.x-(patient.homePoint?.x??patient.x),p.y-(patient.homePoint?.y??patient.y))<13.0);
     const scoreGoal=p=>Math.hypot(p.x-f.x,p.y-f.y)*.18+

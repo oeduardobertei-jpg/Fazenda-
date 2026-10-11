@@ -53,11 +53,17 @@ for(const [k,v]of Object.entries(values)){
   old.set(k,globalThis[k]);globalThis[k]=v;
 }
 try{
-  new Function(inline)();
+  new Function(inline.replace('window.FazendaVivaBridge={',
+    'window.__qaSegmentClear=clearWalkSegment;window.FazendaVivaBridge={'))();
   const get=()=>window.FazendaVivaBridge.state();
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  const pen=get().buildings.find(b=>b.o===get().owners[0]&&b.type==='paddock');
+  assert.equal(window.__qaSegmentClear(pen.o,
+    pen.x-pen.w/2-.42,pen.y-pen.h/2-2.435,
+    pen.x-pen.w/2-2.6667,pen.y-pen.h/2-1.667),false,
+    'planejador deve detectar uma quina atravessada entre amostras espaçadas');
   ui.get('helpOpen').onclick();
   assert.equal(ui.get('welcome').hidden,false,'guia pode ser reaberto');
   let guideTime=performance.now();
@@ -209,13 +215,15 @@ try{
   let ms=Math.max(performance.now(),guideTime),overlap=0,outside=0,maxSite=0,minHorse=1e9;
   let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
   const horseStates=new Set(),workerStates=new Set(),previousHorses=new Map(),horseSpans=new Map();
-  let horseBounds=0,horseBuildings=0,fenceCrossings=0,maxHorseStep=0;
+  let horseBounds=0,horseBuildings=0,fenceCrossings=0,maxHorseStep=0,minOwnCare=100,maxHorseBlocked=0;
   let joinedRuralEvent=false;
   for(let i=0;i<1300;i++){
     ms+=50;step(ms);
     // Mesmo conjunto de estados usado por Canvas 2D e Three.js, independentemente
     // de qual renderizador esteja ativo no Android.
     const live=get();
+    minOwnCare=Math.min(minOwnCare,...live.horses.filter(h=>h.o===live.owners[0]).map(h=>h.care));
+    maxHorseBlocked=Math.max(maxHorseBlocked,...live.horses.map(h=>h.blockedTime||0));
     live.horses.forEach(h=>{
       horseStates.add(h.motion);
       if(!horseSpans.has(h.id))horseSpans.set(h.id,{x:h.x,y:h.y,owner:h.o,max:0});
@@ -324,6 +332,10 @@ try{
   assert.ok(fenceCrossings>=10,'saídas e retornos pelo portão precisam acontecer');
   for(const o of get().owners)assert.ok([...horseSpans.values()].some(h=>h.owner===o&&h.max>30),'cavalos precisam explorar os campos de '+o.name);
   assert.ok(get().horses.filter(h=>h.excursions>0).length>=5,'pastoreio deve incluir retorno à água e ao manejo');
+  assert.ok(minOwnCare>50,'pastoreio não deve impedir o manejo contínuo do plantel inicial');
+  assert.ok(maxHorseBlocked<20,'encontros não podem bloquear cavalos indefinidamente');
+  assert.ok(get().horses.filter(h=>h.id<=10).every(h=>h.careServices>=3),
+    'cavalos iniciais das cinco fazendas precisam continuar recebendo manejo');
   assert.ok(joinedRuralEvent,'participação em evento rural não foi exercitada');
   assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
   assert.ok(roadMiddle>10,'trechos centrais de trilha devem ser utilizados');
@@ -479,7 +491,7 @@ try{
     tarefas:get().farmers.reduce((sum,f)=>sum+(f.tasksDone||0),0),
     caminhos:get().trails.length,distanciaMinimaCavalos:+minHorse.toFixed(2),
     intersecoesDeCaminhos:trailIntersections,
-    portoes:fenceCrossings,maxPasso:+maxHorseStep.toFixed(3),excursões:get().horses.reduce((n,h)=>n+(h.excursions||0),0),estadosCavalos:[...horseStates],estadosTrabalhadores:[...workerStates]
+    portoes:fenceCrossings,maxPasso:+maxHorseStep.toFixed(3),menorCuidadoProprio:+minOwnCare.toFixed(2),maiorEsperaEncontro:+maxHorseBlocked.toFixed(2),excursões:get().horses.reduce((n,h)=>n+(h.excursions||0),0),estadosCavalos:[...horseStates],estadosTrabalhadores:[...workerStates]
   }));
 }finally{
   for(const [k,v]of old)if(v===undefined)delete globalThis[k];else globalThis[k]=v;

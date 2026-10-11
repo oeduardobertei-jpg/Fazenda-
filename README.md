@@ -11,8 +11,8 @@ A versão mantém partidas novas a cada abertura, sem salvamento automático. Pa
 - Guia usa **propriedade** no lugar de “gleba”.
 - Anatomia equina compartilhada pelo Canvas e Three.js: dorso/peito/garupa, pescoço curvo, mandíbula e focinho afilados, orelhas, crina, cauda e cascos.
 - Pastoreio automático dentro de cada fazenda: saída pela porteira, exploração de duas áreas de campo, pausas de pasto/descanso e retorno para manejo. O jogador pode acompanhar a rotina em **Gestão → Cavalos → Acompanhar pastoreio**.
-- Navegação considera edificações, açudes, cercados, paisagismo e outros animais. Novas obras preservam a passagem do piquete e não começam sobre um cavalo. Transferências continuam preservando a identidade dos animais.
-- O tratador reserva um paciente e aguarda seu retorno antes de concluir o cuidado ou consumir ração. A construção de outra instalação não recoloca todo o plantel nos pontos iniciais.
+- Navegação considera edificações, açudes, cercados, paisagismo e outros animais. A porteira admite uma passagem por vez; encontros no campo têm espera/desvio. Novas obras preservam pontos de manejo e corredores; o paisagismo mantém os acessos livres. Transferências continuam preservando a identidade dos animais.
+- O tratador prioriza quem precisa de cuidado, chama o paciente pela área de manejo e aguarda seu retorno antes de concluir o serviço ou consumir ração. Cavalos com cuidado baixo aguardam atendimento no piquete antes de sair. A construção de outra instalação não recoloca todo o plantel nos pontos iniciais.
 - O **Centro Rural é um único espaço regional permanente**. Seu subtítulo muda conforme o evento: mostra equina, contrato agrícola, suprimentos ou mutirão. As quatro bancas ganham produtos e comerciantes, e tocar no terreno do Centro abre **Gestão → Mercado**, inclusive entre eventos.
 - Sem novo salvamento automático, necessidades de NPCs, clima ou ciclo dia/noite.
 

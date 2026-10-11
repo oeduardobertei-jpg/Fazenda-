@@ -259,12 +259,15 @@ try{
   },null,{timeout:30000});
   await page.waitForFunction(()=>{
     const s=window.FazendaVivaBridge.state();
-    return s.horses.some(h=>h.o===s.owners[0]&&h.pastureStage==='campo'&&h.motion==='graze'&&Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>30);
+    return s.horses.some(h=>h.o===s.owners[0]&&h.pastureStage==='campo'&&h.motion==='graze'&&h.pose?.graze>.9&&Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>30);
   },null,{timeout:30000});
   await page.locator('#manageQuick').click();await page.locator('#tab-cavalos').click();
   await page.locator('[data-mgaction="watchPasture"]').click();
   assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget.kind),'horse');
   await page.locator('#pause').click();
+  await page.waitForTimeout(1200); // Enquadramento 3D converge também no renderer por software.
+  assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().careMean[0]>50),
+    'sessão de pastoreio deve manter manejo funcional');
   await page.screenshot({path:resolve(output,'0.9.9-pastoreio-3d.png')});
   await page.locator('#renderMode').click();
   await page.screenshot({path:resolve(output,'0.9.9-pastoreio-2d.png')});
