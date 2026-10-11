@@ -1122,7 +1122,12 @@ function animateFarmers(dt){
     if(f.wait>0){
       f.wait-=maxDt;f.moving=false;
       f.motion=f.working?'work':'idle';
-      if(f.wait<=0){completeWorkerJob(f);chooseFarmerTarget(f)}
+      if(f.wait<=0){
+        // Esperar pela passagem NÃO finaliza uma tarefa nem destrói a rota.
+        // Apenas serviço realmente executado gera produtividade e manejo.
+        if(f.working){completeWorkerJob(f);chooseFarmerTarget(f)}
+        else f.yielding=false;
+      }
       continue;
     }
     if(!f.route||f.routeIndex>=f.route.length){
@@ -1149,12 +1154,38 @@ function animateFarmers(dt){
     }
     const step=Math.min(d,maxDt*(3.3+(f.id%3)*.30));
     const nx=f.x+dx/d*step,ny=f.y+dy/d*step;
-    if(farmers.some(other=>other!==f&&other.o===f.o&&
-        Math.hypot(nx-other.x,ny-other.y)<2.15)){
-      f.moving=false;f.wait=.24+(f.id%3)*.12;
-      f.motion='idle';f.activity='Aguardando passagem';
+    const blocker=farmers.find(other=>other!==f&&other.o===f.o&&
+      Math.hypot(nx-other.x,ny-other.y)<2.15);
+    if(blocker){
+      f.blockedSeconds=(f.blockedSeconds||0)+maxDt;
+      // Dois trabalhadores se cruzam pelas laterais da trilha em vez de
+      // pararem repetidamente no mesmo nó do A*.
+      let sideways=false;
+      for(const side of [f.id>blocker.id?1:-1,f.id>blocker.id?-1:1]){
+        const sx=f.x-(dy/d)*step*side;
+        const sy=f.y+(dx/d)*step*side;
+        if(!workerSafe(f.o,sx,sy,1.6)||
+           !clearWalkSegment(f.o,f.x,f.y,sx,sy))continue;
+        if(farmers.some(other=>other!==f&&other.o===f.o&&
+          Math.hypot(sx-other.x,sy-other.y)<2.15))continue;
+        f.x=sx;f.y=sy;f.heading=Math.atan2(sy-f.y+dy*.001,sx-f.x+dx*.001);
+        f.gait=(f.gait||0)+step*2;
+        f.motion='walk';f.moving=true;f.activity='Abrindo passagem';
+        sideways=true;break;
+      }
+      if(!sideways){
+        f.moving=false;f.yielding=true;
+        f.wait=.24+(f.id%3)*.12;
+        f.motion='idle';f.activity='Aguardando passagem';
+      }
+      if(f.blockedSeconds>8){
+        f.blockedSeconds=0;
+        f.wait=0;f.yielding=false;
+        chooseFarmerTarget(f);
+      }
       continue;
     }
+    f.blockedSeconds=0;
     if(!clearWalkSegment(f.o,f.x,f.y,nx,ny)){
       f.motion='idle';chooseFarmerTarget(f);continue;
     }
