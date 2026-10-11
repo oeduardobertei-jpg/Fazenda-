@@ -1107,6 +1107,10 @@ function completeWorkerJob(f){
       cared.careServices=(cared.careServices||0)+1;
       cared.lastCareDay=day;
       cared.careEffectUntil=cared.phase+2.3;
+      f.horseCareJobs=(f.horseCareJobs||0)+1;
+      careJournal.unshift({o:f.o,horseId:cared.id,horseName:cared.name,
+        day,kind:f.serviceKind,ration:!!ration,careGained:14+ration,workerId:f.id});
+      if(careJournal.length>80)careJournal.length=80;
       f.lastHorseName=cared.name;
       f.lastCareKind=f.serviceKind;
     }
