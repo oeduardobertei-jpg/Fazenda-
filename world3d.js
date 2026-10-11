@@ -624,8 +624,9 @@ function drawWorld(s){
 }
 // Mesmo conjunto de props usados no Canvas. Geometrias simples, recoloridas
 // por InstancedMesh e recalculadas só quando a simulação rearranja o terreno.
+const EMPTY_RANCH_DECOR=Object.freeze([]);
 function syncRanchDecor(s){
-  const sites=s.ranchDecor||[];
+  const sites=s.ranchDecor||EMPTY_RANCH_DECOR;
   const isEco=!!s.lowGraphics;
   ranchLayer.visible=s.zoom>=.62;
   if(sites===lastRanchDecor&&isEco===lastDecorEco)return;
