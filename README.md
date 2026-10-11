@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.4
+# Fazenda Viva — versão 0.9.5
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=094
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=095
 
 ## Novidades da série 0.8
 
@@ -186,6 +186,24 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 
 **Ainda pendente antes da 1.0:** validar a aparência e o desempenho em WebGL no Android real, ampliar a coerência visual das outras estruturas, aprimorar as animações dos cavalos/NPCs, equilibrar o comércio autônomo de longo prazo e consolidar uma experiência estável e intuitiva. Os testes simulados não substituem revisão visual mobile.
 
+### 0.9.5 — Cinco paisagens autorais e trabalho rural visível
+
+**Meta desta etapa:** melhorar a identidade visual das propriedades em vez de simplesmente ampliar a quantidade de botões e números. A versão 0.9.5 implementa uma camada de cenário compartilhada por Canvas 2D e Three.js.
+
+- **Cinco identidades rurais:** Campos do Sul (sede do jogador), Campos Abertos, Terra Vermelha, Vale Produtivo e Rincão Verde. Cada propriedade possui cores de terreno, paredes, telhado, acabamento e vegetação coerentes com sua proposta; modelos 2D e 3D usam o mesmo perfil.
+- **180 elementos naturais/funcionais distribuídos com regras espaciais:** 36 pontos por fazenda contendo bosquetes, arbustos, flores, pedras e fardos. A geração é determinística: os detalhes não mudam quando a câmera gira ou aproxima.
+- **Paisagismo que respeita o jogo:** a distribuição verifica a área real do lote, footprints construídos, distância das vias internas, açudes e afastamento entre objetos. Ao construir novas instalações, o cenário ao redor é regenerado em locais válidos, sem avançar sobre paredes.
+- **Mesma geografia nas duas câmeras:** o array `ranchDecor` fornece posições idênticas para o Canvas e para o Three.js. O modelo 3D renderiza grupos de objetos com `InstancedMesh`; o Canvas omite detalhes pequenos demais na visualização regional.
+- **Animais compatíveis com o cenário:** a escolha de pastagens e piquetes evita árvores, fardos e outros adereços. Corrigido o cache de posições: quando um cavalo é comprado de outra cabanha ele passa a ocupar fisicamente uma vaga da propriedade compradora.
+- **Sombras leves de contato:** cavalos e trabalhadores ganharam sombras estilizadas que dispensam shadow maps custosos. No 2D, o mesmo efeito aumenta a sensação de presença sobre o terreno.
+- **Trabalho visível:** fazendeiros com chapéus distintos por função e microanimações de atividade enquanto executam serviço. No 3D, partículas procedurais localizadas surgem apenas durante o trabalho e desaparecem em descanso; no 2D há indicação equivalente.
+- **Exploração direta:** a aba Mercado permite visitar qualquer uma das quatro cabanhas concorrentes com um toque, além do Centro Rural. As fichas dos produtores indicam o estilo regional de sua propriedade.
+- **Performance:** vegetação e pedras instanciadas, cache por geometria/layout, modo econômico e limite de detalhes por zoom; os detalhes não são reconstruídos por frame. Também foi corrigido um caso que criava uma lista vazia nova quando a camada de decoração não existia.
+
+**Testes em código:** geometria/afastamento de props (cinco fazendas), integridade dos caminhos, migração espacial dos cavalos negociados, comandos de visita, zoom, tarefas, qualidade gráfica e cena 3D simulada. Verificação real do WebGL em Android ainda pendente.
+
+**Limite atual:** a animação de cavalos e trabalhadores é procedural e estilizada, não tem rig profissional importado de Blender. É necessário conferir visualmente a 0.9.5 no celular antes de avançar com ajustes finos da 0.9.6.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -225,7 +243,7 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.9.2 — locomoção dos NPCs sobre a rede real, visual equestre, portões e regressões automatizadas; falta QA visual no Android;
 0.9.3 — agenda regional, mercado ativo, reprodução com pedigree básico e negociação equina; concluída no código, pendente QA Android;
 0.9.4 — genética com três aptidões, compra regional real, Centro Rural e um novo beauty-pass 2D/3D; validada em simulação, QA Android pendente;
-0.9.5 — arquitetura rural autoral, vegetação/microterreno, interações NPC–cavalo e câmera/touch Android;
+0.9.5 — identidades regionais, 180 props sem sobreposição, atividades visíveis e visita às fazendas; implementado em código, faltam QA visual Android e refinamento fino da câmera;
 0.9.6 — estabilidade de longo prazo, acesso dos NPCs, desempenho e verificação visual mobile;
-1.0 — integração, balanceamento, acabamento audiovisual e critérios de aceitação mobile/desktop;
-1.0 — integração e critérios de estabilidade.
+0.9.7–0.9.9 — refinamento sistêmico, interface, QA e candidato ao lançamento;
+1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.
