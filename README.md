@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.6
+# Fazenda Viva — versão 0.9.7
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=096
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=097
 
 ## Novidades da série 0.8
 
@@ -221,6 +221,22 @@ Esta etapa é uma revisão de robustez e performance, para reduzir o risco de um
 
 **O que não foi verificado:** não foi executado WebGL real em Android nesta sessão; não existe, ainda, medição oficial do FPS do aparelho do usuário. O FPS exposto pelo jogo serve para orientar o ajuste visual. O modo 2D continua disponível.
 
+### 0.9.7 — Manejo animal visível, bem-estar e trabalho sem travas
+
+**Objetivo:** transformar o cuidado da cabanha em uma mecânica observável no próprio mapa, onde animais e trabalhadores compartilham exatamente o mesmo estado no Canvas 2D e no Three.js.
+
+- **Cada cavalo tem bem-estar próprio** (15 a 100), número de serviços de cuidado e registro do último manejo. O bem-estar muda com o calendário e com os atendimentos físicos do tratador. As instalações proporcionam amortecimento limitado, mas não substituem o trabalho.
+- **Tratadores cuidam de cavalos reais:** ao escolher uma cocheira/piquete, o NPC prioriza o animal com maior necessidade e procura atender pela lateral da instalação mais próxima do cavalo, sem atravessar paredes ou cercas. As tarefas se alternam entre alimentação e escovação.
+- **Os cavalos respondem visualmente ao atendimento.** Durante o serviço, o animal permanece parado e volta a cabeça na direção do tratador. No 2D surge um indicador temporário; no 3D há uma marca de cuidado acima do cavalo, animação de pescoço e cauda, com indicação especial de ração de qualidade.
+- **Manejo tem custo e consequência:** o bem-estar influencia a contribuição econômica dos animais e o valor estimado de negociação. A gestão exibe o cuidado médio, o valor por animal, o histórico recente de serviços e novas metas ligadas ao manejo de verdade.
+- **Ração reforçada (opcional):** na aba `Gestão → Cavalos`, comprar quatro porções por R$ 200. Elas só são consumidas quando o tratador realmente conclui um atendimento animal, adicionando 10 pontos extras de cuidado. Uma porção não é consumida apenas porque o usuário comprou ou abriu o painel.
+- **Câmera de acompanhamento:** `Gestão → Cavalos → 👁️ Acompanhar manejo no mapa` aproxima a visão do animal em atendimento (ou do funcionário responsável, se ele ainda não escolheu paciente).
+- **Correção de congestionamento de NPCs:** encontrou-se um defeito de longa duração em que esperar outro trabalhador zerava uma rota repetidamente, criando bloqueios persistentes. Agora a espera não cancela tarefas; os personagens tentam desvios laterais coerentes e replanejam rotas se necessário.
+- **Correção de identidade animal 3D:** após vender e comprar outro cavalo mantendo igual quantidade, o modelo deve ser reconstruído quando a identidade mudou; caso contrário seria possível conservar a pelagem do animal antigo.
+- **Simulação/QA:** testes verificam atendimento individual de cavalos, inventário de ração e consumo em serviço real, ausência de cruzamentos com estruturas e cercas, câmera de manejo, indicadores de trato e ração em Three.js, encerramento dos efeitos e substituição de cavalo sem alterar quantidade.
+
+**Limites:** as animações ainda são procedurais e estilizadas, não foram validadas visualmente num Android/WebGL real. O indicador representa bem-estar de **gameplay**, não aconselhamento veterinário ou uma simulação clínica detalhada. A 1.0 continua condicionada a inspeção de imagens e medição real de desempenho mobile.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -263,5 +279,6 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.9.4 — genética com três aptidões, compra regional real, Centro Rural e um novo beauty-pass 2D/3D; validada em simulação, QA Android pendente;
 0.9.5 — identidades regionais, 180 props sem sobreposição, atividades visíveis e visita às fazendas; implementado em código, faltam QA visual Android e refinamento fino da câmera;
 0.9.6 — câmera com projeção matemática estável, DPR adaptativo, telemetria mobile e correção do bosque que invadia as fazendas; inspeção visual Android ainda pendente;
-0.9.7–0.9.9 — refinamento sistêmico, interface, QA e candidato ao lançamento;
+0.9.7 — manejo animal real, histórico de cuidados, bem-estar econômico, metas e correção de bloqueios de trabalhadores; implementado e testado em simulação, pendente inspeção Android;
+0.9.8–0.9.9 — integração da interface, revisão de qualidade visual mobile e candidato à 1.0;
 1.0 — integração, balanceamento, acabamento e critérios de aceitação mobile/desktop.
