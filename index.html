@@ -1049,7 +1049,16 @@ function chooseFarmerTarget(f){
       {x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
       {x:b.x,y:b.y+b.h/2+gap},{x:b.x,y:b.y-b.h/2-gap}
     ].filter(p=>workerSafe(f.o,p.x,p.y,2.4));
-    goals.sort((p,q)=>Math.hypot(p.x-f.x,p.y-f.y)-Math.hypot(q.x-f.x,q.y-f.y));
+    // O tratador se dirige à lateral da cocheira/piquete mais próxima de
+    // seu paciente, reduzindo o manejo a distância e evitando atravessar cercas.
+    const candidateHorses=f.role==='tratador'?
+      horses.filter(h=>h.o===f.o&&Math.hypot(h.x-b.x,h.y-b.y)<42)
+        .sort((p,q)=>(horseCare(p)+Math.hypot(p.x-b.x,p.y-b.y)*.35)-
+          (horseCare(q)+Math.hypot(q.x-b.x,q.y-b.y)*.35)):[];
+    const patient=candidateHorses[0];
+    const scoreGoal=p=>Math.hypot(p.x-f.x,p.y-f.y)*.18+
+      (patient?Math.hypot(p.x-patient.x,p.y-patient.y):Math.hypot(p.x-f.x,p.y-f.y));
+    goals.sort((p,q)=>scoreGoal(p)-scoreGoal(q));
     for(const target of goals){
       const route=farmWalkingRoute(f.o,f.x,f.y,target.x,target.y);
       if(!route.length)continue;
@@ -1059,17 +1068,11 @@ function chooseFarmerTarget(f){
       if(f.role==='tratador'){
         // Manejo real em torno das cocheiras e piquetes, sem atravessar cercas.
         // Priorizar necessidade do animal, com distância limitada à instalação.
-        const herd=horses.filter(h=>h.o===f.o);
-        const nearby=herd.map(h=>({h,
-          distance:Math.hypot(h.x-b.x,h.y-b.y)}))
-          .filter(q=>q.distance<42)
-          .sort((p,q)=>horseCare(p.h)+p.distance*.35-
-            horseCare(q.h)-q.distance*.35);
-        if(nearby.length){
-          f.targetHorseId=nearby[0].h.id;
+        if(patient){
+          f.targetHorseId=patient.id;
           f.serviceKind=(f.tasksDone||0)%2?'escovacao':'alimentacao';
           f.task=(f.serviceKind==='escovacao'?'Escovando ':'Alimentando ')+
-            nearby[0].h.name;
+            patient.name;
         }else{
           f.task='Limpando cocheira e cochos';
           f.serviceKind='limpeza';
