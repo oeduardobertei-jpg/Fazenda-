@@ -101,7 +101,15 @@ const state={
     owner:owner.name,kind:'servico',w:2.5
   }],
   trees:[],ponds:[],fields:[{x:390,y:320,w:40,h:28}],
-  fairground:{x:-65,y:212},ruralEvent:null,panX:-315,panY:-280,zoom:3,
+  fairground:{x:-65,y:212},ruralEvent:null,
+  ranchDecor:[
+    {o:owner,x:-260,y:-220,kind:'arvore',scale:1,variant:0,color:0x648c50},
+    {o:owner,x:-258,y:-240,kind:'arbusto',scale:1.2,variant:1,color:0x648c50},
+    {o:owner,x:-260,y:-260,kind:'flores',scale:1.0,variant:2,color:0x648c50},
+    {o:owner,x:-290,y:-205,kind:'feno',scale:1.1,variant:3,color:0x648c50},
+    {o:owner,x:-300,y:-204,kind:'pedra',scale:1,variant:4,color:0x648c50}
+  ],
+  panX:-315,panY:-280,zoom:3,
   lowGraphics:false
 };
 const previous=new Map();
@@ -142,6 +150,13 @@ try{
   assert.ok(renders>=7,'3D deve resistir a zoom e troca de qualidade');
   assert.ok(meshes.some(m=>m.count===77&&m.matrices.length===77),
     'lavouras instanciadas sem centenas de meshes soltos');
+  assert.ok(meshes.filter(m=>m.count===1&&m.matrices.length===1).length>=5,
+    'camada rural física deve instanciar vegetação e objetos distintos');
+  const decorCached=modelsCreated;
+  frame(340);
+  assert.ok(modelsCreated-decorCached<12,
+    'paisagismo orgânico deve permanecer em cache sem mudanças no terreno');
+
   const beforeEvent=modelsCreated;
   state.ruralEvent={id:'feira',name:'Feira regional de criadores',claimed:false};
   frame(420);
