@@ -17,7 +17,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+      - name: Instalar dependências de teste
+        run: npm ci
       - name: Simular jogo, conferir controle e integridade JS
         run: |
-          node tests/smoke.mjs
-          node tests/render3d.mjs
+          npm test
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Baixar repositório e referência 0.9.7
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependências de teste
+        run: npm ci
+      - name: Instalar Chromium e bibliotecas de sistema
+        run: npx playwright install --with-deps chromium
+      - name: Testar WebGL real e interface em cinco viewports
+        run: npm run test:browser
+      - name: Guardar capturas e métricas para inspeção visual
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazenda-viva-qa-0.9.8
+          path: qa-artifacts/
+          retention-days: 14
