@@ -31,13 +31,25 @@
 - [ ] Testes manuais de usabilidade e desempenho no Android real com captura de tela e inspeção de erros JavaScript/WebGL.
 - [ ] Monitorar FPS e tempo de frame em dispositivo real; ajustar densidade/LOD se houver quedas notáveis.
 
+## Registro de progresso
+
+**0.9.5 — atualização de autoria visual**
+- Cinco paletas de solo, parede, telhado, vegetação e identidade de fazenda sincronizadas no Canvas e no Three.js.
+- 36 props por propriedade (180 no total), com proteção de footprints, trilhas e açudes.
+- LOD e instancing para manter o custo no Android sob controle.
+- Cavalos vendidos migram para piquetes/pastagens da nova cabanha (corrigido cache do proprietário).
+- NPCs com chapéus, sombras e animações procedurais de trabalho coerentes no 2D/3D.
+- Mercado permite visitar cada propriedade diretamente.
+- Os critérios de segurança visual dependem ainda de inspeção manual no celular: não estão declarados como concluídos.
+
 ## Portões de versão
 
 **0.9.4 — circuito de criadores e marco regional**  
 Genética detalhada, trocas reais de cavalos, Centro Rural visível e primeiro beauty-pass de lavouras e edificações. **Implementado; aguarda inspeção visual Android.**
 
 **0.9.5 — autoria visual e vida em campo**  
-Arquitetura individual, animais com animação mais suave, ações visíveis dos NPCs, solo, microvegetação, áreas de produção e conectividade física das instalações.
+**Implementação principal entregue em código, pendente inspeção visual no Android.** Cinco estilos regionais distintos, 180 pontos de paisagismo sem sobreposição, microprops nas duas câmeras, trabalhadores com animação de tarefa e sombras de contato, cavalos com slots que acompanham o proprietário e visitas diretas às fazendas.  
+**Ainda pendentes:** verificar realismo das animações no aparelho e ajustar microcolisões ou artefatos que dependam do ângulo da câmera.
 
 **0.9.6 — câmera, desempenho e QA Android**  
 Prova de longo prazo, câmera sem travas, revisão de LOD, fallback WebGL, redução de travessias/artefatos e ajuste do layout.
