@@ -947,6 +947,72 @@ function processBirths(){
     $('status').textContent='🌱 Um novo potro nasceu! Veja a genealogia em Gestão → Cavalos.';
   }
 }
+// O comércio usa os cavalos existentes no mundo: não gera animais fictícios.
+const regionalTradeHistory=[];
+let nextAITradeDay=225;
+function regionalHorseOffers(){
+  const offers=[];
+  for(const seller of owners.slice(1)){
+    const herd=horses.filter(h=>h.o===seller);
+    if(herd.length<2)continue; // manter rebanho mínimo do proprietário autônomo
+    const candidate=herd.filter(h=>horseAge(h)>=2&&
+      !pregnancies.some(p=>p.motherId===h.id)&&
+      (h.lastTransferDay===undefined||day-h.lastTransferDay>=90))
+      .sort((a,b)=>a.quality-b.quality||a.id-b.id)[0];
+    if(!candidate)continue;
+    const premium=candidate.quality>=82?1.26:1.14;
+    const price=Math.round(horseSalePrice(candidate)*premium+240);
+    offers.push({seller,horse:candidate,price});
+  }
+  return offers;
+}
+function logHorseTransfer(h,from,to,price){
+  regionalTradeHistory.unshift({day,name:h.name,
+    from:from.name,to:to.name,price});
+  if(regionalTradeHistory.length>18)regionalTradeHistory.length=18;
+}
+function buyRegionalHorse(horseId){
+  const offer=regionalHorseOffers().find(x=>x.horse.id===horseId);
+  if(!offer){$('status').textContent='🐎 Esta oferta regional já não está disponível.';return false}
+  const player=owners[0],reserved=pregnancies.filter(p=>p.o===player).length;
+  if(horses.filter(h=>h.o===player).length+reserved>=capacity(player)){
+    $('status').textContent='🏠 Sem vagas: amplie sua cocheira antes de comprar.';
+    return false;
+  }
+  if(player.cash<offer.price){
+    $('status').textContent='💰 Saldo insuficiente para esta negociação.';return false
+  }
+  player.cash-=offer.price;
+  offer.seller.cash+=offer.price;
+  offer.horse.o=player;
+  offer.horse.lastTransferDay=day;
+  horseSlotsKey='';
+  logHorseTransfer(offer.horse,offer.seller,player,offer.price);
+  $('news').textContent='🤝 '+player.name+' comprou '+offer.horse.name+
+    ' de '+offer.seller.name+' por '+brl(offer.price)+'.';
+  $('status').textContent='✅ Cavalo transferido para sua cabanha.';
+  refresh();return true;
+}
+function processRegionalHorseTrades(){
+  if(day<nextAITradeDay)return;
+  nextAITradeDay=day+115;
+  // Proprietários que têm rebanho excedente negociam com quem dispõe de vagas.
+  const offers=regionalHorseOffers().filter(x=>
+    horses.filter(h=>h.o===x.seller).length>=3);
+  const buyers=owners.slice(1).filter(o=>
+    horses.filter(h=>h.o===o).length+
+      pregnancies.filter(p=>p.o===o).length<capacity(o));
+  for(const offer of offers){
+    const buyer=buyers.find(o=>o!==offer.seller&&o.cash>offer.price+5800);
+    if(!buyer)continue;
+    buyer.cash-=offer.price;offer.seller.cash+=offer.price;
+    offer.horse.o=buyer;offer.horse.lastTransferDay=day;
+    horseSlotsKey='';
+    logHorseTransfer(offer.horse,offer.seller,buyer,offer.price);
+    $('news').textContent='🤝 '+buyer.name+' negociou um cavalo com '+offer.seller.name+'.';
+    break; // somente uma transação IA por rodada comercial
+  }
+}
 function sellHorse(h){
   if(!h||h.o!==owners[0])return false;
   if(pregnancies.some(p=>p.motherId===h.id)){
@@ -955,6 +1021,9 @@ function sellHorse(h){
   const price=horseSalePrice(h),index=horses.indexOf(h);
   if(index<0)return false;
   horses.splice(index,1);owners[0].cash+=price;horseSlotsKey='';
+  regionalTradeHistory.unshift({day,name:h.name,from:owners[0].name,
+    to:'Mercado externo',price});
+  if(regionalTradeHistory.length>18)regionalTradeHistory.length=18;
   $('status').textContent='💰 '+h.name+' vendido por '+brl(price)+'.';
   $('news').textContent='📈 Negociação concluída: '+h.name+' · '+brl(price)+'.';
   refresh();return true;
@@ -1306,6 +1375,7 @@ function tick(){
   day+=5;
   updateRuralEvent();
   processBirths();
+  processRegionalHorseTrades();
   market.grain=Math.max(.75,Math.min(1.35,market.grain+(rnd()-.5)*.12));
   market.horse=Math.max(.8,Math.min(1.4,market.horse+(rnd()-.5)*.1));
   for(const o of owners){
@@ -1523,7 +1593,7 @@ $('visitFarm').onclick=()=>{
 $('focus').onclick=()=>{panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;$('panel').hidden=true;$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 window.FazendaVivaBridge={
-  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market}),
+  state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory}),
   mode:(active)=>{mode3D=!!active;document.getElementById('renderStatus').textContent=active?'🌄 3D ativo':'🗺️ 2D compatível'}
 };
 setTimeout(()=>{
