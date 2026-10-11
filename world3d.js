@@ -436,9 +436,17 @@ function makeHorse(h){
   box(careFx,.72,.72,.23,.34,.05,0,0x9ed4a9);
   box(careFx,.88,.79,.21,0,-.34,0,0x7dbf8c).rotation.z=Math.PI/4;
   box(careFx,.20,.56,.16,.08,-1.04,.01,0xe4e3ad);
+  const special=new THREE.Group();
+  for(const side of [-1,1]){
+    const leaf=box(special,.24,.64,.10,side*.55,.22,.20,0xe2c16b);
+    leaf.rotation.z=side*.43;
+  }
+  box(special,.10,.55,.09,0,-.32,.20,0x789956);
+  special.visible=false;careFx.add(special);
   careFx.visible=false;
   group.add(careFx);
   group.userData.careFx=careFx;
+  group.userData.specialCareFx=special;
   group.userData.horse=h;
   group.userData.legs=legs;
   group.userData.neck=neckPivot;
@@ -1054,8 +1062,11 @@ function sync(s){
         -.18+Math.sin(h.phase*.48+h.id)*.14;
     const careFx=mesh.userData.careFx;
     if(careFx){
+      const rationActive=(h.careSpecialUntil??-1)>h.phase;
       careFx.visible=s.zoom>1.5&&!s.lowGraphics&&
-        (h.interacting||(h.careEffectUntil??-1)>h.phase);
+        (h.interacting||(h.careEffectUntil??-1)>h.phase||rationActive);
+      if(mesh.userData.specialCareFx)
+        mesh.userData.specialCareFx.visible=rationActive;
       if(careFx.visible){
         careFx.position.y=5.4+Math.sin(h.phase*4+h.id)*.21;
         careFx.rotation.y=-mesh.rotation.y;
