@@ -89,14 +89,14 @@
     const walk=pose.walk||0,graze=pose.graze||0,care=pose.care||0;
     const phase=entity.gait||0,time=entity.phase||0;
     return {
-      walk,graze,care,
+      walk,graze,care,legRoot:1.599-.049*walk,
       // O focinho alcança o capim: duas articulações, com transição contínua.
       neck:-.10-graze*1.34+care*.10+Math.sin(time*.65+entity.id)*.035*(1-walk),
       head:-.08-graze*.26+Math.sin(time*1.1)*.025,
       tail:-.12+Math.sin(time*.8+entity.id)*(.11+care*.08),
       bodyBob:Math.sin(phase*2)*.016*walk,neckDrop:graze*.22,
       legs:[0,Math.PI,Math.PI/2,Math.PI*1.5].map((offset,i)=>
-        legPose(phase+offset,walk,.73,.75,1.43,i<2?-1:1))
+        legPose(phase+offset,walk,.73,.75,1.479-.049*walk,i<2?-1:1))
     };
   }
   function worker(entity){
@@ -104,8 +104,8 @@
     const walk=pose.walk||0,work=pose.work||0,time=entity.animTime||0;
     const phase=entity.gait||0;
     return {
-      walk,work,bodyBob:Math.sin(phase*2)*.018*walk,
-      legs:[0,Math.PI].map(offset=>legPose(phase+offset,walk,.51,.52,1.00,1)),
+      walk,work,legRoot:1.158-.028*walk,bodyBob:Math.sin(phase*2)*.018*walk,
+      legs:[0,Math.PI].map(offset=>legPose(phase+offset,walk,.51,.52,1.028-.028*walk,1)),
       arms:[-Math.sin(phase)*.28*walk,Math.sin(phase)*.28*walk],
       lean:work*(entity.role==='agricultor'?-.15:-.045),
       elbows:[.10+work*.35,.15+work*(entity.role==='administrador'?.85:.60)],

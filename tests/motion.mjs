@@ -26,7 +26,7 @@ for(let i=0;i<64;i++){
     const down=.73*Math.cos(leg.hip)+.75*Math.cos(leg.hip+leg.knee);
     const horizontal=.73*Math.sin(leg.hip)+.75*Math.sin(leg.hip+leg.knee);
     assert.ok(Math.abs(horizontal-leg.x)<1e-6,'articulações posicionam casco no alvo');
-    assert.ok(Math.abs(down-(1.43-leg.lift))<1e-6,'altura do casco coincide com a passada');
+    assert.ok(Math.abs(down-(pose.legRoot-.12-leg.lift))<1e-6,'altura do casco coincide com a passada');
     assert.ok(leg.knee*sign>0,'joelho respeita a articulação anterior/posterior');
     if(leg.lift>.001)phases.add(j);
   }
@@ -35,6 +35,7 @@ assert.equal(phases.size,4,'os quatro cascos devem executar apoio e balanço');
 horse.motion='idle';
 for(let i=0;i<100;i++)motion.blend(horse,1/60);
 assert.ok(motion.horse(horse).walk<.0001,'repouso encerra a passada');
+assert.ok(motion.horse(horse).legs.every(l=>Math.abs(l.knee)<.10),'repouso não deve agachar o cavalo');
 const worker={id:1,role:'agricultor',motion:'work',animTime:1,gait:4};
 for(let i=0;i<80;i++)motion.blend(worker,1/60);
 const task=motion.worker(worker);

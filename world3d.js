@@ -1171,6 +1171,7 @@ function sync(s){
     mesh.scale.set(animalScale,animalScale,animalScale);
     const legs=mesh.userData.legs||[],knees=mesh.userData.knees||[];
     for(let j=0;j<legs.length;j++){
+      legs[j].position.y=pose.legRoot;
       legs[j].rotation.z=pose.legs[j].hip;
       if(knees[j])knees[j].rotation.z=pose.legs[j].knee;
       if(mesh.userData.hooves?.[j])mesh.userData.hooves[j].rotation.z=-(pose.legs[j].hip+pose.legs[j].knee);
@@ -1215,6 +1216,7 @@ function sync(s){
     const legs=character.userData.legs||[],knees=character.userData.knees||[];
     const arms=character.userData.arms||[];
     for(let k=0;k<legs.length;k++){
+      legs[k].position.y=pose.legRoot;
       legs[k].rotation.z=pose.legs[k].hip;
       if(knees[k])knees[k].rotation.z=pose.legs[k].knee;
       if(character.userData.boots?.[k])character.userData.boots[k].rotation.z=-(pose.legs[k].hip+pose.legs[k].knee);

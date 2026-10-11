@@ -104,7 +104,7 @@ try{
         const model=i<3?models.makeHorse(horse):models.makeWorker({id:i,role:roles[i-3],color:['#658481','#ad8c57','#718267'][i-3]});
         const entity=i<3?horse:{role:roles[i-3],motion:'idle',gait:0,animTime:0};
         const pose=i<3?window.FazendaVivaMotion.horse(entity):window.FazendaVivaMotion.worker(entity);
-        model.userData.legs.forEach((leg,j)=>{leg.rotation.z=pose.legs[j].hip;
+        model.userData.legs.forEach((leg,j)=>{leg.position.y=pose.legRoot||leg.position.y;leg.rotation.z=pose.legs[j].hip;
           model.userData.knees[j].rotation.z=pose.legs[j].knee;
           (model.userData.hooves||model.userData.boots)[j].rotation.z=-(pose.legs[j].hip+pose.legs[j].knee)});
         if(i<3){model.userData.neck.rotation.z=pose.neck;
@@ -139,6 +139,8 @@ try{
     assert.ok(after.calls<300,'orçamento inicial: menos de 300 chamadas na visão local');
     if(width===390)assert.ok(after.calls<=before.calls*1.10,'nova anatomia deve preservar o orçamento de chamadas da 0.9.9');
     await page.screenshot({path:resolve(output,`0.9.9.1-world-${width}x${height}.png`)});
+    assert.ok(await page.locator('#hud .brand').evaluate(el=>el.scrollWidth<=el.clientWidth),
+      'a versão inteira deve caber no HUD');
     const bounds=await page.evaluate(()=>{
       const ids=['hud','economy','topTools','bottom','zoomTools'];
       return ids.map(id=>{
