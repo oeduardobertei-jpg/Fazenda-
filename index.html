@@ -479,7 +479,8 @@ function drawHorseSprite(h){
     ctx.beginPath();ctx.arc(p.x,yy,Math.max(5.5,s*.85),0,Math.PI*2);ctx.fill();
     ctx.textAlign='center';
     ctx.font=Math.max(12,Math.min(23,s*1.8))+'px system-ui';
-    ctx.fillText(h.interacting?'🥕':'💚',p.x,yy+s*.30);
+    ctx.fillText((h.careSpecialUntil??-1)>h.phase?'🌾':
+      h.interacting?'🥕':'💚',p.x,yy+s*.30);
   }else if(zoom>2.55&&horseCare(h)<46){
     // Apenas animais precisando de cuidado exibem a barra na cena;
     // caso contrário a pastagem permanece visualmente limpa.
@@ -1092,7 +1093,13 @@ function completeWorkerJob(f){
   if(f.role==='tratador'){
     const cared=horses.find(h=>h.id===f.targetHorseId&&h.o===f.o);
     if(cared){
-      cared.care=Math.min(100,horseCare(cared)+14);
+      // Alimento reforçado só é consumido quando o trato acontece no mapa.
+      const ration=(f.o.feedStock||0)>0?10:0;
+      if(ration){
+        f.o.feedStock--;
+        cared.careSpecialUntil=cared.phase+2.3;
+      }
+      cared.care=Math.min(100,horseCare(cared)+14+ration);
       cared.careServices=(cared.careServices||0)+1;
       cared.lastCareDay=day;
       cared.careEffectUntil=cared.phase+2.3;
@@ -1161,6 +1168,18 @@ function animateFarmers(dt){
     f.moving=true;f.motion='walk';
     f.activity='Indo trabalhar';
   }
+}
+function purchaseAnimalFeed(){
+  const o=owners[0],owned=horses.filter(h=>h.o===o);
+  if(!owned.length){$('status').textContent='🐎 É necessário ter cavalos para comprar ração.';return false}
+  if((o.feedStock||0)>=8){
+    $('status').textContent='🌾 Estoque suficiente: utilize as rações atuais primeiro.';return false
+  }
+  if(o.cash<200){$('status').textContent='💰 Ração especial: são necessários R$ 200.';return false}
+  o.cash-=200;o.feedStock=(o.feedStock||0)+4;
+  $('news').textContent='🌾 A cabanha recebeu quatro porções de ração reforçada. O tratador aplicará durante o manejo.';
+  $('status').textContent='✅ Suprimentos adquiridos; as porções serão usadas em serviços reais.';
+  refresh();return true;
 }
 function finances(o){
   let gross=0,cost=0;
@@ -1505,6 +1524,11 @@ function managementContent(tab){
         herdCare(o)+'/100</strong></div>'+
       progressBar(herdCare(o),100)+
       '<p class="mgSmall">Tratadores alimentam e escovam os cavalos. Cuidado preservado melhora a produção e o valor dos animais.</p></div>'+
+      '<div class="mgCard"><div class="mgLine"><span>🌾 Ração de qualidade disponível</span>'+
+        '<strong>'+Math.max(0,o.feedStock||0)+' porções</strong></div>'+
+      '<p class="mgSmall">Cada porção acrescenta +10 pontos de cuidado quando o tratador atende um animal. O alimento não é consumido sem serviço realizado.</p>'+
+      '<button type="button" data-mgaction="buyCareFeed">🌾 Adquirir 4 porções · R$ 200</button>'+
+      '<button type="button" data-mgaction="watchCare">👁️ Acompanhar manejo no mapa</button></div>'+
       '<h4>🐴 Criação e linhagens</h4>'+
       (awaiting.length?awaiting.map(p=>{
         const mother=hs.find(h=>h.id===p.motherId);
@@ -1685,6 +1709,21 @@ $('manageBody').onclick=e=>{
   if(action==='buyRegional'){
     buyRegionalHorse(Number(button.dataset.id||0));renderManagement(true);return;
   }
+  if(action==='buyCareFeed'){
+    purchaseAnimalFeed();renderManagement(true);return;
+  }
+  if(action==='watchCare'){
+    const o=owners[0];
+    const handler=farmers.find(f=>f.o===o&&f.role==='tratador');
+    if(!handler)return;
+    const cared=horses.find(h=>h.o===o&&h.id===handler.targetHorseId);
+    panX=cared?(handler.x+cared.x)*.5:handler.x;
+    panY=cared?(handler.y+cared.y)*.5:handler.y;
+    zoom=3.65;overview=false;
+    $('map').textContent='🗺️ Mapa';
+    $('status').textContent='👁️ Acompanhando o manejo de '+(cared?.name||'seus cavalos')+'.';
+    closeManagement();return;
+  }
   if(action==='breedHorse'){
     breedHorses();renderManagement(true);return;
   }
@@ -1726,7 +1765,8 @@ function refresh(){
     const team=farmers.filter(f=>f.o===owners[0]);
     const tasks=team.reduce((n,f)=>n+(f.tasksDone||0),0);
     report.textContent='👨‍🌾 Equipe: '+team.map(f=>f.role+' — '+(f.activity||'disponível')).join(' · ')+
-      '. Serviços concluídos: '+tasks+'. Produtividade: +R$ '+e.bonus+' por ciclo; salários: R$ '+e.payroll+'.';
+      '. Serviços concluídos: '+tasks+'. Cuidado médio dos cavalos: '+herdCare(owners[0])+
+      '/100. Produtividade: +R$ '+e.bonus+' por ciclo; salários: R$ '+e.payroll+'.';
   }
 }
 function zoneOf(o,type){
