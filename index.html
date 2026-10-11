@@ -39,7 +39,7 @@
 #manageBody .mgValue{font-size:16px}#management .manageHead strong{font-size:15px}}
 </style></head><body>
 <canvas id="game"></canvas><div id="hud"><div class="pill">🐎 FAZENDA VIVA · 0.9.3</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy" style="position:fixed;top:145px;left:8px;right:8px;max-width:max-content;background:#173b2bdc;padding:7px 10px;border-radius:8px;font-size:11px;pointer-events:none"></div><div id="status">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><h3>🌿 Sua cabanha · Construção e gestão</h3><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com glebas separadas.</p><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button" style="display:block;width:100%;margin-top:7px">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" style="display:block;width:100%;margin-top:7px" aria-pressed="false">⚙️ Gráficos: normal</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" style="display:block;width:100%;margin-top:8px;background:#694a38;border-color:#d7a66f" type="button">🔄 Reiniciar do dia 1</button></div><div id="bottom"><button id="pause">⏸ Pausar</button><button id="speed">⏩ 1×</button><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="toggle">☰ Menu</button></div><button id="renderMode" type="button">🌄 Iniciando 3D…</button><div id="renderStatus">Carregando renderizador tridimensional…</div><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-label="Gestão da cabanha" aria-modal="true" role="dialog" hidden>
-<header class="manageHead"><strong>📊 Gestão da cabanha</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
+<header class="manageHead"><strong>📊 Gestão da cabanha · ⏸</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" aria-label="Seções da gestão">
 <button data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
 <button data-mgtab="financas" aria-selected="false">💰 Finanças</button>
@@ -68,7 +68,7 @@ function updateRuralEvent(){
  }
  if(!ruralEvent&&day>=nextRuralEventDay){
    const kind=ruralEvents[Math.floor(rnd()*ruralEvents.length)];
-   ruralEvent={...kind,startDay:day,endsAt:day+45,claimed:false};
+   ruralEvent={...kind,startDay:day,endsAt:day+135,claimed:false};
    nextRuralEventDay=day+160+Math.floor(rnd()*9)*5;
    $('news').textContent='📣 Evento regional: '+kind.name+'. Veja Gestão → Mercado.';
  }
@@ -1348,7 +1348,7 @@ function tick(){
   refresh();
 }
 // Partida nova a cada abertura. Nenhum salvamento automático ou carregamento local.
-let prev=performance.now();function frame(now){try{let dt=Math.min(.05,(now-prev)/1000);prev=now;if(!paused){acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);placeHorses();animateFarmers(dt*speed);if(acc>=3){acc-=3;tick()}}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
+let prev=performance.now();function frame(now){try{let dt=Math.min(.05,(now-prev)/1000);prev=now;if(!paused&&$('management').hidden){acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);placeHorses();animateFarmers(dt*speed);if(acc>=3){acc-=3;tick()}}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
 // Gestos robustos: uma máquina de estados para um e dois dedos.
 // Nunca reaproveita distância anterior após levantar ou cancelar um ponteiro.
 const pointers=new Map();
