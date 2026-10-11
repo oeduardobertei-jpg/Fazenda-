@@ -61,9 +61,10 @@ async function open(width,height,route='/'){
   return {context,page};
 }
 async function measurements(page){
-  await page.waitForFunction(()=>window.__qaSamples.some(s=>s.mode==='3D'&&s.calls>0),null,{timeout:15000});
+  await page.waitForFunction(()=>window.__qaSamples.filter(s=>s.mode==='3D'&&s.calls>0).length>=4,null,{timeout:20000});
   return page.evaluate(()=>{
-    const samples=window.__qaSamples.filter(s=>s.mode==='3D'&&s.calls>0);
+    // Descartar a primeira leitura: o loop acaba de iniciar e ainda está aquecendo.
+    const samples=window.__qaSamples.filter(s=>s.mode==='3D'&&s.calls>0).slice(1);
     return {samples:samples.length,calls:Math.max(...samples.map(s=>s.calls)),
       triangles:Math.max(...samples.map(s=>s.triangles)),
       fpsMean:samples.reduce((n,s)=>n+s.fps,0)/samples.length,
@@ -130,6 +131,22 @@ try{
       return Math.hypot(s.panX-h.x,s.panY-h.y);
     });
     assert.ok(followError<.001,'câmera deve acompanhar a posição real do animal');
+    if(width===390){
+      await page.locator('#pause').click();
+      for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
+      await page.screenshot({path:resolve(output,'0.9.8-horse-close-3d.png')});
+      await page.locator('#renderMode').click();
+      await page.waitForFunction(()=>{
+        const s=window.FazendaVivaBridge.state(),h=s.horses.find(h=>h.id===s.followTarget.id);
+        const c=document.getElementById('game'),ctx=c.getContext('2d');
+        const rgb=ctx.getImageData(Math.floor(c.width/2),Math.floor(c.height/2),1,1).data;
+        const coat=parseInt(h.coat.slice(1),16);
+        return rgb[0]===(coat>>16&255)&&rgb[1]===(coat>>8&255)&&rgb[2]===(coat&255);
+      },null,{timeout:5000});
+      await page.screenshot({path:resolve(output,'0.9.8-horse-close-2d.png')});
+      await page.locator('#renderMode').click();
+      await page.locator('#pause').click();
+    }
     await page.mouse.move(width*.45,height*.55);
     await page.mouse.down();await page.mouse.move(width*.45+28,height*.55,{steps:4});await page.mouse.up();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget),null,'arrasto encerra acompanhamento');
@@ -172,6 +189,12 @@ try{
     await page.screenshot({path:resolve(output,`0.9.8-2d-${width}x${height}.png`)});
     await page.locator('#renderMode').click();
     assert.equal(await page.locator('#error').isVisible(),false);
+    if(width===390){
+      await page.locator('#map').click();
+      await page.screenshot({path:resolve(output,'0.9.8-regional-3d.png')});
+      assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().owners.length),5);
+      await page.locator('#focus').click();
+    }
     results.push({version:'0.9.8',viewport:width+'x'+height,...after});
     await context.close();
   }

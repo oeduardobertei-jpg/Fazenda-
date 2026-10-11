@@ -32,7 +32,7 @@
     const phase=entity.gait||0,time=entity.phase||0;
     return {
       walk,graze,care,
-      // O focinho alcança o capim: deux articulations au lieu d'un cou rigide.
+      // O focinho alcança o capim: duas articulações, com transição contínua.
       neck:-.10-graze*1.34+care*.10+Math.sin(time*.65+entity.id)*.035*(1-walk),
       head:-.08-graze*.26+Math.sin(time*1.1)*.025,
       tail:-.12+Math.sin(time*.8+entity.id)*(.11+care*.08),
