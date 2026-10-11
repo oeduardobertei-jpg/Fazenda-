@@ -228,8 +228,11 @@ try{
   ui.get('manageBody').onclick({target:{closest:()=>({dataset:{mgaction:'breedHorse'}})}});
   assert.equal(get().pregnancies.length,1,'não duplicar gestação');
   assert.equal(player.cash,cashBefore-850,'não cobrar taxa em tentativa bloqueada');
+  ui.get('manageClose').onclick();
   let advance=0;
   while(get().day<due&&advance++<1500){ms+=50;step(ms)}
+  ui.get('manageOpen').onclick();
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
   assert.ok(get().horses.filter(h=>h.o===player).length>originalHerd,
     'potro nasce ao final da gestação');
   const foal=get().horses.find(h=>h.motherId===pending.motherId);
