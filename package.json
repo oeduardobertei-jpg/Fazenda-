@@ -1,6 +1,6 @@
 {
   "name": "fazenda-viva",
-  "version": "0.9.9-9",
+  "version": "0.9.9-10",
   "private": true,
   "scripts": {
     "test": "node tests/audio.mjs && node tests/smoke.mjs && node tests/render3d.mjs && node tests/motion.mjs && node tests/geometry3d.mjs",

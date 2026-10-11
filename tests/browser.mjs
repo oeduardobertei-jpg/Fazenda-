@@ -10,8 +10,8 @@ import {chromium} from 'playwright';
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const output=resolve(root,'qa-artifacts');mkdirSync(output,{recursive:true});
 const baseline=resolve(output,'baseline');mkdirSync(baseline,{recursive:true});
-const baselineRef=process.env.FAZENDA_BASELINE_REF||'8e7280ce21b6c3c56e9f51498e233242ba91b4c8';
-for(const file of ['index.html','world3d.js','motion.js'])
+const baselineRef=process.env.FAZENDA_BASELINE_REF||'bb52a1e03a2776a922a55c676a24d65e6b4fa527';
+for(const file of ['index.html','world3d.js','motion.js','audio.js','ui.css'])
   writeFileSync(resolve(baseline,file),execFileSync('git',['show',baselineRef+':'+file],{cwd:root}));
 const server=createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
@@ -76,13 +76,13 @@ try{
   await basePage.locator('#guideSkip').click();
   await basePage.locator('#pause').click();
   const before=await measurements(basePage);
-  await basePage.screenshot({path:resolve(output,'baseline-0.9.9.3-portrait.png')});
-  results.push({version:'0.9.9.3',viewport:'390x844',...before});
+  await basePage.screenshot({path:resolve(output,'baseline-0.9.9.9-portrait.png')});
+  results.push({version:'0.9.9.9',viewport:'390x844',...before});
   console.log('BASELINE',JSON.stringify(results.at(-1)));
   // Prancha de revisão visual: os construtores de produção, sem cenário encobrindo.
-  async function characterSheet(page,name,dir,movement=false){
+  async function characterSheet(page,name,dir,movement=false,equineOnly=false){
     const source=readFileSync(resolve(dir,'world3d.js'),'utf8');
-    await page.evaluate(async ({source,moduleUrl,movement})=>{
+    await page.evaluate(async ({source,moduleUrl,movement,equineOnly})=>{
       const Three=await import(moduleUrl);
       const start=source.indexOf('/* Fazenda Viva'),end=source.indexOf('function makeTrees');
       const models=new Function('THREE',source.slice(start,end)+';return {makeHorse,makeWorker};')(Three);
@@ -93,21 +93,22 @@ try{
       document.body.append(canvas);
       const r=new Three.WebGLRenderer({canvas,antialias:true});r.setSize(innerWidth,innerHeight);r.setPixelRatio(1.5);
       r.setScissorTest(true);
-      const labels=movement?['Passada 1','Passada 2','Passada 3','Passada 4',
+      const labels=equineOnly?['Perfil','Três quartos','Frente','Repouso',
+        'Pasto','Caminhada','Potro · perfil','Potro · frente']:movement?['Passada 1','Passada 2','Passada 3','Passada 4',
         'Repouso','Pasto','Descanso no campo','Resposta ao trato',
         'Alimentação','Escovação · ida','Escovação · volta','Agricultor']:
         ['Cavalo · perfil','Cavalo · frente','Cavalo · pasto','Tratador','Agricultor','Administrador'];
-      const cols=movement?4:3,rows=movement?3:2;
+      const cols=movement||equineOnly?4:3,rows=movement?3:2;
       for(let i=0;i<labels.length;i++){
         const width=innerWidth/cols,height=innerHeight/rows,x=(i%cols)*width,row=Math.floor(i/cols),y=innerHeight-(row+1)*height;
         r.setViewport(x,y,width,height);r.setScissor(x,y,width,height);
         const scene=new Three.Scene();scene.background=new Three.Color('#e4ddcc');
         scene.add(new Three.HemisphereLight(0xfff0d9,0x777e65,2));
         const light=new Three.DirectionalLight(0xffffff,1.9);light.position.set(-5,9,6);scene.add(light);
-        const isHorse=movement?i<8:i<3;
-        const horse={id:1,coat:'#9a6545',age:4,motion:'idle',phase:1,gait:movement&&i<4?i*Math.PI/2:0,
-          careKind:'alimentacao',pose:{walk:movement&&i<4?1:0,
-            graze:i===(movement?5:2)?1:0,rest:movement&&i===6?1:0,care:movement&&i===7?1:0}};
+        const isHorse=equineOnly||(movement?i<8:i<3),walking=(movement&&i<4)||(equineOnly&&i===5);
+        const horse={id:1,coat:'#9a6545',age:equineOnly&&i>=6?.5:4,motion:'idle',phase:1,gait:walking?1.2+i*Math.PI/2:0,
+          careKind:'alimentacao',pose:{walk:walking?1:0,
+            graze:i===(equineOnly?4:movement?5:2)?1:0,rest:movement&&i===6?1:0,care:movement&&i===7?1:0}};
         const roles=['tratador','agricultor','administrador'];
         const role=movement?(i===11?'agricultor':'tratador'):roles[i-3];
         const entity=isHorse?horse:{id:i,role,motion:movement?'work':'idle',gait:0,
@@ -129,20 +130,24 @@ try{
           model.userData.upper.rotation.z=pose.lean;model.userData.upper.position.y=pose.bodyBob||0;
           model.userData.tool.rotation.z=pose.tool;
           if(model.userData.brush){model.userData.brush.visible=pose.action==='brush';model.userData.bucket.visible=pose.action!=='brush'}}
+        if(isHorse){const scale=window.FazendaVivaMotion.horseScale(entity.age);model.scale.set(scale.x,scale.y,scale.z)}
         scene.add(model);
         const camera=new Three.OrthographicCamera(-3.7,3.7,3.7*height/width,-3.7*height/width,.1,100);
-        camera.position.set(!movement&&i===1?12:isHorse?0:8,5,!movement&&i===1?0:12);camera.lookAt(0,1.9,0);
+        const front=equineOnly?(i===2||i===7):!movement&&i===1;
+        camera.position.set(front?12:equineOnly&&i===1?8:isHorse?0:8,5,front?0:12);camera.lookAt(0,1.9,0);
         r.render(scene,camera);
         const label=document.createElement('div');label.textContent=labels[i];
         label.dataset.qaSheet='1';
         label.style=`position:fixed;z-index:100000;left:${x+12}px;top:${row*height+14}px;color:#394538;font:600 15px system-ui`;
         document.body.append(label);
       }
-    },{source,moduleUrl:url+'/node_modules/three/build/three.module.js',movement});
+    },{source,moduleUrl:url+'/node_modules/three/build/three.module.js',movement,equineOnly});
     await page.screenshot({path:resolve(output,name)});
   }
   await basePage.setViewportSize({width:1050,height:720});
-  await characterSheet(basePage,'baseline-0.9.9.3-personagens.png',baseline);
+  await characterSheet(basePage,'baseline-0.9.9.9-personagens.png',baseline);
+  await basePage.setViewportSize({width:1280,height:800});
+  await characterSheet(basePage,'baseline-0.9.9.9-cavalos.png',baseline,false,true);
   await baseContext.close();
 
   for(const [width,height] of [[390,844],[320,568],[360,640],[844,390],[1365,900]]){
@@ -150,14 +155,15 @@ try{
     await page.waitForTimeout(350);
     const day=await page.evaluate(()=>window.FazendaVivaBridge.state().day);
     assert.equal(day,1,'guia deve pausar a simulação no dia 1');
-    await page.screenshot({path:resolve(output,`0.9.9.9-guide-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.10-guide-${width}x${height}.png`)});
     await page.locator('#guideSkip').click();
     await page.locator('#pause').click();
     const after=await measurements(page);
     console.log('RENDER',width+'x'+height,JSON.stringify(after));
     assert.ok(after.calls<300,'orçamento inicial: menos de 300 chamadas na visão local');
-    if(width===390)assert.ok(after.calls<=before.calls*1.10,'nova anatomia deve preservar o orçamento de chamadas da 0.9.9.3');
-    await page.screenshot({path:resolve(output,`0.9.9.9-world-${width}x${height}.png`)});
+    if(width===390)assert.ok(after.calls<=before.calls*1.10,'nova anatomia deve preservar o orçamento de chamadas da 0.9.9.9');
+    if(width===390)assert.ok(after.triangles<=before.triangles*1.08,'revisão de volumes deve preservar o orçamento de triângulos');
+    await page.screenshot({path:resolve(output,`0.9.9.10-world-${width}x${height}.png`)});
     assert.ok(await page.locator('#hud .brand').evaluate(el=>el.scrollWidth<=el.clientWidth),
       'a versão inteira deve caber no HUD');
     const bounds=await page.evaluate(()=>{
@@ -202,13 +208,13 @@ try{
       const setting=await page.evaluate(()=>window.FazendaVivaBridge.state().audio);
       assert.equal(setting.volume,.24);assert.equal(setting.ambience,.38);
       assert.equal(await page.locator('#masterValue').innerText(),'24%');
-      await page.screenshot({path:resolve(output,'0.9.9.9-ambiente.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-ambiente.png')});
       await page.locator('#tab-resumo').click();
       assert.ok((await page.locator('#manageBody').innerText()).includes('Diário de crescimento'));
-      await page.screenshot({path:resolve(output,'0.9.9.9-crescimento.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-crescimento.png')});
     }
     await page.locator('#tab-cavalos').click();
-    await page.screenshot({path:resolve(output,`0.9.9.9-management-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.10-management-${width}x${height}.png`)});
     await page.locator('[data-mgaction="findHorse"]').first().click();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget.kind),'horse');
     await page.locator('#pause').click();
@@ -223,7 +229,7 @@ try{
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
       await page.waitForTimeout(1200);
-      await page.screenshot({path:resolve(output,'0.9.9.9-horse-close-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-horse-close-3d.png')});
       await page.locator('#renderMode').click();
       await page.waitForFunction(()=>{
         const s=window.FazendaVivaBridge.state(),h=s.horses.find(h=>h.id===s.followTarget.id);
@@ -234,7 +240,7 @@ try{
         const coat=parseInt(h.coat.slice(1),16);
         return Math.hypot(rgb[0]-(coat>>16&255),rgb[1]-(coat>>8&255),rgb[2]-(coat&255))<75;
       },null,{timeout:5000});
-      await page.screenshot({path:resolve(output,'0.9.9.9-horse-close-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-horse-close-2d.png')});
       await page.locator('#renderMode').click();
       await page.locator('#pause').click();
     }
@@ -242,17 +248,20 @@ try{
     await page.mouse.down();await page.mouse.move(width*.45+28,height*.55,{steps:4});await page.mouse.up();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget),null,'arrasto encerra acompanhamento');
     await page.locator('#focus').click();
+    const previousView=await page.evaluate(()=>{const s=window.FazendaVivaBridge.state();return {zoom:s.zoom,x:s.panX,y:s.panY}});
     await page.locator('#observe').click();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().observing),true);
     assert.equal(await page.locator('#hud').isVisible(),false);
     assert.equal(await page.locator('#observeTools').isVisible(),true);
-    await page.waitForTimeout(650);
-    await page.screenshot({path:resolve(output,`0.9.9.9-contemplar-${width}x${height}.png`)});
+    assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().zoom>6.8),'Contemplar deve aproximar o personagem');
+    await page.waitForTimeout(1200);
+    await page.screenshot({path:resolve(output,`0.9.9.10-contemplar-${width}x${height}.png`)});
     await page.locator('#observeNext').click();
     assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget));
     await page.locator('#observeExit').click();
     assert.equal(await page.locator('#hud').isVisible(),true);
     assert.equal(await page.locator('#observeTools').isVisible(),false);
+    assert.deepEqual(await page.evaluate(()=>{const s=window.FazendaVivaBridge.state();return {zoom:s.zoom,x:s.panX,y:s.panY}}),previousView,'sair de Contemplar restaura o enquadramento anterior');
     await page.locator('#focus').click();
     if(width===390){
       const cdp=await context.newCDPSession(page);
@@ -289,20 +298,20 @@ try{
       assert.ok((await page.locator('#renderMode').innerText()).includes('2D'));
     }
     await page.locator('#renderMode').click();
-    await page.screenshot({path:resolve(output,`0.9.9.9-2d-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.10-2d-${width}x${height}.png`)});
     await page.locator('#renderMode').click();
     assert.equal(await page.locator('#error').isVisible(),false);
     if(width===390){
       await page.locator('#manageQuick').click();await page.locator('#tab-mercado').click();
       assert.ok((await page.locator('#manageBody').innerText()).includes('As quatro bancas'));
       await page.locator('[data-mgaction="visitFair"]').click();
-      await page.screenshot({path:resolve(output,'0.9.9.9-centro-rural-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-centro-rural-3d.png')});
       await page.mouse.click(width/2,height/2);
       assert.equal(await page.locator('#management').isVisible(),true,'toque no Centro Rural abre o mercado');
       assert.equal(await page.locator('#tab-mercado').getAttribute('aria-selected'),'true');
       await page.locator('#manageClose').click();
       await page.locator('#renderMode').click();
-      await page.screenshot({path:resolve(output,'0.9.9.9-centro-rural-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-centro-rural-2d.png')});
       await page.mouse.click(width/2,height/2);
       assert.equal(await page.locator('#management').isVisible(),true,'Centro Rural também funciona em Canvas');
       await page.locator('#manageClose').click();await page.locator('#renderMode').click();
@@ -318,7 +327,7 @@ try{
         });
       });
       assert.ok(labelsClear,'nomes das fazendas não podem cobrir controles de zoom');
-      await page.screenshot({path:resolve(output,'0.9.9.9-regional-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-regional-3d.png')});
       assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().owners.length),5);
       await page.locator('#focus').click();
       await page.locator('#toggle').click();
@@ -326,12 +335,12 @@ try{
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
       await page.waitForTimeout(1200);
-      await page.screenshot({path:resolve(output,'0.9.9.9-worker-close-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-worker-close-3d.png')});
       await page.locator('#renderMode').click();
-      await page.screenshot({path:resolve(output,'0.9.9.9-worker-close-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.10-worker-close-2d.png')});
       await page.locator('#renderMode').click();
     }
-    results.push({version:'0.9.9.9',viewport:width+'x'+height,...after});
+    results.push({version:'0.9.9.10',viewport:width+'x'+height,...after});
     await context.close();
   }
   // Perda/restauração de contexto real, viewport e simulação funcionando juntas.
@@ -368,16 +377,18 @@ try{
   await page.waitForTimeout(1200); // Enquadramento 3D converge também no renderer por software.
   assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().careMean[0]>50),
     'sessão de pastoreio deve manter manejo funcional');
-  await page.screenshot({path:resolve(output,'0.9.9.9-pastoreio-3d.png')});
+  await page.screenshot({path:resolve(output,'0.9.9.10-pastoreio-3d.png')});
   await page.locator('#renderMode').click();
-  await page.screenshot({path:resolve(output,'0.9.9.9-pastoreio-2d.png')});
+  await page.screenshot({path:resolve(output,'0.9.9.10-pastoreio-2d.png')});
   await page.locator('#renderMode').click();
-  await page.screenshot({path:resolve(output,'0.9.9.9-restored-webgl.png')});
+  await page.screenshot({path:resolve(output,'0.9.9.10-restored-webgl.png')});
   await context.close();
   const sheet=await open(1050,720);
-  await characterSheet(sheet.page,'0.9.9.9-personagens.png',root);
+  await characterSheet(sheet.page,'0.9.9.10-personagens.png',root);
   await sheet.page.setViewportSize({width:1280,height:960});
-  await characterSheet(sheet.page,'0.9.9.9-movimento.png',root,true);
+  await characterSheet(sheet.page,'0.9.9.10-movimento.png',root,true);
+  await sheet.page.setViewportSize({width:1280,height:800});
+  await characterSheet(sheet.page,'0.9.9.10-cavalos.png',root,false,true);
   await sheet.context.close();
   assert.deepEqual(errors,[],'nenhum erro JavaScript real');
   writeFileSync(resolve(output,'browser-results.json'),JSON.stringify({

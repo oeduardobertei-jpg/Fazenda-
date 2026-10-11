@@ -73,6 +73,17 @@ try{
   }
   const muzzle=new Three.Box3().setFromObject(horseModel.userData.muzzle);
   assert.ok(muzzle.min.y>=.40&&muzzle.min.y<.90,'focinho deve alcançar o capim sem atravessar o chão');
+  for(const age of [.5,1.5,4]){
+    horse.age=age;
+    for(const graze of [0,.25,.5,.75,1]){
+      horse.pose={walk:1-graze,graze,rest:0,care:0};frame(now+=40);
+      assert.ok(new Three.Box3().setFromObject(horseModel.userData.muzzle).min.y>=.40,
+        'adultos e potros preservam o focinho acima do terreno durante a transição');
+      for(const hoof of horseModel.userData.hooves)
+        assert.ok(new Three.Box3().setFromObject(hoof).min.y>=.418,
+          'cascos de adultos e potros não atravessam o terreno');
+    }
+  }
   const shadow=horseModel.children.find(m=>m.material?.transparent);
   assert.ok(shadow.getWorldPosition(new Three.Vector3()).y>.40,'sombra deve ficar acima do piquete');
   worker.motion='work';

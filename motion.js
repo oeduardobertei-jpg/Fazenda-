@@ -11,10 +11,10 @@
     const step=delta*(1-Math.exp(-Math.max(0,dt)*7));
     return current+clamp(step,-maxRate*dt,maxRate*dt);
   }
-  const neckForm=[[-.08,-.32,.51,.42],[.00,-.02,.54,.42],[.14,.31,.49,.35],
-    [.30,.61,.40,.29],[.46,.88,.31,.25],[.63,1.08,.23,.22],[.76,1.15,.15,.19]];
-  const headForm=[[-.14,.04,.15,.19],[.03,.02,.30,.27],[.24,-.04,.33,.29],
-    [.45,-.18,.28,.25],[.68,-.35,.22,.22],[.88,-.48,.18,.21],[1.05,-.53,.16,.20]];
+  const neckForm=[[-.13,-.38,.52,.45],[-.02,-.10,.55,.46],[.14,.18,.50,.40],
+    [.30,.47,.41,.33],[.46,.71,.31,.27],[.61,.91,.23,.23],[.69,.99,.13,.18]];
+  const headForm=[[-.15,.04,.14,.18],[.01,.03,.29,.27],[.20,-.04,.32,.30],
+    [.41,-.15,.27,.25],[.63,-.29,.21,.22],[.83,-.42,.17,.20],[1.00,-.47,.15,.20]];
   // Seguir a superfície real mantém crina/lista ligadas à anatomia em todos
   // os ângulos. O centro fica ligeiramente dentro da pele, sem faixas soltas.
   function surfaceTrace(rings,indices,radius,width,inset){
@@ -29,32 +29,38 @@
   // raio vertical e largura. Os anéis acompanham a curva de cada volume.
   const horseForm=Object.freeze({
     // Garupa larga, dorso menos tubular e cernelha elevada sobre o ombro.
-    body:[[-2.00,2.32,.13,.18],[-1.80,2.38,.46,.54],[-1.48,2.40,.65,.73],
-      [-1.08,2.34,.66,.72],[-.63,2.28,.61,.65],[-.10,2.28,.60,.62],
-      [.40,2.35,.65,.65],[.77,2.40,.72,.64],[1.08,2.28,.63,.52],
-      [1.35,2.15,.45,.35],[1.48,2.15,.14,.18]],
+    body:[[-1.90,2.27,.13,.19],[-1.70,2.36,.45,.56],[-1.38,2.39,.65,.73],
+      [-1.01,2.32,.64,.69],[-.55,2.26,.60,.62],[-.07,2.28,.60,.61],
+      [.38,2.39,.68,.65],[.73,2.40,.73,.65],[1.01,2.23,.61,.51],
+      [1.27,2.06,.39,.32],[1.36,2.04,.12,.17]],
+    // Ombro e anca sobrepõem o tronco e recebem a raiz dos membros.
+    // A mesma anatomia é desenhada em Canvas e fundida no WebGL.
+    shoulder:[[.56,2.76,.13,.16],[.79,2.47,.33,.26],[.82,2.17,.31,.27],
+      [.80,1.87,.23,.21],[.95,1.65,.12,.13]],
+    haunch:[[-1.40,2.76,.17,.21],[-1.36,2.46,.36,.31],[-1.23,2.15,.34,.29],
+      [-1.09,1.83,.25,.21],[-1.16,1.61,.12,.13]],
     // Base muscular ligada ao peito; a crista arqueia até a nuca.
     neck:neckForm,
     // Mandíbula distinta do chanfro: cabeça encorpada e focinho inclinado.
     head:headForm,
-    muzzle:[[.98,-.51,.17,.22],[1.12,-.54,.18,.23],[1.22,-.54,.13,.20]],
+    muzzle:[[.94,-.46,.17,.22],[1.08,-.48,.18,.23],[1.18,-.48,.13,.20]],
     ear:[[0,0,.09,.08],[-.025,.13,.065,.06],[.01,.29,.008,.012]],
     mane:surfaceTrace(neckForm,[1,2,3,4,5,6],.045,.085,.012),
     forelock:surfaceTrace(headForm,[0,1,2],.032,.075,.012),
     blaze:surfaceTrace(headForm,[2,3,4,5,6],.009,.060,.002),
     tail:[[0,0,.10,.11],[-.15,-.20,.14,.14],[-.29,-.57,.17,.18],
       [-.34,-.99,.17,.17],[-.28,-1.37,.10,.12],[-.15,-1.59,.025,.035]],
-    hindLeg:[[-.05,.62,.26,.27],[-.08,.31,.28,.25],[.03,.02,.21,.18],
-      [.12,-.30,.13,.13],[0,-.73,.105,.105]],
-    foreLeg:[[-.06,.66,.22,.23],[-.03,.28,.21,.19],[.01,-.05,.14,.13],
-      [.02,-.40,.09,.095],[0,-.73,.085,.09]],
+    hindLeg:[[-.02,.54,.23,.23],[.06,.30,.26,.24],[.12,.03,.21,.19],
+      [.10,-.29,.145,.135],[0,-.73,.105,.105]],
+    foreLeg:[[-.08,.54,.20,.21],[-.035,.27,.20,.19],[.01,-.05,.15,.135],
+      [.02,-.40,.10,.10],[0,-.73,.09,.095]],
     shin:[[0,0,.105,.105],[.02,-.13,.08,.08],[.035,-.43,.07,.075],
       [.035,-.60,.095,.10],[.025,-.68,.075,.085]],
     hoof:[[-.10,0,.115,.12],[.05,0,.12,.13],[.19,-.01,.09,.11]]
   });
   // Uma única referência de articulações para WebGL, Canvas e pranchas de QA.
-  const horseRig=Object.freeze({neckX:1.12,neckY:2.55,headX:.74,headY:1.08,
-    tailX:-1.82,tailY:2.66,legXs:[-1.29,1.12],legZ:.44});
+  const horseRig=Object.freeze({neckX:1.03,neckY:2.50,headX:.67,headY:.95,
+    tailX:-1.78,tailY:2.64,legXs:[-1.23,1.03],legZ:.43});
   // Volumes eretos compartilhados no Canvas e WebGL; rosto voltado a +X.
   const workerForm=Object.freeze({
     torso:[[0,1.18,.25,.31],[0,1.38,.28,.36],[0,1.81,.29,.43],

@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.9 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.10 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -487,6 +487,10 @@ function makeHorse(h){
   contactShadow(group,2.7,1.20);
   const body=new THREE.Group();group.add(body);
   equinePart(body,'body',h.coat);group.userData.body=body;
+  for(const side of [-1,1]){
+    equinePart(body,'shoulder',h.coat).position.z=side*.43;
+    equinePart(body,'haunch',h.coat).position.z=side*.43;
+  }
   const neckPivot=new THREE.Group();
   neckPivot.position.set(rig.neckX,rig.neckY,0);group.add(neckPivot);
   equinePart(neckPivot,'neck',h.coat);
@@ -499,8 +503,8 @@ function makeHorse(h){
   for(const side of [-1,1]){
     box(headPivot,.105,.08,.045,.18,.13,side*.286,0x211d19);
     box(headPivot,.025,.022,.047,.16,.15,side*.289,0xf5e9d5);
-    box(headPivot,.075,.045,.032,1.13,-.50,side*.226,0x292522);
-    box(headPivot,.17,.018,.025,1.07,-.67,side*.18,0x3d302a);
+    box(headPivot,.075,.045,.032,1.09,-.45,side*.226,0x292522);
+    box(headPivot,.17,.018,.025,1.04,-.61,side*.18,0x3d302a);
     const earPivot=new THREE.Group();earPivot.position.set(-.06,.33,side*.18);
     earPivot.rotation.x=side*.14;headPivot.add(earPivot);
     equinePart(earPivot,'ear',h.coat);
