@@ -284,6 +284,14 @@ try{
   assert.ok(get().farmers.filter(f=>f.role==='tratador').every(f=>
     f.lastHorseName&&f.tasksDone>0),
     'cada tratador deve atender pelo menos um animal');
+  assert.ok(get().careJournal.length>=5,'diário de manejo não registra os serviços');
+  assert.ok(get().careJournal.every(item=>
+    Number.isFinite(item.careGained)&&item.careGained>=14&&
+    Number.isFinite(item.day)&&item.horseId>0),
+    'diário deve corresponder a cuidados de animais existentes');
+  assert.ok(get().farmers.filter(f=>f.role==='tratador').some(f=>
+    (f.horseCareJobs||0)>=8),'meta de oito cuidados precisa ser alcançável');
+
     assert.ok(get().day>1,'dias devem avançar');
   assert.ok(get().trails.length>0,'caminhos existentes');
   assert.ok(get().farmers.some(f=>(f.tasksDone||0)>0),'tarefas em execução');
@@ -302,6 +310,8 @@ try{
   ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
   assert.ok(ui.get('manageBody').innerHTML.includes('Cuidado médio do plantel'),
     'gestão mostra o bem-estar animal');
+  assert.ok(ui.get('manageBody').innerHTML.includes('Diário de manejo'),
+    'painel não apresenta os cuidados concluídos');
   assert.ok(ui.get('manageBody').innerHTML.includes('Ração de qualidade'),
     'gestão oferece estoque de ração especial');
   const careOwner=get().owners[0],moneyBeforeCare=careOwner.cash;
