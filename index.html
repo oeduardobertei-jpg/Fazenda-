@@ -492,6 +492,13 @@ function spriteGeometry(p,s,heading){
 }
 function drawHorseSprite(h){
   const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom*(horseAge(h)<1?.64:horseAge(h)<2?.82:1);
+  if(s<1.25){
+    // Vista regional: a silhueta custa três traços, sem centenas de faces subpixel.
+    ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s*.67);ctx.rotate(-(h.heading||0));
+    ctx.fillStyle=h.coat;ctx.beginPath();ctx.ellipse(0,0,2,.66,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=h.coat;ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(1,0);ctx.lineTo(2.6,0);ctx.stroke();
+    ctx.strokeStyle='#382d27';ctx.lineWidth=.24;ctx.beginPath();ctx.moveTo(-1.8,0);ctx.lineTo(-2.6,.2);ctx.stroke();ctx.restore();return;
+  }
   ctx.save();
   ctx.fillStyle='#35523655';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.70,s*2.4,s*.72,0,0,Math.PI*2);ctx.fill();
@@ -547,6 +554,11 @@ function drawHorseSprite(h){
 }
 function drawWorkerSprite(f){
   const p=screen(f.x,f.y),s=Math.min(W/300,H/260)*zoom;
+  if(s<1.25){
+    const look=motion.workerLook(f);
+    ctx.fillStyle=look.shirt;ctx.fillRect(p.x-s*.42,p.y-s*1.7,s*.84,s*1.7);
+    ctx.fillStyle=look.hat;ctx.beginPath();ctx.ellipse(p.x,p.y-s*2.2,s*.7,s*.27,0,0,Math.PI*2);ctx.fill();return;
+  }
   ctx.save();
   ctx.fillStyle='#2a3a2b50';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.34,s*.83,s*.34,0,0,Math.PI*2);ctx.fill();
