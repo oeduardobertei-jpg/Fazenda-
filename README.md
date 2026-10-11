@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.2
+# Fazenda Viva — versão 0.9.3
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=092
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=093
 
 ## Novidades da série 0.8
 
@@ -147,6 +147,18 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 
 **Limite e próximo passo:** a animação continua procedural e low-poly. Falta conferir o resultado diretamente em um Android com WebGL real. Os testes não provam ausência total de artefatos de renderização; cobrem geometria lógica e renderizador Three.js simulado.
 
+### 0.9.3 — Eventos regionais, negociação e genética inicial
+- **Calendário econômico dinâmico:** feiras de criadores, contratos agrícolas, central de suprimentos e mutirões de infraestrutura ocorrem sem eventos climáticos, ciclo dia/noite ou estações. Cada evento tem duração de 45 dias de jogo, impacto temporário e intervalo previsível entre ocorrências.
+- **Participação opcional no Mercado:** o jogador pode pagar para participar uma única vez por evento, desde que atenda às condições. As decisões influenciam caixa, reputação, custos futuros ou progresso de uma construção. Eventos não são apostas: retornos são determinísticos com base nas instalações e na qualidade do plantel.
+- **Índices de mercado conectados à contabilidade:** os indicadores de grãos e cavalos e a diferença temporária de custos afetam a economia das cinco propriedades. A aba Finanças discrimina variações de custos e descontos por compras coletivas.
+- **Negociação de cavalos:** cada animal possui valor de venda baseado na qualidade, idade e índice equestre. Vendas retiram o animal do mundo, liberam vagas e creditam o caixa; não é possível vender uma égua com gestação ativa.
+- **Criação equina inicial:** machos/fêmeas identificados, reprodução de adultos de linhagens compatíveis, custo fixo de R$ 850, reserva de vaga, gestação simplificada de 330 dias de jogo e nascimento de potro com genealogia, raça, pelagem e qualidade parcialmente herdadas. A mãe tem descanso reprodutivo mínimo de um ano de jogo.
+- **Potros reconhecíveis em 2D/3D:** modelos menores até atingirem dois anos de jogo, produção econômica proporcional à idade e patrimônio alinhado ao valor de negociação.
+- **Sem gravação automática:** o botão de reiniciar e o início do dia 1 permanecem, por preferência de design. Os dados são simulações de gameplay.
+- **QA:** teste automatizado verifica participação sem duplicação de recompensas, gravidez sem cobrança repetida, nascimento após 330 dias, herança e idade inicial, bloqueio de venda de égua gestante, venda de potro e funcionamento continuado da economia. Smoke e renderizador simulado 3D passaram.
+
+**Nota:** esta atualização introduz genética simples, mas ainda não implementa seleção genética profunda, competições equinas completas, contratos diretos entre proprietários ou animação esquelética profissional. São etapas em aberto para as próximas versões. Ainda é necessária inspeção visual real no Android.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -184,5 +196,6 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.9.0 — gestão e progressão funcional, implementadas e testadas na simulação; falta inspeção visual no Android;
 0.9.1 — correção arquitetural das trilhas e locomoção procedural 2D/3D; pendente inspeção visual Android;
 0.9.2 — locomoção dos NPCs sobre a rede real, visual equestre, portões e regressões automatizadas; falta QA visual no Android;
-0.9.3 — equilíbrio econômico, objetivos avançados, eventos rurais e revisão do desempenho mobile;
+0.9.3 — agenda regional, mercado ativo, reprodução com pedigree básico e negociação equina; concluída no código, pendente QA Android;
+0.9.4 — aperfeiçoar genética, comércio entre fazendas, variedade de modelos e equilíbrio mobile;
 1.0 — integração e critérios de estabilidade.
