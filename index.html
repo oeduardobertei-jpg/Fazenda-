@@ -498,6 +498,15 @@ function render(){
   for(let i=0;i<30;i++){let x=((i*317.21)%1160)-580,y=((i*193.39)%1060)-530,p=screen(x,y);
     if(p.x>-100&&p.x<W+100&&p.y>-100&&p.y<H+100)rect(p.x,p.y,50*s,35*s,i%2?'#8cad71':'#83a367');
   }
+  // Cada gleba possui solo e bioma próprios também na projeção 2D.
+  for(const o of owners){
+    const pos=screen(o.x,o.y);
+    if(pos.x<-130*s||pos.x>W+130*s||pos.y<-90*s||pos.y>H+90*s)continue;
+    ctx.fillStyle='#'+o.style.ground.toString(16).padStart(6,'0');
+    ctx.beginPath();
+    ctx.ellipse(pos.x,pos.y,121*s,118*s*.67,0,0,Math.PI*2);
+    ctx.fill();
+  }
   drawRoad(-140,-580,-140,580,14);drawRoad(140,-580,140,580,14);drawRoad(-580,140,580,140,14);
   for(const o of owners){
     if(Math.abs(o.x)<100){drawRoad(o.x,o.y,o.x,140,7)}
@@ -539,7 +548,12 @@ function render(){
     ...buildings.filter(b=>visible(b.x,b.y,45)).map(b=>({y:b.y,draw:()=>drawBuilding(b)})),
     ...horses.filter(h=>visible(h.x,h.y,35)).map(h=>({y:h.y,draw:()=>drawHorseSprite(h)})),
     ...farmers.filter(f=>visible(f.x,f.y,20)).map(f=>({y:f.y,draw:()=>drawWorkerSprite(f)}))
-  ];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(let o of owners){if(!visible(o.x,o.y,90))continue;let p=screen(o.x,o.y-25),scale=Math.min(W/300,H/260)*zoom;ctx.font='bold '+Math.max(10,Math.min(14,scale*8))+'px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#173625';ctx.strokeText(o.name,p.x,p.y);ctx.fillStyle='#fff9df';ctx.fillText(o.name,p.x,p.y)}}
+  ];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(let o of owners){if(!visible(o.x,o.y,90))continue;let p=screen(o.x,o.y-25),scale=Math.min(W/300,H/260)*zoom;ctx.font='bold '+Math.max(10,Math.min(14,scale*8))+'px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#173625';ctx.strokeText(o.name,p.x,p.y);ctx.fillStyle='#fff9df';ctx.fillText(o.name,p.x,p.y);
+  if(zoom<1.10&&zoom>.38){
+    ctx.font='600 '+Math.max(9,Math.min(12,scale*5))+'px system-ui';
+    ctx.fillStyle='#eff5c4';ctx.fillText(o.style.label,p.x,p.y+16);
+  }
+}}
 // Até dois cavalos por piquete. Excedentes usam pastagem livre, sem empilhamento.
 let horseSlotsKey='',horseSlots=new Map();
 function placeHorses(){
