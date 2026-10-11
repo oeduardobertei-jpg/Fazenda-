@@ -340,10 +340,26 @@ function building(b,detail=true){
   }
   group.userData.building=b;return group;
 }
+// Sombras estilizadas de contato: malha compartilhada, sem shadow maps caros
+// ou múltiplas fontes de luz, apropriada para WebGL em aparelhos modestos.
+let contactGeo=null,contactMat=null;
+function contactShadow(parent,rx,rz){
+  if(!contactGeo)contactGeo=new THREE.CircleGeometry(1,16);
+  if(!contactMat)contactMat=new THREE.MeshBasicMaterial({
+    color:0x243926,side:THREE.DoubleSide,transparent:true,
+    opacity:.16,depthWrite:false});
+  const mesh=new THREE.Mesh(contactGeo,contactMat);
+  mesh.rotation.x=-Math.PI/2;
+  mesh.position.set(0,.025,0);
+  mesh.scale.set(rx,rz,1);
+  parent.add(mesh);
+  return mesh;
+}
 // Os pivôs ficam na articulação, não no centro das caixas. A fase da passada
 // vem da distância realmente percorrida na simulação (mesma fonte do 2D).
 function makeHorse(h){
   const group=new THREE.Group(),coat=mat(h.coat||0x81553d);
+  contactShadow(group,2.8,1.4);
   const part=(parent,w,y,d,x,py,z)=>{
     const mesh=new THREE.Mesh(sharedBox(w,y,d),coat);
     mesh.position.set(x,py,z);parent.add(mesh);return mesh;
@@ -390,6 +406,7 @@ function makeHorse(h){
 }
 function makeWorker(f){
   const group=new THREE.Group(),skin=0xd6a17d,shirt=f.color||'#759389';
+  contactShadow(group,.75,.48);
   const legs=[],arms=[];
   for(const sign of [-1,1]){
     const leg=new THREE.Group();
@@ -408,9 +425,11 @@ function makeWorker(f){
   box(group,.50,.44,.45,0,2.73,0,skin);
   const head=new THREE.Mesh(new THREE.SphereGeometry(.56,8,6),mat(skin));
   head.position.set(0,3.10,0);group.add(head);
-  const brim=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.12,10),mat(0xd4b477));
+  const hatColor=f.role==='tratador'?0x7393a0:
+    f.role==='agricultor'?0xc7ad70:0x6f806a;
+  const brim=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.12,10),mat(hatColor));
   brim.position.set(0,3.50,0);group.add(brim);
-  cylinder(group,.44,.55,.51,0,3.75,0,0xbc995c,9);
+  cylinder(group,.44,.55,.51,0,3.75,0,hatColor,9);
   // Peito/frente na direção +X, para combinar com o rumo no Canvas.
   box(group,.18,.36,.40,.72,2.22,0,0xe2d0a3);
   const tool=new THREE.Group();group.add(tool);
@@ -425,6 +444,18 @@ function makeWorker(f){
     box(tool,.98,1.18,.12,1.08,1.52,.38,0x8e683e);
     box(tool,.80,.91,.14,1.08,1.53,.48,0xe4d8ba);
   }
+  // Ação localizada no equipamento que o trabalhador está operando.
+  // Quando a tarefa termina, os elementos somem. Não há efeitos em idle.
+  const workFx=new THREE.Group();
+  const fxColor=f.role==='tratador'?0x76bfd0:
+    f.role==='agricultor'?0xb3c26a:0xdfd4ad;
+  for(let i=0;i<4;i++){
+    const particle=box(workFx,.20+i*.055,.19+i*.04,.18,
+      0,0,0,fxColor);
+    particle.userData.index=i;
+  }
+  workFx.visible=false;group.add(workFx);
+  group.userData.workFx=workFx;
   group.userData.legs=legs;
   group.userData.arms=arms;
   group.userData.tool=tool;
@@ -991,6 +1022,22 @@ function sync(s){
     if(tool){
       tool.rotation.z=working?Math.sin((f.animTime||0)*3.2)*.12:0;
       tool.position.y=working?Math.sin((f.animTime||0)*3.2)*.07:0;
+    }
+    const workFx=character.userData.workFx;
+    if(workFx){
+      workFx.visible=working&&!s.lowGraphics&&s.zoom>1.45;
+      if(workFx.visible){
+        const phase=(f.animTime||0)*2.8;
+        workFx.children.forEach((p,j)=>{
+          const fz=f.role==='tratador'?.45:f.role==='agricultor'?-.32:.15;
+          const t=(phase*.18+j*.27)%1;
+          p.position.set(1.05+.3*Math.sin(phase+j*2.1),
+            .35+t*(f.role==='tratador'?1.7:2.4),
+            fz+(j-1.5)*.25);
+          const grow=(1-t)*(.7+(j%2)*.35);
+          p.scale.set(grow,grow,grow);
+        });
+      }
     }
   });
 }
