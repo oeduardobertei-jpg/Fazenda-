@@ -5,13 +5,14 @@ import {readFileSync} from 'node:fs';
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const source=world.slice(world.indexOf('/* Fazenda Viva'));
 assert.ok(source.startsWith('/* Fazenda Viva'));
-const meshes=[];
+const meshes=[],sceneObjects=[];
 let renders=0,frame,modelsCreated=0;
 const pixelRatios=[];
 let rendererDom=null;
 class Mock3D{
   constructor(...args){
     modelsCreated++;
+    sceneObjects.push(this);
     this.args=args;this.geometry=args[0];this.material=args[1];
     this.children=[];this.userData={};this.style={};this.visible=true;
     this.domElement={style:{},listeners:{},addEventListener(type,fn){this.listeners[type]=fn}};
@@ -206,6 +207,28 @@ try{
   frame(20300);
   assert.ok(renders>stoppedAt,
     'renderização deve reiniciar após restauração do contexto');
+  state.zoom=3;state.lowGraphics=false;
+  state.horses[0].interacting=true;
+  state.horses[0].careSpecialUntil=state.horses[0].phase+2;
+  frame(20400);
+  const horseModel=sceneObjects.find(m=>m.userData.horse===state.horses[0]);
+  assert.ok(horseModel&&horseModel.userData.careFx,
+    'cavalo precisa de representação tridimensional do cuidado');
+  assert.ok(horseModel.userData.careFx.visible,
+    'cavalo em atendimento mostra indicador no mapa');
+  assert.ok(horseModel.userData.specialCareFx.visible,
+    'ração especial mostra folha dourada no 3D');
+  state.horses[0].interacting=false;
+  state.horses[0].careSpecialUntil=-1;
+  state.horses[0].careEffectUntil=-1;
+  frame(20500);
+  assert.equal(horseModel.userData.careFx.visible,false,
+    'efeito do manejo desaparece ao concluir');
+  state.horses[0].careEffectUntil=state.horses[0].phase+2;
+  frame(20600);
+  assert.ok(horseModel.userData.careFx.visible,
+    'efeito de conclusão mantém destaque temporário');
+
 
 
   assert.ok(!ui.get('renderStatus').textContent.includes('indisponível'),
