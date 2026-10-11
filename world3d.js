@@ -993,14 +993,19 @@ function sync(s){
     }
   }
   for(const b of nearby){
-    const version=modelVersion(b,highDetail);
+    // LOD por construção, não por fazenda inteira: um galpão distante não
+    // precisa de centenas de detalhes só porque o zoom local está elevado.
+    const distance=Math.hypot(b.x-s.panX,b.y-s.panY);
+    const detailed=highDetail&&!s.lowGraphics&&
+      distance<(s.zoom>=3?96:s.zoom>=1.7?145:205);
+    const version=modelVersion(b,detailed);
     const record=modelsByBuilding.get(b);
     if(record&&record.version===version)continue;
     if(record){
       content.remove(record.model);
       disposeTransientGroup(record.model);
     }
-    const model=building(b,highDetail);
+    const model=building(b,detailed);
     content.add(model);
     modelsByBuilding.set(b,{model,version});
   }
