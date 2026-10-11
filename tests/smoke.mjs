@@ -97,6 +97,16 @@ try{
   }
   assert.ok(ui.get('manageBody').innerHTML.includes('Primeira expansão'),
     'metas de progressão visíveis');
+  ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'mercado'}})}});
+  assert.ok(ui.get('manageBody').innerHTML.includes('Visitar fazenda'),
+    'visita a fazendas disponíveis no Mercado');
+  ui.get('manageBody').onclick({target:{closest:()=>({
+    dataset:{mgaction:'visitCompetitor',index:'1'}})}});
+  assert.equal(ui.get('management').hidden,true,'visita fecha o painel e mostra o mundo');
+  assert.equal(get().panX,get().owners[1].x,'visita desloca câmera ao proprietário correto');
+  assert.equal(get().panY,get().owners[1].y,'visita desloca câmera ao terreno correto');
+  ui.get('manageOpen').onclick();
+
   // Cliques do painel usam a mesma câmera da simulação, não reiniciam a partida.
   const startCash=get().owners[0].cash;
   ui.get('manageTabs').onclick({target:{closest:()=>({dataset:{mgtab:'cavalos'}})}});
