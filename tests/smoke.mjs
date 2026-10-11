@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const motion=createRequire(import.meta.url)('../motion.js');
+const sound=createRequire(import.meta.url)('../audio.js');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const inline=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];
@@ -23,7 +24,7 @@ assert.ok(repRewards.length>=7&&thresholds?.length>=7,
   'progressão/recompensas incompletas');
 assert.ok(repRewards.reduce((a,b)=>a+b,0)>=thresholds.at(-1),
   'nível máximo de reputação inalcançável');
-const ids='game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode perfMode perfHud renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody manageQuick panelClose sceneContext contextText contextCancel welcome guideTitle guideText guideHint guideProgress guideNext guideSkip helpOpen'.split(' ');
+const ids='observe observeTools observeCaption observeNext observePause observeExit soundToggle growthHud growthTitle growthLevel growthDetail growthFill game date money buildings economy status panel actions buyhorse upgrade news pause speed focus map toggle visitFarm viewWorkers workerReport graphicsMode perfMode perfHud renderMode renderStatus error zoomIn zoomOut resetGame manageOpen management manageClose manageTabs manageBody manageQuick panelClose sceneContext contextText contextCancel welcome guideTitle guideText guideHint guideProgress guideNext guideSkip helpOpen'.split(' ');
 const noop=()=>{},ctx=new Proxy({setTransform:noop},{
   get:(o,key)=>o[key]??noop,set:(o,key,v)=>{o[key]=v;return true}
 });
@@ -37,7 +38,7 @@ const ui=new Map(ids.map(id=>[id,{
 }]));
 let step=()=>{},saved=0,reset=false;
 const values={
-  window:{FazendaVivaMotion:motion},document:{getElementById:id=>{
+  window:{FazendaVivaMotion:motion,FazendaVivaAudio:sound},document:{getElementById:id=>{
     assert.ok(ui.has(id),'HTML control ausente: '+id);return ui.get(id);
   },addEventListener:noop},innerWidth:390,innerHeight:844,devicePixelRatio:2,
   addEventListener:noop,requestAnimationFrame:fn=>step=fn,
@@ -211,6 +212,7 @@ try{
   assert.equal(get().lowGraphics,true,'modo econômico');
   ui.get('graphicsMode').onclick();
   assert.equal(get().lowGraphics,false,'modo normal');
+  bridge.mode(true); // O harness de simulação não redesenha milhares de faces Canvas por passo.
   ui.get('speed').onclick();ui.get('speed').onclick(); // 8x
   let ms=Math.max(performance.now(),guideTime),overlap=0,outside=0,maxSite=0,minHorse=1e9;
   let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
@@ -352,7 +354,7 @@ try{
   assert.ok(get().careJournal.length>=5,'diário de manejo não registra os serviços');
   assert.ok(get().careJournal.every(item=>
     Number.isFinite(item.careGained)&&item.careGained>=14&&
-    Number.isFinite(item.day)&&item.horseId>0),
+    Number.isFinite(item.day)&&item.horseId>0&&item.distance<3.8),
     'diário deve corresponder a cuidados de animais existentes');
   assert.ok(get().farmers.filter(f=>f.role==='tratador').some(f=>
     (f.horseCareJobs||0)>=8),'meta de oito cuidados precisa ser alcançável');

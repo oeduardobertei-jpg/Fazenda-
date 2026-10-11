@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.3 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.9 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -16,7 +16,7 @@ const motion = window.FazendaVivaMotion;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer, ranchLayer;
+let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer, ranchLayer, faunaLayer;
 let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
 const modelsByBuilding=new Map();
 let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
@@ -415,6 +415,11 @@ function building(b,detail=true){
     cylinder(group,.14,1.15,1.38,siloX,7.92,-d*.24,0x7b8983,9);
     for(let i=0;i<4;i++)
       box(group,.12,.16,.28,siloX+1.13,.95+i*1.42,-d*.24,0xcfd3c0);
+    const ready=Math.min(4,Math.floor((b.o.work?.agricultor||0)/.6));
+    for(let i=0;i<ready;i++){
+      box(group,.83,.60,.78,-w*.25+i*.95,.52,front-.42,0xc6ae74);
+      box(group,.86,.10,.81,-w*.25+i*.95,.87,front-.42,0xe0c78e);
+    }
     // Pilhas paletizadas e sacarias remetem a uma operação agrícola real.
     for(let k=0;k<(t>=2?3:2);k++){
       box(group,1.12,.74,.83,-w*.36+k*1.32,.69,front+.36,0x987a56);
@@ -819,6 +824,7 @@ function drawWorld(s){
   grassLayer=new THREE.Group();scene.add(grassLayer);
   fairLayer=new THREE.Group();scene.add(fairLayer);
   ranchLayer=new THREE.Group();scene.add(ranchLayer);
+  faunaLayer=new THREE.Group();scene.add(faunaLayer);
 }
 // Mesmo conjunto de props usados no Canvas. Geometrias simples, recoloridas
 // por InstancedMesh e recalculadas só quando a simulação rearranja o terreno.
@@ -1105,9 +1111,35 @@ function scatterPasture(s){
 function modelVersion(b,highDetail){
   return (highDetail?'H':'L')+'|'+b.type+'|'+b.x.toFixed(2)+'|'+b.y.toFixed(2)+
     '|'+(b.tier||1)+'|'+(b.status||'complete')+'|'+(b.progress??100)+
-    '|'+(b.plannedTier||0);
+    '|'+(b.plannedTier||0)+'|'+(b.type==='barn'?Math.floor((b.o.work?.agricultor||0)/.6):0);
+}
+function syncWildlife(s){
+ faunaLayer.visible=!s.lowGraphics&&s.zoom>1.2;
+ if(!faunaLayer.visible)return;
+ const life=s.wildlife||[];
+ if(!faunaLayer.children.length){
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute([
+   0,0,0,-1,.6,-.2,-.6,0,.3, 0,0,0,1,.6,-.2,.6,0,.3
+  ],3));geometry.computeVertexNormals();geometry.__fvTransient=true;
+  const mesh=new THREE.InstancedMesh(geometry,mat(0xffffff),15);mesh.frustumCulled=false;
+  faunaLayer.add(mesh);
+ }
+ const mesh=faunaLayer.children[0],dummy=new THREE.Object3D();
+ for(let i=0;i<15;i++){
+  const a=life[i];
+  const visible=a&&Math.abs(a.x-s.panX)<170&&Math.abs(a.y-s.panY)<170;
+  dummy.position.set(a?.x||0,a?.height||0,a?.y||0);
+  dummy.rotation.set(0,(a?.phase||0)*.04,0);
+  const size=visible?a.size:0;
+  dummy.scale.set(size,size*(.3+Math.abs(Math.sin(a?.phase||0))*.7),size);
+  dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+  if(a&&mesh.setColorAt)mesh.setColorAt(i,new THREE.Color(a.color));
+ }
+ mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
 }
 function sync(s){
+  syncWildlife(s);
   syncTrails(s);
   syncFairground(s);
   syncRanchDecor(s);
@@ -1170,8 +1202,8 @@ function sync(s){
     mesh.position.set(x,.42,z);
     mesh.rotation.y=h.heading||0;
     const age=(h.age||0)+Math.floor(Math.max(0,s.day-(h.bornDay||1))/365);
-    const animalScale=age<1?.65:age<2?.83:1;
-    mesh.scale.set(animalScale,animalScale,animalScale);
+    const dimensions=motion.horseScale(age);
+    mesh.scale.set(dimensions.x,dimensions.y,dimensions.z);
     const legs=mesh.userData.legs||[],knees=mesh.userData.knees||[];
     for(let j=0;j<legs.length;j++){
       legs[j].position.y=pose.legRoot;
@@ -1261,7 +1293,7 @@ function sync(s){
   });
 }
 function updateLabels(s){
-  labelLayer.style.visibility=s.overlaysOpen?'hidden':'visible';
+  labelLayer.style.visibility=s.overlaysOpen||s.observing?'hidden':'visible';
   const zoomBounds=s.zoom<=1.13?document.getElementById('zoomTools')?.getBoundingClientRect?.():null;
   for(let i=0;i<s.owners.length;i++){
     const o=s.owners[i],label=labelNodes[i];
