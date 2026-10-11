@@ -4,6 +4,32 @@
   'use strict';
   const TAU=Math.PI*2;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  // Secções da mesma anatomia nos dois renderizadores: centro X/altura,
+  // raio vertical e largura. Os anéis acompanham a curva de cada volume.
+  const horseForm=Object.freeze({
+    body:[[-2.06,2.28,.32,.40],[-1.56,2.34,.70,.73],[-.94,2.30,.78,.73],
+      [0,2.31,.69,.64],[.73,2.42,.73,.62],[1.24,2.31,.68,.55],[1.52,2.17,.33,.37]],
+    neck:[[0,-.22,.43,.42],[.28,.31,.46,.36],[.58,.87,.35,.28],[.97,1.38,.23,.23]],
+    head:[[-.12,.13,.24,.25],[.26,.13,.35,.30],[.62,-.08,.29,.26],[.98,-.31,.21,.23],[1.23,-.36,.17,.22]],
+    mane:[[-.25,-.16,.14,.12],[-.12,.48,.14,.13],[.27,1.03,.12,.12],[.64,1.43,.10,.09]],
+    tail:[[0,0,.18,.19],[-.22,-.63,.17,.20],[-.40,-1.20,.13,.16],[-.30,-1.68,.04,.08]]
+  });
+  function volume(rings,sides=8){
+    const vertices=[],faces=[];
+    rings.forEach(([x,y,r,width],i)=>{
+      const prev=rings[Math.max(0,i-1)],next=rings[Math.min(rings.length-1,i+1)];
+      const dx=next[0]-prev[0],dy=next[1]-prev[1],len=Math.hypot(dx,dy)||1;
+      for(let j=0;j<sides;j++){
+        const a=j*TAU/sides;
+        vertices.push([x-dy/len*r*Math.cos(a),y+dx/len*r*Math.cos(a),width*Math.sin(a)]);
+      }
+      if(i)for(let j=0;j<sides;j++)faces.push([(i-1)*sides+j,(i-1)*sides+(j+1)%sides,
+        i*sides+(j+1)%sides,i*sides+j]);
+    });
+    faces.push(Array.from({length:sides},(_,i)=>sides-1-i),
+      Array.from({length:sides},(_,i)=>(rings.length-1)*sides+i));
+    return {vertices,faces};
+  }
   function blend(entity,dt){
     const pose=entity.pose||(entity.pose={walk:0,graze:0,work:0,care:0});
     const weight=1-Math.exp(-Math.max(0,Math.min(.25,dt))*7);
@@ -52,7 +78,7 @@
       tool:Math.sin(time*(entity.role==='agricultor'?2.4:3.0))*.13*work
     };
   }
-  const motion=Object.freeze({blend,horse,worker,legPose});
+  const motion=Object.freeze({blend,horse,worker,legPose,horseForm,volume});
   if(typeof module!=='undefined'&&module.exports)module.exports=motion;
   else window.FazendaVivaMotion=motion;
 })();

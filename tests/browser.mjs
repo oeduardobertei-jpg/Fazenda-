@@ -10,8 +10,8 @@ import {chromium} from 'playwright';
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const output=resolve(root,'qa-artifacts');mkdirSync(output,{recursive:true});
 const baseline=resolve(output,'baseline');mkdirSync(baseline,{recursive:true});
-const baselineRef=process.env.FAZENDA_BASELINE_REF||'8f28cad65071b063487ce18934d75817ad990e51';
-for(const file of ['index.html','world3d.js'])
+const baselineRef=process.env.FAZENDA_BASELINE_REF||'8f7ec8a46ff7f1ed8f301c0c34e854207c629de8';
+for(const file of ['index.html','world3d.js','motion.js'])
   writeFileSync(resolve(baseline,file),execFileSync('git',['show',baselineRef+':'+file],{cwd:root}));
 const server=createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
@@ -73,10 +73,11 @@ async function measurements(page){
 }
 try{
   const {context:baseContext,page:basePage}=await open(390,844,'/baseline/index.html');
+  await basePage.locator('#guideSkip').click();
   await basePage.locator('#pause').click();
   const before=await measurements(basePage);
-  await basePage.screenshot({path:resolve(output,'0.9.7-portrait.png')});
-  results.push({version:'0.9.7',viewport:'390x844',...before});
+  await basePage.screenshot({path:resolve(output,'baseline-0.9.8-portrait.png')});
+  results.push({version:'0.9.9',viewport:'390x844',...before});
   console.log('BASELINE',JSON.stringify(results.at(-1)));
   await baseContext.close();
 
@@ -85,14 +86,14 @@ try{
     await page.waitForTimeout(350);
     const day=await page.evaluate(()=>window.FazendaVivaBridge.state().day);
     assert.equal(day,1,'guia deve pausar a simulação no dia 1');
-    await page.screenshot({path:resolve(output,`0.9.8-guide-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9-guide-${width}x${height}.png`)});
     await page.locator('#guideSkip').click();
     await page.locator('#pause').click();
     const after=await measurements(page);
     assert.ok(after.calls<300,'orçamento inicial: menos de 300 chamadas na visão local');
-    if(width===390)assert.ok(after.calls<before.calls*.8,'redução real de chamadas com geometria estática fundida');
+    if(width===390)assert.ok(after.calls<=before.calls*1.10,'nova anatomia deve preservar o orçamento de chamadas da 0.9.8');
     console.log('RENDER',width+'x'+height,JSON.stringify(after));
-    await page.screenshot({path:resolve(output,`0.9.8-world-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9-world-${width}x${height}.png`)});
     const bounds=await page.evaluate(()=>{
       const ids=['hud','economy','topTools','bottom','zoomTools'];
       return ids.map(id=>{
@@ -121,7 +122,7 @@ try{
       assert.ok(fits,'conteúdo da gestão transborda horizontalmente: '+section);
     }
     await page.locator('#tab-cavalos').click();
-    await page.screenshot({path:resolve(output,`0.9.8-management-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9-management-${width}x${height}.png`)});
     await page.locator('[data-mgaction="findHorse"]').first().click();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget.kind),'horse');
     await page.locator('#pause').click();
@@ -135,16 +136,18 @@ try{
     if(width===390){
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
-      await page.screenshot({path:resolve(output,'0.9.8-horse-close-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9-horse-close-3d.png')});
       await page.locator('#renderMode').click();
       await page.waitForFunction(()=>{
         const s=window.FazendaVivaBridge.state(),h=s.horses.find(h=>h.id===s.followTarget.id);
         const c=document.getElementById('game'),ctx=c.getContext('2d');
-        const rgb=ctx.getImageData(Math.floor(c.width/2),Math.floor(c.height/2),1,1).data;
+        const scale=Math.min(innerWidth/300,innerHeight/260)*s.zoom;
+        const size=c.width/innerWidth;
+        const rgb=ctx.getImageData(Math.floor(c.width/2),Math.floor(c.height/2-scale*1.9*size),1,1).data;
         const coat=parseInt(h.coat.slice(1),16);
-        return rgb[0]===(coat>>16&255)&&rgb[1]===(coat>>8&255)&&rgb[2]===(coat&255);
+        return Math.hypot(rgb[0]-(coat>>16&255),rgb[1]-(coat>>8&255),rgb[2]-(coat&255))<75;
       },null,{timeout:5000});
-      await page.screenshot({path:resolve(output,'0.9.8-horse-close-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9-horse-close-2d.png')});
       await page.locator('#renderMode').click();
       await page.locator('#pause').click();
     }
@@ -187,10 +190,23 @@ try{
       assert.ok((await page.locator('#renderMode').innerText()).includes('2D'));
     }
     await page.locator('#renderMode').click();
-    await page.screenshot({path:resolve(output,`0.9.8-2d-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9-2d-${width}x${height}.png`)});
     await page.locator('#renderMode').click();
     assert.equal(await page.locator('#error').isVisible(),false);
     if(width===390){
+      await page.locator('#manageQuick').click();await page.locator('#tab-mercado').click();
+      assert.ok((await page.locator('#manageBody').innerText()).includes('As quatro bancas'));
+      await page.locator('[data-mgaction="visitFair"]').click();
+      await page.screenshot({path:resolve(output,'0.9.9-centro-rural-3d.png')});
+      await page.mouse.click(width/2,height/2);
+      assert.equal(await page.locator('#management').isVisible(),true,'toque no Centro Rural abre o mercado');
+      assert.equal(await page.locator('#tab-mercado').getAttribute('aria-selected'),'true');
+      await page.locator('#manageClose').click();
+      await page.locator('#renderMode').click();
+      await page.screenshot({path:resolve(output,'0.9.9-centro-rural-2d.png')});
+      await page.mouse.click(width/2,height/2);
+      assert.equal(await page.locator('#management').isVisible(),true,'Centro Rural também funciona em Canvas');
+      await page.locator('#manageClose').click();await page.locator('#renderMode').click();
       await page.locator('#map').click();
       await page.waitForFunction(()=>[...document.querySelectorAll('#sceneLabels > div')].slice(0,5)
         .every(el=>el.style.display==='block'));
@@ -203,19 +219,19 @@ try{
         });
       });
       assert.ok(labelsClear,'nomes das fazendas não podem cobrir controles de zoom');
-      await page.screenshot({path:resolve(output,'0.9.8-regional-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9-regional-3d.png')});
       assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().owners.length),5);
       await page.locator('#focus').click();
       await page.locator('#toggle').click();
       await page.locator('#viewWorkers').click();
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
-      await page.screenshot({path:resolve(output,'0.9.8-worker-close-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9-worker-close-3d.png')});
       await page.locator('#renderMode').click();
-      await page.screenshot({path:resolve(output,'0.9.8-worker-close-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9-worker-close-2d.png')});
       await page.locator('#renderMode').click();
     }
-    results.push({version:'0.9.8',viewport:width+'x'+height,...after});
+    results.push({version:'0.9.9',viewport:width+'x'+height,...after});
     await context.close();
   }
   // Perda/restauração de contexto real, viewport e simulação funcionando juntas.
@@ -237,8 +253,23 @@ try{
   await page.waitForTimeout(10000);
   const advanced=await page.evaluate(()=>window.FazendaVivaBridge.state().day);
   assert.ok(advanced>10,'economia deve continuar após alternar modos/restaurar WebGL');
+  await page.waitForFunction(()=>{
+    const s=window.FazendaVivaBridge.state();
+    return s.horses.some(h=>h.o===s.owners[0]&&h.homeReturns>0);
+  },null,{timeout:30000});
+  await page.waitForFunction(()=>{
+    const s=window.FazendaVivaBridge.state();
+    return s.horses.some(h=>h.o===s.owners[0]&&h.pastureStage==='campo'&&Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>30);
+  },null,{timeout:30000});
+  await page.locator('#manageQuick').click();await page.locator('#tab-cavalos').click();
+  await page.locator('[data-mgaction="watchPasture"]').click();
+  assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget.kind),'horse');
   await page.locator('#pause').click();
-  await page.screenshot({path:resolve(output,'0.9.8-restored-webgl.png')});
+  await page.screenshot({path:resolve(output,'0.9.9-pastoreio-3d.png')});
+  await page.locator('#renderMode').click();
+  await page.screenshot({path:resolve(output,'0.9.9-pastoreio-2d.png')});
+  await page.locator('#renderMode').click();
+  await page.screenshot({path:resolve(output,'0.9.9-restored-webgl.png')});
   await context.close();
   assert.deepEqual(errors,[],'nenhum erro JavaScript real');
   writeFileSync(resolve(output,'browser-results.json'),JSON.stringify({

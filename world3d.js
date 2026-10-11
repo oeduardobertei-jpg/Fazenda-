@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.8 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -186,12 +186,22 @@ function roof(parent,w,d,h,ridgeY,color) {
   parent.add(new THREE.Mesh(item.main,mat(color)));
   for(const geom of item.ends)parent.add(new THREE.Mesh(geom,mat(color)));
 }
-function rails(parent,w,d,color=colors.fence,y=1.4) {
+function rails(parent,w,d,color=colors.fence,y=1.4,gate=0) {
   const sx=[-w/2,w/2],sz=[-d/2,d/2];
   for(let x of sx) for(let z of sz) box(parent,.6,2.4,.6,x,1.2,z,color);
   for(let z of sz){
-    box(parent,w, .36,.35,0,y,z,color);
-    box(parent,w,.3,.35,0,y*.48,z,color);
+    if(gate&&z<0){
+      for(const side of [-1,1]){
+        box(parent,(w-gate)/2,.36,.35,side*(w+gate)/4,y,z,color);
+        box(parent,(w-gate)/2,.30,.35,side*(w+gate)/4,y*.48,z,color);
+        box(parent,.48,2.4,.48,side*gate/2,1.2,z,color);
+      }
+      // Porteira aberta paralela à passagem, deixando o vão central livre.
+      box(parent,gate,.36,.27,-gate,y,z-.4,color);
+      box(parent,gate,.30,.27,-gate,y*.48,z-.4,color);
+    }else{
+      box(parent,w,.36,.35,0,y,z,color);box(parent,w,.3,.35,0,y*.48,z,color);
+    }
   }
   for(let x of sx){
     box(parent,.35,.36,d,x,y,0,color);
@@ -226,7 +236,7 @@ function building(b,detail=true){
   const variety=(Math.abs(Math.round(b.x*17+b.y*23+((b.o?.style?.roof||0)%17)))%5);
   if(b.type==='paddock'){
     flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
-    rails(group,w-.7,d-.7,PALETTE.lightWood);
+    rails(group,w-.7,d-.7,PALETTE.lightWood,1.4,6.2);
     if(!detail){
       // Mesmo na visão regional, o piquete CONCLUÍDO não parece uma obra vazia.
       box(group,2.2,.75,1.3,-w*.23,.56,d*.17,0xc1a068);
@@ -235,20 +245,20 @@ function building(b,detail=true){
     if(detail){
       // Um piquete CONCLUÍDO contém abrigo, bebedouro, cocho e capim — não é um canteiro de obras.
       flat(group,w*.78,d*.73,0,0,variety%2?0x84ac65:0x79a35c,.33);
-      box(group,2.2,.72,.95,-w*.27,.65,d*.24,0x98734f);
-      box(group,2.6,.45,1,w*.25,.67,-d*.29,0x638f9c);
+      box(group,2.2,.72,.95,-w*.34,.65,d*.32,0x98734f);
+      box(group,2.6,.45,1,w*.33,.67,d*.32,0x638f9c);
       // Abrigo simples no canto, dentro do espaço cercado.
-      const sx=w*.29,sz=d*.22;
+      const sx=w*.29,sz=d*.32;
       for(const x of [sx-2.5,sx+2.5])for(const z of [sz-1.6,sz+1.6])
         box(group,.23,2.35,.23,x,1.2,z,0xaa8256);
       box(group,5.8,.25,4.0,sx,2.46,sz,0xa2764d);
       for(let i=0;i<7;i++){
-        const x=-w*.30+(i%4)*1.7,z=-d*.21+Math.floor(i/4)*3.4;
+        const x=-w*.30+(i%4)*1.7,z=d*.18+Math.floor(i/4)*2.1;
         cylinder(group,.28,.45,.7,x,.52,z,0x658f48,5);
       }
       // Fardos e pilhas de material funcional de manejo.
-      cylinder(group,.9,1.0,.68,-w*.24,.53,-d*.26,0xc4ad69,8);
-      cylinder(group,.9,1.0,.68,-w*.11,.53,-d*.26,0xbca05d,8);
+      cylinder(group,.9,1.0,.68,-w*.38,.53,d*.30,0xc4ad69,8);
+      cylinder(group,.9,1.0,.68,-w*.38,.53,d*.10,0xbca05d,8);
     }
     group.userData.building=b;return group;
   }
@@ -421,52 +431,60 @@ function contactShadow(parent,rx,rz){
 }
 // Os pivôs ficam na articulação, não no centro das caixas. A fase da passada
 // vem da distância realmente percorrida na simulação (mesma fonte do 2D).
+const equineGeometries=new Map();
+function equinePart(parent,name,color){
+  let geometry=equineGeometries.get(name);
+  if(!geometry){
+    const form=motion.volume(motion.horseForm[name]),data=[];
+    for(const face of form.faces)for(let j=1;j<face.length-1;j++)
+      for(const index of [face[0],face[j],face[j+1]])data.push(...form.vertices[index]);
+    geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(data,3));
+    geometry.computeVertexNormals();equineGeometries.set(name,geometry);
+  }
+  const mesh=new THREE.Mesh(geometry,mat(color));parent.add(mesh);return mesh;
+}
 function makeHorse(h){
   const group=new THREE.Group(),coat=mat(h.coat||0x81553d);
-  contactShadow(group,2.8,1.4);
+  contactShadow(group,2.7,1.20);
   const part=(parent,w,y,d,x,py,z)=>{
     const mesh=new THREE.Mesh(sharedBox(w,y,d),coat);
     mesh.position.set(x,py,z);parent.add(mesh);return mesh;
   };
   const body=new THREE.Group();group.add(body);
-  // Volumes facetados reutilizados: dorso, garupa e peito com silhueta orgânica.
-  if(!horseBodyGeometry)horseBodyGeometry=new THREE.IcosahedronGeometry(1,1);
-  for(const [x,y,sx,sy,sz] of [[0,2.27,1.94,.79,.72],[-1.18,2.30,.90,.83,.76],[1.16,2.23,.68,.86,.68]]){
-    const mesh=new THREE.Mesh(horseBodyGeometry,coat);
-    mesh.position.set(x,y,0);mesh.scale.set(sx,sy,sz);body.add(mesh);
-  }
-  group.userData.body=body;
+  equinePart(body,'body',h.coat);group.userData.body=body;
   const neckPivot=new THREE.Group();
-  neckPivot.position.set(1.45,2.62,0);group.add(neckPivot);
-  part(neckPivot,.84,1.70,.86,.51,.49,0).rotation.z=-.47;
-  box(neckPivot,.17,1.47,.61,.12,.67,0,0x48372e).rotation.z=-.47;
-  const headPivot=new THREE.Group();headPivot.position.set(1.30,1.20,0);
-  neckPivot.add(headPivot);
-  part(headPivot,1.16,.69,.72,.48,0,0);
-  const muzzle=box(headPivot,.52,.40,.67,1.15,-.08,0,0xa38c75);
-  group.userData.muzzle=muzzle;
+  neckPivot.position.set(1.36,2.58,0);group.add(neckPivot);
+  equinePart(neckPivot,'neck',h.coat);
+  equinePart(neckPivot,'mane',0x382d27);
+  const headPivot=new THREE.Group();headPivot.position.set(1.02,1.35,0);
+  neckPivot.add(headPivot);equinePart(headPivot,'head',h.coat);
+  const muzzle=box(headPivot,.36,.29,.45,1.22,-.37,0,0x837363);
+  muzzle.rotation.z=-.20;group.userData.muzzle=muzzle;
   for(const side of [-1,1]){
-    box(headPivot,.14,.13,.07,.49,.13,side*.38,0x2f251f);
-    box(headPivot,.13,.09,.07,1.22,-.05,side*.34,0x43352f);
-    box(headPivot,.20,.46,.17,.02,.50,side*.23,0x4f3b31).rotation.z=-.13;
+    box(headPivot,.105,.11,.065,.30,.20,side*.30,0x211d19);
+    box(headPivot,.10,.07,.06,1.31,-.34,side*.23,0x292522);
+    // Orelhas afiladas, separadas do focinho, com interior rosado.
+    const ear=box(headPivot,.15,.44,.15,-.03,.56,side*.20,h.coat);
+    ear.rotation.z=-.22;ear.rotation.x=side*.14;
+    box(headPivot,.065,.28,.03,-.005,.59,side*.275,0xa88673).rotation.z=-.22;
   }
+  if(h.id%3===1)box(headPivot,.11,.40,.025,.56,.02,.272,0xe5d7bf).rotation.z=.49;
   const legs=[],knees=[],hooves=[];
-  for(const x of [-1.25,1.25])for(const z of [-.48,.48]){
-    const pivot=new THREE.Group();
-    pivot.position.set(x,1.55,z);group.add(pivot);
-    part(pivot,.33,.73,.30,0,-.365,0);
+  if(!horseBodyGeometry)horseBodyGeometry=new THREE.IcosahedronGeometry(1,1);
+  for(const x of [-1.24,1.22])for(const z of [-.45,.45]){
+    const pivot=new THREE.Group();pivot.position.set(x,1.55,z);group.add(pivot);
+    const thigh=new THREE.Mesh(horseBodyGeometry,coat);
+    thigh.position.set(0,-.30,0);thigh.scale.set(x<0?.24:.19,.46,.20);pivot.add(thigh);
     const knee=new THREE.Group();knee.position.set(0,-.73,0);pivot.add(knee);
-    part(knee,.23,.75,.24,0,-.375,0);
-    hooves.push(box(knee,.39,.24,.35,0,-.75,0,0x473c32));
+    part(knee,.17,.75,.18,0,-.375,0);
+    if(h.id%4===0)box(knee,.19,.20,.20,0,-.60,0,0xd7ccb8);
+    hooves.push(box(knee,.31,.24,.29,0,-.75,0,0x332d27));
     legs.push(pivot);knees.push(knee);
   }
-  const tailPivot=new THREE.Group();
-  tailPivot.position.set(-2.0,2.58,0);group.add(tailPivot);
-  box(tailPivot,.37,1.2,.4,-.12,-.58,0,0x49382c);
-  // Variação discreta por indivíduo, mas mantém a leitura das pelagens em zoom.
-  if(h.id%4===0){
-    box(group,.46,.16,1.12,.58,3.10,0,0xcbb897);
-  }
+  const tailPivot=new THREE.Group();tailPivot.position.set(-1.93,2.65,0);group.add(tailPivot);
+  equinePart(tailPivot,'tail',0x382d27);
+  batchStaticMeshes(body);batchStaticMeshes(neckPivot);batchStaticMeshes(headPivot);
   // Sinal de trato: flutua acima do animal somente durante/recentemente
   // após o serviço realizado por um trabalhador desta mesma fazenda.
   const careFx=new THREE.Group();
@@ -886,6 +904,13 @@ function syncFairground(s){
     box(booth,7.5,1.1,.24,0,.73,3.90,0x735a40);
     for(const x of [-3.5,3.5])
       cylinder(booth,.53,.63,.88,x,.71,3.13,0xbda267,7);
+    const shirt=[0x6d9294,0xb79b55,0x7c9970,0x9e7055][i];
+    box(booth,1.25,1.15,.64,2.7,1.86,5.0,shirt);
+    for(const x of [2.42,2.96])box(booth,.34,1.03,.36,x,.77,5.0,0x514a3e);
+    box(booth,.57,.57,.55,2.7,2.67,5.0,0xd1a07c);
+    box(booth,.98,.12,.88,2.7,3.0,5.0,0xc7ad79);
+    box(booth,3.7,.17,1.6,-1.7,1.10,5.20,0x9a7750);
+    for(const x of [-3.1,-1.7,-.3])box(booth,.90,.63,.94,x,1.48,5.2,i===1?0xc7ad67:i===2?0x668a80:0xb29163);
     // Cada evento tem materiais reconhecíveis: feira, colheita ou insumos.
     if(e?.id==='safra'||e?.id==='insumos'){
       for(const x of [-2.6,0,2.6])
@@ -1114,7 +1139,7 @@ function sync(s){
     if(mesh.userData.body)mesh.userData.body.position.y=pose.bodyBob;
     if(mesh.userData.neck){
       mesh.userData.neck.rotation.z=pose.neck;
-      mesh.userData.neck.position.y=2.62+pose.bodyBob;
+      mesh.userData.neck.position.y=2.58+pose.bodyBob;
     }
     if(mesh.userData.head)mesh.userData.head.rotation.z=pose.head;
     if(mesh.userData.tail)
@@ -1206,7 +1231,8 @@ function updateLabels(s){
     fairLabel.style.display=visible?'block':'none';
     if(visible){
       fairLabel.style.transform='translate(-50%,-100%) translate('+x+'px,'+y+'px)';
-      const label=s.ruralEvent?'🎪 '+s.ruralEvent.name:'🏛️ Centro Rural';
+      const label='🏛️ Centro Rural'+(s.zoom>1.1?' · toque para Mercado':'')+
+        (s.ruralEvent?'\n🎪 '+s.ruralEvent.name:'');
       if(fairLabel.textContent!==label)fairLabel.textContent=label;
     }
   }
@@ -1364,7 +1390,7 @@ function init(){
     labelLayer.appendChild(el);labelNodes.push(el);
   }
   fairLabel=document.createElement('div');
-  fairLabel.style.cssText='position:absolute;left:0;top:0;white-space:nowrap;'+
+  fairLabel.style.cssText='position:absolute;left:0;top:0;white-space:pre-line;text-align:center;max-width:calc(100vw - 40px);'+
     'color:#fff2c7;background:#314d39df;border:1px solid #e7cb87a8;'+
     'border-radius:10px;padding:4px 9px;font:700 11px system-ui;'+
     'box-shadow:0 2px 6px #0004;display:none';
