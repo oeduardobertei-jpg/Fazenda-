@@ -47,6 +47,10 @@ try{
   scene.traverse(obj=>{if(obj.isMesh&&obj.geometry.index)indexed++});
   assert.ok(indexed>15,'volumes compartilhados devem usar vértices indexados para iluminação suave');
   assert.ok(houseModel.children.length<22,'peças estáticas devem ser fundidas por material');
+  const barrel=new Three.Box3().setFromObject(horseModel.userData.body);
+  const skull=new Three.Box3().setFromObject(horseModel.userData.head);
+  assert.ok(skull.max.y-barrel.max.y<1.20,'cabeça não deve voltar à silhueta de pescoço excessivamente alto');
+  assert.ok(skull.max.z-skull.min.z>.60,'cabeça deve conservar mandíbula e largura legíveis de frente');
   let lowest=Infinity,highest=0;
   for(let i=0;i<64;i++){
     horse.gait=i*Math.PI/32;worker.gait=horse.gait;frame(now+=40);
@@ -62,7 +66,11 @@ try{
   }
   assert.ok(highest-lowest>.20,'cascos alternam apoio e elevação');
   horse.motion='graze';
-  for(let i=0;i<120;i++){motion.blend(horse,1/60);frame(now+=40)}
+  for(let i=0;i<120;i++){
+    motion.blend(horse,1/60);frame(now+=40);
+    assert.ok(new Three.Box3().setFromObject(horseModel.userData.muzzle).min.y>=.40,
+      'transição completa para pasto deve preservar o focinho acima do chão');
+  }
   const muzzle=new Three.Box3().setFromObject(horseModel.userData.muzzle);
   assert.ok(muzzle.min.y>=.40&&muzzle.min.y<.90,'focinho deve alcançar o capim sem atravessar o chão');
   const shadow=horseModel.children.find(m=>m.material?.transparent);

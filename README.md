@@ -1,10 +1,22 @@
-# Fazenda Viva — versão 0.9.9.1 (para testes)
+# Fazenda Viva — versão 0.9.9.2 (para testes)
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Testar a 0.9.9.1:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=0991
+**Testar a 0.9.9.2:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=0992
 
-A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.9.1**. Os critérios de Android físico da 1.0 continuam pendentes.
+A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.9.2**. Os critérios de Android físico da 1.0 continuam pendentes.
+
+## 0.9.9.2 — proporções dos cavalos após avaliação no celular
+
+As capturas da 0.9.9.1 mostraram cavalos com pescoço excessivamente alto/estreito, corpo tubular e pouca definição dos membros. Esta etapa revê esses volumes antes de ampliar as animações; os fazendeiros da 0.9.9.1 são preservados.
+
+- Pescoço mais curto, base larga ligada ao peito e crista arqueada; cabeça com mandíbula, chanfro e focinho mais definidos.
+- Garupa mais larga, dorso menos tubular e cernelha sobre o ombro; membros anteriores e posteriores diferenciados.
+- Crina mais fina sobre a crista, topete, cauda afilada, narinas e boca discretas.
+- Articulações anatômicas compartilhadas entre Canvas e Three.js; pastoreio ajustado à nova cabeça, mantendo focinho e cascos acima do solo.
+- Mantidos manejo, circulação, comércio, economia e o visual dos trabalhadores.
+
+**Verificação:** `npm test` e Chromium/WebGL2 por software passaram em cinco viewports. Capturas comparativas de perfil/frente/pasto e cenas 2D/3D foram inspecionadas. Corrigidos o vão da crina e a lista interrompida encontrados na primeira inspeção. Mantidas 165 chamadas na cena inicial, com +0,56% de triângulos. Ver `RELEASE_0.9.9.2.md`; avaliação visual e desempenho no Android físico continuam pendentes.
 
 ## 0.9.9.1 — revisão dos personagens
 
