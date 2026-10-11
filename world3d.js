@@ -1028,7 +1028,10 @@ function sync(s){
     content.add(model);
     modelsByBuilding.set(b,{model,version});
   }
-  if(horseLayer.children.length!==s.horses.length){
+  if(horseLayer.children.length!==s.horses.length||
+     s.horses.some((h,i)=>horseLayer.children[i]?.userData.horse!==h)){
+    // Uma troca por outro animal de igual quantidade deve reconstruir a
+    // pelagem/identidade; apenas comparar tamanho do plantel não basta.
     for(const child of [...horseLayer.children]){
       horseLayer.remove(child);disposeTransientGroup(child);
     }
