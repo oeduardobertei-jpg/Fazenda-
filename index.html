@@ -1191,6 +1191,10 @@ function managementContent(tab){
         (h.motherId?'<div class="mgSmall">Linhagem: mãe #'+h.motherId+' · pai #'+h.fatherId+'</div>':'')+
         '<div class="mgLine"><span>Qualidade</span><strong>'+h.quality+'/100</strong></div>'+
         progressBar(h.quality,100)+
+        '<div class="mgSmall">🧬 Aptidões herdáveis</div>'+
+        traits.map(trait=>'<div class="mgLine"><span>'+traitNames[trait]+
+          '</span><strong>'+(h.genetics?.[trait]??h.quality)+'/100</strong></div>'+
+          progressBar(h.genetics?.[trait]??h.quality,100)).join('')+
         '<div class="mgLine"><span>Valor de negociação</span><strong>'+brl(horseSalePrice(h))+'</strong></div>'+
         '<button type="button" data-mgaction="findHorse" data-index="'+i+'">📍 Localizar no mapa</button>'+
         '<button type="button" data-mgaction="sellHorse" data-index="'+i+'">💰 Vender animal</button></div>').join('')+
@@ -1245,6 +1249,26 @@ function managementContent(tab){
       statCard('🐎','Índice equestre',price(marketIndex('horse')))+
       statCard('🌾','Índice agrícola',price(marketIndex('grain')))+
       '</div><h4>🌾 Agenda regional</h4>'+activity+
+      '<h4>🐎 Negociações entre cabanhas</h4>'+
+      (regionalHorseOffers().length?
+        regionalHorseOffers().map(offer=>{
+          const h=offer.horse;
+          const hasSpace=hs.length+pregnancies.filter(p=>p.o===o).length<capacity(o);
+          const affordable=o.cash>=offer.price;
+          return '<div class="mgRow"><strong>'+h.name+'</strong>'+
+            '<div class="mgSmall">Vendedor: '+offer.seller.name+' · '+h.breed+
+            ' · Qualidade '+h.quality+'/100 · '+horseAge(h)+' anos</div>'+
+            '<div class="mgLine"><span>Preço pedido</span><strong>'+
+              brl(offer.price)+'</strong></div>'+
+            '<button type="button" data-mgaction="buyRegional" data-id="'+h.id+'"'+
+            (!hasSpace||!affordable?' disabled':'')+'>'+
+            '🤝 Comprar desta fazenda</button></div>';
+        }).join(''):'<p class="mgNote">Nenhum criador com rebanho excedente no momento.</p>')+
+      (regionalTradeHistory.length?
+        '<h4>📜 Negociações recentes</h4>'+
+        regionalTradeHistory.slice(0,4).map(t=>
+        '<div class="mgLine"><span>Dia '+t.day+' · '+t.name+'</span><strong>'+
+        brl(t.price)+'</strong></div>').join(''):'')+
       '<h4>🏘️ Competidores autônomos</h4>'+
       comps.map(p=>'<div class="mgRow"><strong>'+p.name+'</strong>'+
         '<div class="mgLine"><span>Estruturas / cavalos</span><span>'+p.structures+' / '+p.animals+'</span></div>'+
@@ -1302,6 +1326,9 @@ $('manageBody').onclick=e=>{
   const index=Number(button.dataset.index||0),action=button.dataset.mgaction;
   if(action==='buyHorse'){
     $('buyhorse').onclick();renderManagement(true);return;
+  }
+  if(action==='buyRegional'){
+    buyRegionalHorse(Number(button.dataset.id||0));renderManagement(true);return;
   }
   if(action==='breedHorse'){
     breedHorses();renderManagement(true);return;
