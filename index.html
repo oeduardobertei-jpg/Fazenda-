@@ -469,6 +469,25 @@ function drawHorseSprite(h){
   }
   for(let j=0;j<3;j++)rect(1.10-j*.26,-.59,.19,.32,'#514036');
   ctx.restore();
+  const fresh=h.interacting||(h.careEffectUntil??-1)>h.phase;
+  if(fresh&&zoom>1.45){
+    // Ações sincronizadas com o modelo 3D: tratador presente ou cuidado recém
+    // concluído; nunca criar um brilho permanente nos animais.
+    const t=(h.phase+h.id*.21)*3.2;
+    const yy=p.y-5.4*s-Math.sin(t)*s*.28;
+    ctx.fillStyle='#163c29df';
+    ctx.beginPath();ctx.arc(p.x,yy,Math.max(5.5,s*.85),0,Math.PI*2);ctx.fill();
+    ctx.textAlign='center';
+    ctx.font=Math.max(12,Math.min(23,s*1.8))+'px system-ui';
+    ctx.fillText(h.interacting?'🥕':'💚',p.x,yy+s*.30);
+  }else if(zoom>2.55&&horseCare(h)<46){
+    // Apenas animais precisando de cuidado exibem a barra na cena;
+    // caso contrário a pastagem permanece visualmente limpa.
+    const width=Math.min(48,Math.max(21,s*6.5));
+    ctx.fillStyle='#173b2ddf';ctx.fillRect(p.x-width/2,p.y-4.1*s,width,4);
+    ctx.fillStyle='#e8b479';
+    ctx.fillRect(p.x-width/2,p.y-4.1*s,width*horseCare(h)/100,4);
+  }
 }
 function drawWorkerSprite(f){
   const p=screen(f.x,f.y),s=Math.min(W/300,H/260)*zoom;
@@ -623,6 +642,18 @@ function placeHorses(){
     }
     const delta=Math.max(0,Math.min(.22,h.phase-(h._lastPhase??h.phase)));
     h._lastPhase=h.phase;
+    const handler=farmers.find(f=>f.o===h.o&&f.role==='tratador'&&
+      f.working&&f.targetHorseId===h.id);
+    h.interacting=!!handler;
+    if(handler){
+      // O animal responde ao tratador, sem atravessar cercas nem alterar seu
+      // ponto de pastejo. O giro é compartilhado entre Canvas e Three.js.
+      h.motion='idle';
+      const desired=-Math.atan2(handler.y-h.y,handler.x-h.x);
+      const turn=Math.atan2(Math.sin(desired-h.heading),Math.cos(desired-h.heading));
+      h.heading+=turn*Math.min(1,.22+delta*4);
+      continue;
+    }
     const cycle=(h.phase+h.id*.97)%15;
     const walking=(cycle>=2.4&&cycle<6.5)||(cycle>=10.5&&cycle<12.9);
     h.motion=walking?'walk':cycle>=6.5&&cycle<10.5?'graze':'idle';
@@ -1421,6 +1452,8 @@ function financialBreakdown(o){
     (e.supplyDiscount?'<div class="mgLine"><span>Economia de insumos</span><span class="mgGood">− '+brl(e.supplyDiscount)+'</span></div>':'')+
     (o.supplyCycles?'<p class="mgSmall">Suprimentos contratados por mais '+o.supplyCycles+' ciclos.</p>':'')+
     '<div class="mgLine"><span>Produção da equipe (incluída nas receitas)</span><span>'+brl(e.bonus)+'</span></div>'+
+    '<div class="mgLine"><span>💚 Cuidado médio do plantel</span><strong>'+herdCare(o)+'/100</strong></div>'+
+    '<p class="mgSmall">O cuidado dos animais influencia a produção equina e o preço estimado de negociação.</p>'+
     '<hr style="border:0;border-top:1px solid #537660">'+
     '<div class="mgLine"><strong>Resultado líquido</strong><strong class="'+(e.net>=0?'mgGood':'mgBad')+'">'+brl(e.net)+'</strong></div></div>'+
     '<h4>🏡 Composição do patrimônio</h4>'+
@@ -1467,7 +1500,12 @@ function managementContent(tab){
     return '<div class="mgGrid">'+
       statCard('🐎','Plantel',hs.length+' animais')+
       statCard('🏠','Vagas livres',available+' de '+capacity(o))+
-      '</div><h4>🐴 Criação e linhagens</h4>'+
+      '</div><div class="mgCard">'+
+      '<div class="mgLine"><span>💚 Cuidado médio do plantel</span><strong>'+
+        herdCare(o)+'/100</strong></div>'+
+      progressBar(herdCare(o),100)+
+      '<p class="mgSmall">Tratadores alimentam e escovam os cavalos. Cuidado preservado melhora a produção e o valor dos animais.</p></div>'+
+      '<h4>🐴 Criação e linhagens</h4>'+
       (awaiting.length?awaiting.map(p=>{
         const mother=hs.find(h=>h.id===p.motherId);
         return '<div class="mgCard"><strong>🐣 Nascimento previsto</strong>'+
@@ -1481,6 +1519,11 @@ function managementContent(tab){
         (h.motherId?'<div class="mgSmall">Linhagem: mãe #'+h.motherId+' · pai #'+h.fatherId+'</div>':'')+
         '<div class="mgLine"><span>Qualidade</span><strong>'+h.quality+'/100</strong></div>'+
         progressBar(h.quality,100)+
+        '<div class="mgLine"><span>💚 Bem-estar e manejo</span><strong>'+
+          Math.round(horseCare(h))+'/100</strong></div>'+
+        progressBar(horseCare(h),100)+
+        '<div class="mgSmall">Cuidados recebidos: '+(h.careServices||0)+
+          ' · Último manejo: dia '+(h.lastCareDay??'—')+'</div>'+
         '<div class="mgSmall">🧬 Aptidões herdáveis</div>'+
         traits.map(trait=>'<div class="mgLine"><span>'+traitNames[trait]+
           '</span><strong>'+(h.genetics?.[trait]??h.quality)+'/100</strong></div>'+
@@ -1502,6 +1545,10 @@ function managementContent(tab){
         '<div class="mgSmall">'+(f.activity||'Preparando serviço')+'</div>'+
         '<div class="mgLine"><span>Deslocamento</span><strong>'+
           (f.pathMode==='rede'?'🛤️ Pela rede de trilhas':'🌱 Pelo terreno livre')+'</strong></div>'+
+        (f.role==='tratador'?
+          '<div class="mgLine"><span>Animal em atendimento</span><strong>'+
+            (horses.find(h=>h.id===f.targetHorseId)?.name||
+             f.lastHorseName||'Aguardando')+'</strong></div>':'')+
         '<div class="mgLine"><span>Trabalhos concluídos</span><strong>'+(f.tasksDone||0)+'</strong></div>'+
         '<button type="button" data-mgaction="findWorker" data-index="'+i+'">📍 Acompanhar trabalhador no mapa</button></div>').join('')+
       '<div class="mgCard"><div class="mgLine"><span>Bônus temporário de produtividade</span><strong>'+brl(e.bonus)+'</strong></div>'+
@@ -1984,7 +2031,7 @@ $('perfMode').onclick=()=>{
 window.FazendaVivaBridge={
   state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
     regionalOffers:regionalHorseOffers(),ranchDecor:farmLandscaping(),
-    cameraGesture:pointers.size>0}),
+    cameraGesture:pointers.size>0,careMean:owners.map(herdCare)}),
   projectedGroundAt:(x,y,z)=>cameraGroundAt(x,y,z),
   reportPerformance,
   mode:(active)=>{
