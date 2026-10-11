@@ -159,7 +159,8 @@
       tool:gestures.tool*work
     };
   }
-  const motion=Object.freeze({blend,horse,worker,legPose,turnToward,horseGaitPerUnit,
+  function horseScale(age){return age<1?{x:.64,y:.79,z:.67}:age<2?{x:.82,y:.90,z:.85}:{x:1,y:1,z:1}}
+  const motion=Object.freeze({blend,horse,worker,legPose,turnToward,horseGaitPerUnit,horseScale,
     horseStride,horseForm,horseRig,workerForm,workerLook,volume});
   if(typeof module!=='undefined'&&module.exports)module.exports=motion;
   else window.FazendaVivaMotion=motion;

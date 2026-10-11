@@ -1,0 +1,41 @@
+/* Campos do Sul — superfícies suaves, volume discreto e leitura compacta. */
+:root{--panel:#20392cf7;--edge:#83956d;--gold:#e6c891;--ink:#f5efdc;--muted:#c2cdb6}
+button{background:linear-gradient(#385440,#2b4433);border-color:#8a9d746b;border-radius:9px;box-shadow:inset 0 1px #e6ecc015,0 2px 0 #11281e65;transition:background .15s,transform .12s}
+button:hover{background:linear-gradient(#49664b,#36543d)}button:active{transform:translateY(1px);box-shadow:inset 0 1px 3px #10261855}button:disabled{transform:none}
+#hud{width:min(386px,calc(100vw - 24px));gap:0;border:1px solid #d2d9aa49;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 4px),linear-gradient(125deg,#273d2ff5,#18362aee);box-shadow:0 4px 14px #152d2130}
+#hud .pill{background:none;border:0;border-radius:0;padding:5px 11px;font-size:12px;line-height:20px}
+#hud .brand{font-size:10px;letter-spacing:.4px;padding-left:10px;color:#edd19a}
+#hud #date{text-align:right;color:#cbd5ba;font-size:11px}
+#hud #money{font-size:17px;font-weight:720;padding-top:1px;padding-bottom:8px;font-variant-numeric:tabular-nums}
+#hud #buildings{font-size:11px;padding-top:1px;padding-bottom:8px;text-align:right}
+#economy{top:calc(var(--top) + 72px);padding:0 3px;background:none;font-size:10px;color:#f0f1d7;text-shadow:0 1px 2px #253e2b}
+#growthHud{position:fixed;z-index:5;top:calc(var(--top) + 95px);left:var(--side);width:min(386px,calc(100vw - 24px));height:47px;min-height:44px;padding:5px 10px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:1px 9px;background:linear-gradient(110deg,#2c4434ed,#203d2edb);border:1px solid #bed39a55;box-shadow:0 2px 5px #1b33251b;font-size:10px;line-height:14px}
+#growthTitle{color:#edcf95;font-weight:650;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#growthDetail{grid-row:2;grid-column:1/-1;color:#d8e0c9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#growthLevel{color:#c9d9b1;font-size:10px}
+#growthTrack{grid-column:1/-1;height:3px;background:#112f23;border-radius:9px;overflow:hidden;margin-top:2px}#growthFill{height:100%;width:0;background:linear-gradient(90deg,#8ba96b,#d9d59a);transition:width 1s ease}
+#topTools{top:var(--top)}#topTools button{background:linear-gradient(#2c4836f2,#1d382bee);min-width:44px;font-size:11px;padding:8px}#topTools #renderMode{min-width:82px}
+#soundToggle{width:44px;font-size:0!important}#soundToggle:before{content:'♫';font-size:21px;line-height:20px;color:#e3d6ab}#soundToggle[aria-pressed=false]:before{content:'♪';color:#b9c4ae}#soundToggle[aria-pressed=false]:after{content:'';position:absolute;width:25px;height:1px;background:#cbd3bc;transform:translate(-23px,11px) rotate(-42deg)}
+#bottom{border-radius:12px;padding:6px;gap:5px;background:repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 4px),linear-gradient(#243f2fea,#193427f5);box-shadow:0 4px 18px #10261d30}
+#bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;line-height:15px;min-height:54px;font-size:11px;padding:6px 3px}
+#bottom svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#manageQuick{background:linear-gradient(#ded6a4,#babf82);color:#283c2b;border-color:#ebe1b5;font-weight:750}
+#panel,#management,#welcome{background:repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 4px),var(--panel);border-radius:13px;border-color:#c7cc9470;box-shadow:0 10px 35px #11271a66}
+#management .manageHead{background:linear-gradient(#304733,#223d2c);border-color:#b3c49330}#management .manageHead strong{color:#edd8a9;font-size:15px}
+#manageBody .mgCard,#manageBody .mgRow{background:linear-gradient(135deg,#354b38a8,#29402ec2);border-radius:9px;border-color:#b5c19533;box-shadow:inset 0 1px #ecedc508}
+#manageTabs{gap:5px;padding-top:8px}#manageTabs button{border-radius:8px;min-height:44px;font-size:11px}#manageTabs button[aria-selected=true]{background:linear-gradient(#d5d0a1,#adb97f);color:#253d2b;border-color:#e6dcad}
+#manageBody h4{font-size:13px;letter-spacing:.2px}#manageBody .mgTrack{height:5px}#manageBody .mgFill{background:linear-gradient(90deg,#8daa6e,#d3d69e);transition:width .6s}
+#manageBody .journalEntry{display:grid;grid-template-columns:36px 1fr;gap:10px;margin:0;padding:10px 0;border-bottom:1px solid #b6c09622;font-size:12px}#manageBody .journalDay{color:#c5d2b3;font-size:10px;text-align:center}#manageBody .journalEntry strong{display:block;color:#e5d4aa;font-weight:600}#manageBody .journalEntry small{color:var(--muted);font-size:11px}
+#manageBody .growthHero{padding:14px;background:linear-gradient(130deg,#455a39b0,#2b432fcc);border:1px solid #d0ce8e5c;border-radius:10px;margin:5px 0 11px}#manageBody .growthHero strong{color:#f1dcad;font-size:17px}#manageBody .growthHero p{margin:4px 0 8px;font-size:12px;color:#d5dfc6}
+.soundControl{display:block;margin:14px 0;font-size:12px;color:#dae2cc}.soundControl span{float:right;color:#edcf95}.soundControl input{display:block;width:100%;height:44px;margin:2px 0;accent-color:#c2c48b;cursor:pointer}
+#zoomTools button{width:44px;height:44px;border-radius:11px;background:linear-gradient(#34533def,#244631ef)}#sceneContext{border-radius:10px;background:#203e2def}
+#status{border-radius:10px;background:#213d2dee;color:#e8e3c9;font-size:11px;padding:8px 12px;border-color:#ccd19a55}#welcome .eyebrow{font-size:10px;letter-spacing:1.8px}#welcome h2{color:#f0d8a6;font-size:26px}
+@media(max-width:700px){#topTools{top:calc(var(--top) + 153px);left:var(--side);right:auto;gap:5px}#topTools button{padding:7px 9px;font-size:10px}#renderStatus{top:calc(var(--top) + 203px)}#perfHud{top:calc(var(--top) + 204px)}#hud .pill{font-size:11px;padding:5px 9px}#hud #money{font-size:16px}#hud .brand{font-size:9px;letter-spacing:0}#economy{font-size:10px;top:calc(var(--top) + 72px)}}
+@media(max-height:500px) and (min-width:600px){#topTools{top:var(--top);left:auto;right:var(--side)}#growthHud{width:386px}#renderStatus{top:calc(var(--top) + 109px)}#perfHud{top:calc(var(--top) + 58px)}}
+@media(prefers-reduced-motion:reduce){button,#growthFill,#manageBody .mgFill{transition:none}button:active{transform:none}}
+
+#observe{font-size:22px!important;color:#d5d9ad}
+#observeTools{position:fixed;z-index:7;bottom:var(--base);left:50%;transform:translateX(-50%);width:min(420px,calc(100vw - 24px));padding:9px 11px;background:linear-gradient(#274431e6,#193b2bed);border:1px solid #d1d39c66;border-radius:12px;box-shadow:0 4px 16px #172f2444}
+#observeCaption{font-size:11px;color:#e8debb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;margin-bottom:7px}
+#observeTools>div:last-child{display:flex;gap:6px}#observeTools button{flex:1;font-size:11px;min-height:44px}#observeExit{background:linear-gradient(#d9d3a4,#b6c08c);color:#293e2d}
+body.observing #hud,body.observing #economy,body.observing #growthHud,body.observing #topTools,body.observing #bottom,body.observing #status,body.observing #sceneContext,body.observing #renderStatus,body.observing #perfHud{display:none!important}
+body.observing #zoomTools{opacity:.72}body.observing #zoomTools:hover{opacity:1}
+@media(max-width:359px){#hud #date{font-size:9px}#hud .brand{font-size:8.5px}#economy{font-size:9px}#growthDetail{font-size:9px}}

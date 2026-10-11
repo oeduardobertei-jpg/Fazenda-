@@ -1,10 +1,25 @@
-# Fazenda Viva — versão 0.9.9.3 (para testes)
+# Fazenda Viva — 0.9.9.9
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Testar a 0.9.9.3:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=0993
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=0999
 
-A versão mantém partidas novas a cada abertura, sem salvamento automático. Para conferir a atualização, o HUD deve mostrar **0.9.9.3**. Os critérios de Android físico da 1.0 continuam pendentes.
+Partida nova no dia 1 a cada abertura, sem salvamento automático. A versão completa aparece no HUD.
+
+## 0.9.9.4–0.9.9.9 — o ritmo do campo
+
+Entrega integrada da sequência solicitada pelo usuário, com direção de interface inspirada em Doutrina e identidade rural própria.
+
+- HUD com superfícies texturizadas, botões com volume discreto, ícones vetoriais e acompanhamento de meta/obra.
+- Paisagem sonora original: vento leve, pássaros espaçados e pequenas confirmações. Controle de volume, ambiente separado e silêncio a um toque; áudio suspende ao ocultar a página.
+- Diário de crescimento ligado a metas, obras e nascimentos reais da sua cabanha.
+- Manejo físico: encontro lateral fora da porteira, alimentação junto ao focinho e escovação ao lado do corpo. O animal retorna pelo vão e libera passagem antes do próximo atendimento.
+- Pássaros e borboletas próximos às flores, compartilhados entre Canvas e Three.js e ocultos no modo econômico. Sacarias no galpão acompanham a produção da equipe.
+- Modo **Contemplar**: tela livre, acompanhamento de animais/trabalhadores/instalações, troca de cena e pausa.
+- Potros com porte proporcional mais estreito e pernas relativamente longas, coerente em 2D/3D.
+- Manejo recalibrado para o deslocamento físico; vizinhos só ampliam o plantel se o cuidado atual está acima de 70/100.
+
+**Verificação:** regressões locais, geometria e testes de áudio passaram. A rodada de navegador/inspeção visual é registrada no PR desta entrega e em `RELEASE_0.9.9.9.md`. Desempenho e qualidade sonora no Android físico continuam pendentes.
 
 ## 0.9.9.3 — passadas, giros e manejo
 

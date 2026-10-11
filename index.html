@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.3</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.9</title>
 <style>
 :root{color-scheme:dark;--ink:#f8f1dd;--muted:#c4d1ba;--panel:#17392ded;--edge:#739477;--gold:#dfc18a;--top:calc(10px + env(safe-area-inset-top,0px));--base:calc(10px + env(safe-area-inset-bottom,0px));--side:12px}
 *{box-sizing:border-box}body{margin:0;background:#1b3528;color:var(--ink);font:14px/1.45 system-ui,sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#game{position:fixed;inset:0;z-index:0}
@@ -16,8 +16,8 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 @media(max-height:500px) and (min-width:600px){#hud{width:390px;grid-template-columns:1fr 1fr}#economy{top:calc(var(--top) + 80px)}#topTools{top:var(--top);right:var(--side);left:auto}#renderStatus{top:calc(var(--top) + 109px)}#zoomTools{top:55%}#panel,#management{left:var(--side);transform:none;width:min(470px,calc(100vw - 84px));bottom:calc(var(--base) + 77px)}#welcome{max-height:calc(100dvh - var(--base) - var(--top) - 85px);overflow:auto;padding:16px}#welcome h2{font-size:21px}#welcome p{font-size:12px}#welcome .welcomeActions{margin-top:10px}}
 #hud .brand{font-size:clamp(8.5px,2.6vw,11px);letter-spacing:0;padding-inline:5px}
 @media(prefers-reduced-motion:reduce){#status{transition:none}}
-</style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.3</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button></div><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
+</style><link rel="stylesheet" href="./ui.css?v=0999"></head><body>
+<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.9</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><button id="growthHud" type="button" aria-label="Acompanhar crescimento da cabanha"><span id="growthTitle">Sua cabanha está começando</span><span id="growthLevel">Nível 1</span><span id="growthDetail">Primeira expansão · 3 de 4 estruturas</span><span id="growthTrack"><span id="growthFill" style="display:block"></span></span></button><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="soundToggle" type="button" aria-pressed="true" aria-label="Som ativado · silenciar" title="Som · volume em Gestão → Ambiente">Som</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button><button id="observe" type="button" aria-label="Contemplar a fazenda" title="Contemplar a fazenda">◉</button></div><aside id="observeTools" hidden aria-label="Modo contemplar"><div id="observeCaption">O ritmo da sua cabanha</div><div><button id="observeNext" type="button">Outra cena</button><button id="observePause" type="button">Pausar</button><button id="observeExit" type="button">Voltar</button></div></aside><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong id="manageTitle">Gestão da cabanha · tempo pausado</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" role="tablist" aria-label="Seções da gestão">
 <button id="tab-resumo" role="tab" aria-controls="manageBody" data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -26,17 +26,33 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 <button id="tab-equipe" role="tab" aria-controls="manageBody" data-mgtab="equipe" aria-selected="false">👨‍🌾 Equipe</button>
 <button id="tab-mercado" role="tab" aria-controls="manageBody" data-mgtab="mercado" aria-selected="false">🌾 Mercado</button>
 <button id="tab-metas" role="tab" aria-controls="manageBody" data-mgtab="metas" aria-selected="false">🏆 Metas</button>
+<button id="tab-ambiente" role="tab" aria-controls="manageBody" data-mgtab="ambiente" aria-selected="false">♫ Ambiente</button>
 </nav>
 <div id="manageBody" role="tabpanel" aria-labelledby="tab-resumo" tabindex="0"></div>
 </section><div id="sceneContext" hidden><span id="contextText"></span><button id="contextCancel" type="button">Encerrar</button></div>
 <section id="welcome" role="dialog" aria-labelledby="guideTitle"><div class="eyebrow">Campos do Sul · Fazenda Viva</div><div id="guideProgress">GUIA · 1 DE 3</div><h2 id="guideTitle">Sua cabanha, viva.</h2><p id="guideText">Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.</p><p id="guideHint">A partida começa no dia 1 a cada abertura. Não há salvamento automático.</p><div class="welcomeActions"><button id="guideSkip" type="button">Explorar agora</button><button id="guideNext" type="button">Próximo →</button></div></section>
 <div id="error" hidden></div>
-<script src="./motion.js?v=0993"></script>
+<script src="./audio.js?v=0999"></script>
+<script src="./motion.js?v=0999"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
 const motion=window.FazendaVivaMotion;
+const audio=window.FazendaVivaAudio?.create(window);
+const navPaths={focus:'<path d="M3 10 12 3l9 7v10H3Z M9 20v-7h6v7"/>',map:'<path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16 M15 5v16"/>',manageQuick:'<path d="M4 20V12h4v8 M10 20V8h4v12 M16 20V4h4v16 M2 20h20"/>',toggle:'<path d="m5 3 4 4-2 3-4-4v5l4 2 3-1 9 9 3-3-9-9 1-3-2-4Z"/>'};
+function navLabel(id,label){$(id).innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+navPaths[id]+'</svg><span>'+label+'</span>'}
+navLabel('focus','Fazenda');navLabel('map','Mapa');navLabel('manageQuick','Gestão');navLabel('toggle','Construir');
+document.addEventListener('pointerdown',e=>{if(e.isTrusted)void audio?.unlock()}, {capture:true,passive:true});
+document.addEventListener('click',e=>{if(e.isTrusted&&e.target.closest?.('button')&&!e.target.closest('#soundToggle'))audio?.cue('tap')});
+document.addEventListener('visibilitychange',()=>audio?.setVisible(!document.hidden));
+function updateSoundButton(){
+ const enabled=audio?.snapshot().enabled??false;
+ $('soundToggle').setAttribute('aria-pressed',String(enabled));
+ $('soundToggle').setAttribute('aria-label',enabled?'Som ativado · silenciar':'Som desativado · ativar');
+}
+$('soundToggle').onclick=()=>{audio?.setEnabled(!audio.snapshot().enabled);updateSoundButton()};
+updateSoundButton();
 let W=0,H=0,dpr=1,zoom=2.45,panX=0,panY=0,lowGraphics=false,paused=false,speed=1,day=1,acc=0,build=null,selected=null,seed=314159,overview=false,mode3D=false,visitIndex=0;
-let followTarget=null,guideStep=0,lastDialogFocus=null;
+let followTarget=null,guideStep=0,lastDialogFocus=null,sceneClock=0,observing=false,observationIndex=-1,lastObservationUpdate=0;
 let showPerformance=false,localFps=0,framesSinceSample=0,sampleStart=0;
 let performanceSnapshot={mode:'2D',fps:0,dpr:1,calls:0,triangles:0};const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const owners=[{name:'Sua cabanha',x:-315,y:-280,cash:19000,ai:false,color:'#b78355'},{name:'Estância Horizonte',x:305,y:-275,cash:18000,ai:true,color:'#6f9eb1'},{name:'Cabanha Santa Fé',x:-315,y:285,cash:14000,ai:true,color:'#c98c81'},{name:'Agro Vale',x:315,y:280,cash:16000,ai:true,color:'#d4bb76'},{name:'Rincão Verde',x:0,y:0,cash:12000,ai:true,color:'#91ad72'}];
 // Identidades espaciais compartilhadas por Canvas e Three.js: cada propriedade
@@ -267,6 +283,32 @@ function farmLandscaping(){
   ranchDecorSites=sites;
   return ranchDecorSites;
 }
+function wildlife(){
+ if(lowGraphics)return [];
+ const decor=farmLandscaping(),life=[];
+ owners.forEach((o,k)=>{
+  const flowers=decor.filter(p=>p.o===o&&p.kind==='flores');
+  for(let i=0;i<Math.min(2,flowers.length);i++){
+   const flower=flowers[i],t=sceneClock*.42+k*2+i*3;
+   life.push({kind:'butterfly',x:flower.x+Math.cos(t)*2.7,y:flower.y+Math.sin(t*1.3)*2,
+    height:1.5+Math.sin(t*2)*.4,phase:sceneClock*7+i,color:i?'#e9c686':'#dcb6a8',size:.55});
+  }
+  const t=sceneClock*.07+k*1.7;
+  life.push({kind:'bird',x:o.x+Math.cos(t)*65,y:o.y+Math.sin(t)*49,
+   height:12+Math.sin(t*2)*2,phase:sceneClock*4+k,color:'#415745',size:1.15});
+ });return life;
+}
+function drawWildlife(){
+ if(zoom<1.2||lowGraphics)return;
+ const scale=Math.min(W/300,H/260)*zoom;
+ for(const a of wildlife()){
+  const p=screen(a.x,a.y);if(p.x<0||p.x>W||p.y<0||p.y>H)continue;
+  const size=scale*a.size,flap=.3+Math.abs(Math.sin(a.phase))*.6,y=p.y-a.height*scale;
+  ctx.fillStyle=a.color;
+  poly([[p.x,y],[p.x-size,y-size*flap],[p.x-size*.65,y+size*.17]],a.color);
+  poly([[p.x,y],[p.x+size,y-size*flap],[p.x+size*.65,y+size*.17]],a.color);
+ }
+}
 function drawRanchDecor(){
   const s=Math.min(W/300,H/260)*zoom;
   // No enquadramento regional, não desenhar 180 props de tamanho subpixel.
@@ -356,6 +398,10 @@ function drawBuilding(b){
     }
     ctx.fillStyle='#ffe6a0';ctx.font='bold '+Math.max(9,s*5)+'px system-ui';
     ctx.textAlign='center';ctx.fillText('★'.repeat(n),x+w/2,y-h*.25);
+  }
+  if(b.type==='barn'&&isBuilt(b)){
+    const stock=Math.min(4,Math.floor((b.o.work?.agricultor||0)/.6));
+    for(let i=0;i<stock;i++)rect(x+w*(.12+i*.10),y+h*.83,w*.08,h*.10,'#d5bd83');
   }
   if(b.status==='upgrading'){
     const barW=Math.max(12,w*.80);
@@ -455,10 +501,11 @@ function drawRoad(x1,y1,x2,y2,width=9){
 }
 // Silhuetas 2D usam os mesmos heading/gait/motion usados nos modelos Three.js.
 const spriteForms=new Map();
-function spriteGeometry(p,s,heading){
+function spriteGeometry(p,s,heading,dimensions={x:1,y:1,z:1}){
   const faces=[],cos=Math.cos(heading),sin=Math.sin(heading);
   const rotate=(x,y,angle)=>({x:x*Math.cos(angle)-y*Math.sin(angle),y:x*Math.sin(angle)+y*Math.cos(angle)});
   const project=(x,height,z)=>{
+    x*=dimensions.x;height*=dimensions.y;z*=dimensions.z;
     const wx=x*cos+z*sin,wy=-x*sin+z*cos;
     return {x:p.x+wx*s,y:p.y+(wy*.67-height*.82)*s,depth:wy*.82+height*.67};
   };
@@ -492,10 +539,10 @@ function spriteGeometry(p,s,heading){
   return {addForm,addBox,rotate,draw};
 }
 function drawHorseSprite(h){
-  const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom*(horseAge(h)<1?.64:horseAge(h)<2?.82:1);
+  const p=screen(h.x,h.y),s=Math.min(W/300,H/260)*zoom,dimensions=motion.horseScale(horseAge(h));
   if(s<1.25){
     // Vista regional: a silhueta custa três traços, sem centenas de faces subpixel.
-    ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s*.67);ctx.rotate(-(h.heading||0));
+    ctx.save();ctx.translate(p.x,p.y);ctx.scale(s*dimensions.x,s*.67*dimensions.z);ctx.rotate(-(h.heading||0));
     ctx.fillStyle=h.coat;ctx.beginPath();ctx.ellipse(0,0,2,.66,0,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle=h.coat;ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(1,0);ctx.lineTo(2.6,0);ctx.stroke();
     ctx.strokeStyle='#382d27';ctx.lineWidth=.24;ctx.beginPath();ctx.moveTo(-1.8,0);ctx.lineTo(-2.6,.2);ctx.stroke();ctx.restore();return;
@@ -504,7 +551,7 @@ function drawHorseSprite(h){
   ctx.fillStyle='#35523655';ctx.beginPath();
   ctx.ellipse(p.x,p.y+s*.70,s*2.4,s*.72,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
-  const pose=motion.horse(h),rig=motion.horseRig,model=spriteGeometry(p,s,h.heading||0);
+  const pose=motion.horse(h),rig=motion.horseRig,model=spriteGeometry(p,s,h.heading||0,dimensions);
   const {addForm,addBox,rotate}=model;
   addForm('body',h.coat,(x,y,z)=>({x,y:y+pose.bodyBob,z}));
   const neck=(x,y,z)=>{const v=rotate(x,y,pose.neck);return {x:rig.neckX+v.x,y:rig.neckY+pose.bodyBob-pose.neckDrop+v.y,z}};
@@ -673,13 +720,13 @@ function render(){
     ...buildings.filter(b=>!(b.type==='paddock'&&isBuilt(b))&&visible(b.x,b.y,45)).map(b=>({y:b.y,draw:()=>drawBuilding(b)})),
     ...horses.filter(h=>visible(h.x,h.y,35)).map(h=>({y:h.y,draw:()=>drawHorseSprite(h)})),
     ...farmers.filter(f=>visible(f.x,f.y,20)).map(f=>({y:f.y,draw:()=>drawWorkerSprite(f)}))
-  ];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(let o of owners){if(!visible(o.x,o.y,90))continue;let p=screen(o.x,o.y-25),scale=Math.min(W/300,H/260)*zoom;ctx.font='bold '+Math.max(10,Math.min(14,scale*8))+'px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#173625';ctx.strokeText(o.name,p.x,p.y);ctx.fillStyle='#fff9df';ctx.fillText(o.name,p.x,p.y);
+  ];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());drawWildlife();for(let o of owners){if(!visible(o.x,o.y,90))continue;let p=screen(o.x,o.y-25),scale=Math.min(W/300,H/260)*zoom;ctx.font='bold '+Math.max(10,Math.min(14,scale*8))+'px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#173625';ctx.strokeText(o.name,p.x,p.y);ctx.fillStyle='#fff9df';ctx.fillText(o.name,p.x,p.y);
   if(zoom<1.10&&zoom>.38){
     ctx.font='600 '+Math.max(9,Math.min(12,scale*5))+'px system-ui';
     ctx.fillStyle='#eff5c4';ctx.fillText(o.style.label,p.x,p.y+16);
   }
 }}
-// 0.9.9.3 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
+// 0.9.9.9 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
 let horseSlotsKey='',horseSlots=new Map();
 const animalObstacles=new Map();let animalDecor=null;
 function syncAnimalObstacles(){
@@ -798,12 +845,12 @@ function movePastureHorse(h,dt){
   if(Math.hypot(h.x-h.homePoint.x,h.y-h.homePoint.y)>18)h.outOnField=true;
   h.gait=(h.gait||0)+moved*motion.horseGaitPerUnit;h.motion=moved>.001?'walk':'idle';
   if(h.pastureIndex>=h.pastureRoute.length){
-    const returned=h.pastureStage==='retornando';
-    h.pastureRoute=[];h.pastureStage=returned?'piquete':'campo';
+    const returned=h.pastureStage==='retornando',handling=h.pastureStage==='manejo';
+    h.pastureRoute=[];h.pastureStage=handling?'manejo':returned?'piquete':'campo';
     h.pastureWait=returned?5+h.id%5:8+h.id%7;
     if(returned){if(h.outOnField)h.excursions=(h.excursions||0)+1;h.outOnField=false;h.fieldStops=0;h.homeReturns=(h.homeReturns||0)+1}
     else h.fieldStops=(h.fieldStops||0)+1;
-    h.motion=returned?'idle':h.resting?'idle':'graze';
+    h.motion=handling||returned?'idle':h.resting?'idle':'graze';
   }
 }
 function placeHorses(dt=0){
@@ -842,16 +889,17 @@ function placeHorses(dt=0){
       returnHorseHome(h);
     }
     const handler=farmers.find(f=>f.o===h.o&&f.role==='tratador'&&f.targetHorseId===h.id);
-    h.interacting=!!handler?.working&&Math.hypot(handler.x-h.x,handler.y-h.y)<13.5;
+    h.interacting=!!handler?.working&&Math.hypot(handler.x-h.x,handler.y-h.y)<3.8;
     h.careKind=h.interacting?handler.serviceKind:null;
     if(!dt)continue;
-    if(handler&&h.pastureStage!=='piquete')returnHorseHome(h);
+    if(handler?.meetingPoint)meetHandler(h,handler);
+    else if(h.pastureStage==='manejo'){h.pastureStage='campo';returnHorseHome(h)}
     if(h.pastureRoute?.length){movePastureHorse(h,dt);continue}
     h.pastureWait=Math.max(0,(h.pastureWait||0)-dt);
-    if(h.pastureStage==='piquete'&&(handler||(h.homePaddock&&horseCare(h)<65))){
+    if((h.pastureStage==='manejo'&&handler)||(h.pastureStage==='piquete'&&h.homePaddock&&horseCare(h)<65)){
       h.motion='idle';h.activity=handler?'Água e manejo':'Aguardando manejo no piquete';
       if(handler){
-        const goal=-Math.atan2(handler.y-h.y,handler.x-h.x);
+        const goal=0;
         h.heading=motion.turnToward(h.heading||0,goal,dt,1.8);
       }
       continue;
@@ -1256,70 +1304,74 @@ const workerJobs={
   administrador:'Administrando a cabanha'
 };
 const careJournal=[];
+function careMeeting(h,kind){
+ const entry=h.homePaddock?paddockPassage(h.homePaddock).at(-1):h.homePoint;
+ if(!entry)return null;
+ // O atendimento fica ao lado da passagem, deixando a porteira livre.
+ const points=h.homePaddock?[9,-9,12,-12].map(dx=>({x:entry.x+dx,y:entry.y})): [entry];
+ for(const at of points){
+  const worker={x:at.x+(kind==='escovacao'?.65:3.2),y:at.y+(kind==='escovacao'?-1.9:-.55)};
+  if(!fieldSafe(h.o,at.x,at.y)||!workerSafe(h.o,worker.x,worker.y,2.4))continue;
+  if(horses.some(other=>other!==h&&other.o===h.o&&Math.hypot(other.x-at.x,other.y-at.y)<5.9))continue;
+  if(h.homePaddock&&!clearWalkSegment(h.o,entry.x,entry.y,at.x,at.y,true))continue;
+  return {horse:at,worker};
+ }
+ return null;
+}
 function chooseFarmerTarget(f){
-  const wanted={tratador:['stable','paddock'],
-    agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
-  let list=buildings.filter(b=>b.o===f.o&&wanted.includes(b.type)&&isBuilt(b));
-  if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
-  if(!list.length){f.route=[];f.activity='Aguardando instalações';return}
-  const patientsByBuilding=new Map();
-  if(f.role==='tratador'){
-    for(const b of list){
-      const points=[{x:b.x-b.w/2-4.4,y:b.y},{x:b.x+b.w/2+4.4,y:b.y},
-        {x:b.x,y:b.y+b.h/2+4.4},{x:b.x,y:b.y-b.h/2-4.4}]
-        .filter(p=>workerSafe(f.o,p.x,p.y,2.4));
-      const patients=horses.filter(h=>h.o===f.o&&
-        (horseCare(h)<65||(h.pastureStage==='piquete'&&horseCare(h)<85))&&
-        points.some(p=>Math.hypot(p.x-(h.homePoint?.x??h.x),p.y-(h.homePoint?.y??h.y))<13.0))
-        .sort((p,q)=>horseCare(p)-horseCare(q));
-      patientsByBuilding.set(b,patients);
-    }
-    // Necessidade real vem antes de um passeio aleatório entre instalações.
-    // Usar a área de manejo permite chamar pacientes que estão longe no campo.
-    list.sort((a,b)=>(patientsByBuilding.get(a)[0]?horseCare(patientsByBuilding.get(a)[0]):1000)-
-      (patientsByBuilding.get(b)[0]?horseCare(patientsByBuilding.get(b)[0]):1000)||
-      Math.hypot(a.x-f.x,a.y-f.y)-Math.hypot(b.x-f.x,b.y-f.y));
+ const released=horses.find(h=>h.id===f.releaseHorseId&&h.o===f.o);
+ if(released?.homePaddock&&released.pastureStage!=='piquete'){
+  f.route=[];f.wait=.6;f.moving=false;f.motion='idle';f.activity='Deixando a porteira livre';return;
+ }
+ f.releaseHorseId=null;
+ const wanted={tratador:['stable','paddock'],agricultor:['barn','paddock'],administrador:['house','barn']}[f.role];
+ let list=buildings.filter(b=>b.o===f.o&&wanted.includes(b.type)&&isBuilt(b));
+ if(!list.length)list=buildings.filter(b=>b.o===f.o&&isBuilt(b));
+ if(!list.length){f.route=[];f.activity='Aguardando instalações';return}
+ if(f.role==='tratador'){
+  const kind=(f.tasksDone||0)%2?'escovacao':'alimentacao';
+  const patients=horses.filter(h=>h.o===f.o&&h.homePoint&&
+   (horseCare(h)<65||(['piquete','manejo'].includes(h.pastureStage)&&horseCare(h)<85)))
+   .sort((a,b)=>horseCare(a)-horseCare(b));
+  for(const h of patients){
+   const meeting=careMeeting(h,kind);if(!meeting)continue;
+   const route=farmWalkingRoute(f.o,f.x,f.y,meeting.worker.x,meeting.worker.y);
+   if(!route.length)continue;
+   f.route=route;f.routeIndex=0;f.tx=meeting.worker.x;f.ty=meeting.worker.y;
+   f.pathMode=route.viaRoad?'rede':'terreno';f.targetHorseId=h.id;f.serviceKind=kind;
+   f.targetBuilding=h.homePaddock||list[0];f.meetingPoint=meeting.horse;
+   f.task=(kind==='escovacao'?'Escovando ':'Alimentando ')+h.name;
+   f.activity='Indo encontrar '+h.name;f.moving=true;f.patientWait=0;return;
   }
-  const offset=f.id%list.length;
-  for(let k=0;k<list.length;k++){
-    const b=f.role==='tratador'?list[k]:list[(k+offset+Math.floor(rnd()*list.length))%list.length];
-    const gap=4.4;
-    let goals=[
-      {x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
-      {x:b.x,y:b.y+b.h/2+gap},{x:b.x,y:b.y-b.h/2-gap}
-    ].filter(p=>workerSafe(f.o,p.x,p.y,2.4));
-    // O tratador se dirige à lateral da cocheira/piquete mais próxima de
-    // seu paciente, reduzindo o manejo a distância e evitando atravessar cercas.
-    const candidateHorses=patientsByBuilding.get(b)||[];
-    const patient=candidateHorses.find(h=>goals.some(p=>Math.hypot(p.x-(h.homePoint?.x??h.x),p.y-(h.homePoint?.y??h.y))<13.0));
-    if(patient)goals=goals.filter(p=>Math.hypot(p.x-(patient.homePoint?.x??patient.x),p.y-(patient.homePoint?.y??patient.y))<13.0);
-    const scoreGoal=p=>Math.hypot(p.x-f.x,p.y-f.y)*.18+
-      (patient?Math.hypot(p.x-patient.x,p.y-patient.y):Math.hypot(p.x-f.x,p.y-f.y));
-    goals.sort((p,q)=>scoreGoal(p)-scoreGoal(q));
-    for(const target of goals){
-      const route=farmWalkingRoute(f.o,f.x,f.y,target.x,target.y);
-      if(!route.length)continue;
-      f.route=route;f.routeIndex=0;f.tx=target.x;f.ty=target.y;
-      f.pathMode=route.viaRoad?'rede':'terreno';
-      f.targetBuilding=b;f.targetHorseId=null;f.serviceKind=null;
-      if(f.role==='tratador'){
-        // Manejo real em torno das cocheiras e piquetes, sem atravessar cercas.
-        // Priorizar necessidade do animal, com distância limitada à instalação.
-        if(patient){
-          f.targetHorseId=patient.id;
-          f.serviceKind=(f.tasksDone||0)%2?'escovacao':'alimentacao';
-          f.task=(f.serviceKind==='escovacao'?'Escovando ':'Alimentando ')+
-            patient.name;
-        }else{
-          f.task='Limpando cocheira e cochos';
-          f.serviceKind='limpeza';
-        }
-      }else f.task=workerJobs[f.role];
-      f.activity='Indo trabalhar';f.targetType=b.type;
-      f.moving=true;return;
-    }
+ }
+ const offset=f.id%list.length;
+ for(let k=0;k<list.length;k++){
+  const b=list[(k+offset+Math.floor(rnd()*list.length))%list.length],gap=4.4;
+  const goals=[{x:b.x-b.w/2-gap,y:b.y},{x:b.x+b.w/2+gap,y:b.y},
+   {x:b.x,y:b.y+b.h/2+gap},{x:b.x,y:b.y-b.h/2-gap}]
+   .filter(p=>workerSafe(f.o,p.x,p.y,2.4))
+   .sort((a,b)=>Math.hypot(a.x-f.x,a.y-f.y)-Math.hypot(b.x-f.x,b.y-f.y));
+  for(const target of goals){
+   const route=farmWalkingRoute(f.o,f.x,f.y,target.x,target.y);if(!route.length)continue;
+   f.route=route;f.routeIndex=0;f.tx=target.x;f.ty=target.y;f.pathMode=route.viaRoad?'rede':'terreno';
+   f.targetBuilding=b;f.targetHorseId=null;f.meetingPoint=null;
+   f.serviceKind=f.role==='tratador'?'limpeza':null;
+   f.task=f.role==='tratador'?'Limpando cocheira e cochos':workerJobs[f.role];
+   f.activity='Indo trabalhar';f.targetType=b.type;f.moving=true;return;
   }
-  f.route=[];f.wait=1.5;f.activity='Aguardando caminho livre';f.moving=false;
+ }
+ f.route=[];f.wait=1.5;f.activity='Aguardando caminho livre';f.moving=false;
+}
+function meetHandler(h,f){
+ if(h.pastureRoute?.length&&(h.pastureStage==='manejo'||h.pastureStage==='retornando'))return;
+ if(h.pastureStage==='manejo'&&Math.hypot(h.x-f.meetingPoint.x,h.y-f.meetingPoint.y)<.1)return;
+ if(h.pastureStage==='piquete'&&h.homePaddock){
+  if(horseGateBusy(h)){h.pastureWait=1;return}
+  setHorseRoute(h,[...paddockPassage(h.homePaddock).map(p=>({...p,home:true})),{...f.meetingPoint}],'manejo');
+ }else{
+  const route=farmRoute(h.o,h.x,h.y,f.meetingPoint.x,f.meetingPoint.y,true);
+  if(route.length)setHorseRoute(h,route,'manejo');
+ }
 }
 function completeWorkerJob(f){
   if(!f.working)return;
@@ -1332,26 +1384,27 @@ function completeWorkerJob(f){
   }
   if(f.role==='tratador'){
     const cared=horses.find(h=>h.id===f.targetHorseId&&h.o===f.o);
-    if(cared&&Math.hypot(cared.x-f.x,cared.y-f.y)<13.5){
+    if(cared&&Math.hypot(cared.x-f.x,cared.y-f.y)<3.8){
       // Alimento reforçado só é consumido quando o trato acontece no mapa.
       const ration=(f.o.feedStock||0)>0?10:0;
       if(ration){
         f.o.feedStock--;
         cared.careSpecialUntil=cared.phase+2.3;
       }
-      cared.care=Math.min(100,horseCare(cared)+14+ration);
+      cared.care=Math.min(100,horseCare(cared)+22+ration);
       cared.careServices=(cared.careServices||0)+1;
       cared.lastCareDay=day;
       cared.careEffectUntil=cared.phase+2.3;
       f.horseCareJobs=(f.horseCareJobs||0)+1;
       careJournal.unshift({o:f.o,horseId:cared.id,horseName:cared.name,
-        day,kind:f.serviceKind,ration:!!ration,careGained:14+ration,workerId:f.id});
+        day,kind:f.serviceKind,distance:Math.hypot(cared.x-f.x,cared.y-f.y),ration:!!ration,careGained:22+ration,workerId:f.id});
       if(careJournal.length>80)careJournal.length=80;
       f.lastHorseName=cared.name;
       f.lastCareKind=f.serviceKind;
+      if(cared.homePaddock){f.releaseHorseId=cared.id;cared.pastureStage='campo';returnHorseHome(cared)}
     }
   }
-  f.targetHorseId=null;f.serviceKind=null;f.targetBuilding=null;
+  f.targetHorseId=null;f.serviceKind=null;f.targetBuilding=null;f.meetingPoint=null;
   f.working=false;f.activity='Serviço concluído';f.route=[];
 }
 function animateFarmers(dt){
@@ -1395,7 +1448,7 @@ function animateFarmers(dt){
     const dx=waypoint.x-f.x,dy=waypoint.y-f.y,d=Math.hypot(dx,dy);
     if(d<.7){
       const patient=horses.find(h=>h.o===f.o&&h.id===f.targetHorseId);
-      if(f.routeIndex===f.route.length-1&&patient&&Math.hypot(patient.x-f.x,patient.y-f.y)>=13.5){
+      if(f.routeIndex===f.route.length-1&&patient&&(patient.pastureStage!=='manejo'||Math.hypot(patient.x-f.x,patient.y-f.y)>=3.8)){
         f.motion='idle';f.activity='Aguardando retorno do cavalo';
         f.patientWait=(f.patientWait||0)+maxDt;
         if(f.patientWait>45){f.patientWait=0;chooseFarmerTarget(f)}
@@ -1506,6 +1559,11 @@ function finances(o){
 // 0.9 — Gestão da cabanha: números derivados exclusivamente da simulação.
 const brl=value=>'R$ '+Math.round(value).toLocaleString('pt-BR');
 const ledger=[],finishedGoals=new Set();
+const growthJournal=[{day:1,title:'Sua cabanha nasceu',detail:'Dois cavalos, uma equipe e novos caminhos pela frente.'}];
+function growthMoment(title,detail,kind='milestone'){
+ growthJournal.unshift({day,title,detail});if(growthJournal.length>24)growthJournal.length=24;
+ audio?.cue(kind);
+}
 let reputation=0,manageTab='resumo',lastManagementRender=0;
 const ownBuildings=()=>buildings.filter(b=>b.o===owners[0]);
 const ownHorses=()=>horses.filter(h=>h.o===owners[0]);
@@ -1571,6 +1629,7 @@ function processBirths(){
     foal.motherId=mother.id;foal.fatherId=pending.fatherId;
     foal.name='Potro '+horseNames[(foal.id-1)%horseNames.length]+' '+foal.id;
     horses.push(foal);
+    if(pending.o===owners[0])growthMoment('Um novo potro',foal.name+' entrou na linhagem da cabanha.','birth');
     pregnancies.splice(i,1);
     horseSlotsKey='';
     $('news').textContent='🐴 Nasceu '+foal.name+' na '+pending.o.name+
@@ -1704,7 +1763,7 @@ function managementLevel(){
   for(let i=1;i<steps.length;i++)if(reputation>=steps[i])level=i+1;
   const names=['Iniciante','Produtor rural','Criador regional','Empreendedor rural',
     'Cabanha reconhecida','Referência estadual','Referência nacional'];
-  return {level,name:names[Math.min(level-1,names.length-1)],next:steps[level]??null};
+  return {level,name:names[Math.min(level-1,names.length-1)],base:steps[level-1],next:steps[level]??null};
 }
 function evaluateGoals(){
   for(const goal of goalDefs){
@@ -1712,6 +1771,7 @@ function evaluateGoals(){
     finishedGoals.add(goal.id);
     reputation+=goal.rep;
     owners[0].cash+=goal.cash;
+    growthMoment(goal.title,'+'+goal.rep+' reputação · '+brl(goal.cash)+' de recompensa.');
     $('news').textContent='🏆 Meta concluída: '+goal.title+
       '! +'+goal.rep+' reputação e '+brl(goal.cash)+'.';
     $('status').textContent='🏆 '+goal.title+' concluída! Verifique Gestão → Metas.';
@@ -1789,7 +1849,7 @@ function managementContent(tab){
     const place=standings.findIndex(x=>x.f===o)+1;
     const level=managementLevel(),done=finishedGoals.size;
     const site=activeSite(o);
-    return '<div class="mgGrid">'+
+    return '<div class="growthHero"><strong>'+level.name+'</strong><p>Nível '+level.level+' · '+(level.next?'próximo nível em '+Math.max(0,level.next-reputation)+' pontos de reputação':'sua cabanha é referência nacional')+'</p>'+progressBar(reputation-level.base,(level.next??(reputation+1))-level.base)+'<button type="button" data-mgaction="growthGoals">Ver próximos passos</button></div><div class="mgGrid">'+
       statCard('💰','Patrimônio',brl(asset.total))+
       statCard('📈','Lucro por ciclo',(e.net>=0?'+':'')+brl(e.net))+
       statCard('🐎','Cavalos',hs.length+'/'+capacity(o))+
@@ -1805,9 +1865,19 @@ function managementContent(tab){
       '<div class="mgLine"><span>Obra ativa</span><strong>'+(site?({building:'Nova estrutura',upgrading:'Ampliação'}[site.status]||'Em execução'):'Nenhuma')+'</strong></div>'+
       (site?progressBar(site.progress,100)+'<p class="mgSmall">'+(site.progress||0)+'% concluído</p>':'')+
       '<div class="mgLine"><span>Trabalhadores</span><strong>'+team.length+'</strong></div></div>'+
+      '<h4>🌱 Diário de crescimento</h4><div class="mgCard">'+growthJournal.slice(0,6).map(m=>'<div class="journalEntry"><span class="journalDay">DIA<br>'+m.day+'</span><div><strong>'+m.title+'</strong><small>'+m.detail+'</small></div></div>').join('')+'</div>'+
       '<h4>🧭 Propriedades da região</h4>'+
       standings.map((x,i)=>'<div class="mgLine"><span>'+(i+1)+'º · '+x.f.name+'</span><strong>'+x.score+' pts</strong></div>').join('')+
       '<p class="mgNote">A classificação considera patrimônio, construções, cavalos e resultado operacional.</p>';
+  }
+  if(tab==='ambiente'){
+    const sound=audio?.snapshot()||{enabled:false,volume:0,ambience:0};
+    return '<div class="growthHero"><strong>O ritmo do campo</strong><p>Vento leve, pássaros ao longe e pequenos sons para cada escolha.</p></div>'+
+      '<div class="mgCard"><button type="button" data-mgaction="sound">'+(sound.enabled?'Silenciar todos os sons':'Ativar sons')+'</button>'+
+      '<label class="soundControl" for="masterVolume">Volume geral <span id="masterValue">'+Math.round(sound.volume*100)+'%</span><input id="masterVolume" type="range" min="0" max="100" value="'+Math.round(sound.volume*100)+'"></label>'+
+      '<label class="soundControl" for="ambientVolume">Ambiente rural <span id="ambientValue">'+Math.round(sound.ambience*100)+'%</span><input id="ambientVolume" type="range" min="0" max="100" value="'+Math.round(sound.ambience*100)+'"></label></div>'+
+      '<p class="mgNote">Os sons começam após seu primeiro toque. O ambiente mantém o mesmo ritmo em 1×, 3× e 8×. Ao sair para outro aplicativo, o áudio fica em silêncio.</p>'+
+      '<h4>Um tempo para observar</h4><p class="mgSmall">Use Pausar para contemplar a fazenda. Em Cavalos, acompanhe o pastoreio; em Equipe, siga um trabalhador. Você escolhe quando construir e participar dos eventos.</p>';
   }
   if(tab==='financas')return financialBreakdown(o);
   if(tab==='cavalos'){
@@ -1997,6 +2067,7 @@ function openManagement(tab='resumo'){
 }
 $('manageOpen').onclick=openManagement;
 $('manageQuick').onclick=openManagement;
+$('growthHud').onclick=()=>openManagement(activeSite(owners[0])?'resumo':'metas');
 $('panelClose').onclick=()=>setPanel(false);
 $('manageClose').onclick=closeManagement;
 $('manageTabs').onclick=e=>{
@@ -2014,8 +2085,40 @@ $('manageTabs').addEventListener('keydown',e=>{
     (current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
   manageTab=tabs[next].dataset.mgtab;renderManagement(true);tabs[next].focus();
 });
+function setObserving(active){
+ observing=!!active;document.body?.classList?.toggle('observing',observing);
+ $('observeTools').hidden=!observing;
+ $('observe').setAttribute('aria-pressed',String(observing));
+ if(observing){finishGuide();closeManagement();setPanel(false);build=null;observationIndex=-1;nextObservation()}
+ else{stopFollowing();$('observe').focus?.()}
+ updateSceneContext();
+}
+function nextObservation(){
+ const views=[...ownHorses().map(h=>({kind:'horse',obj:h,label:h.name})),
+  ...ownFarmers().map(f=>({kind:'worker',obj:f,label:f.role})),
+  ...ownBuildings().filter(isBuilt).map(b=>({kind:'building',obj:b,label:typeNames[b.type]}))];
+ if(!views.length)return;
+ const v=views[++observationIndex%views.length];
+ if(v.kind==='building'){stopFollowing();panX=v.obj.x;panY=v.obj.y;zoom=3.1;
+  $('observeCaption').textContent=v.label+' · nível '+(v.obj.tier||1)+' · Dia '+day;}
+ else{follow(v.kind,v.obj,v.label);panX=v.obj.x;panY=v.obj.y;zoom=v.kind==='horse'?4.1:4.4;updateObservation()}
+ overview=false;
+}
+function updateObservation(){
+ if(!observing)return;
+ $('observePause').textContent=paused?'Retomar':'Pausar';
+ if(!followTarget)return;
+ const h=followTarget.kind==='horse'?horses.find(h=>h.id===followTarget.id):null;
+ const f=!h?farmers.find(f=>f.id===followTarget.id):null;
+ const action=h?(h.activity||'No campo'):(f?.activity||'Na cabanha');
+ $('observeCaption').textContent=followTarget.label+' · '+action+(h?' · cuidado '+Math.round(horseCare(h))+'/100':'');
+}
+$('observe').onclick=()=>setObserving(!observing);
+$('observeNext').onclick=nextObservation;
+$('observeExit').onclick=()=>setObserving(false);
+$('observePause').onclick=()=>{$('pause').onclick();updateObservation()};
 function updateSceneContext(){
-  $('sceneContext').hidden=!build&&!followTarget;
+  $('sceneContext').hidden=observing||(!build&&!followTarget);
   $('contextText').textContent=build?'Construir '+typeNames[build]+' · toque em terreno livre':
     followTarget?'Acompanhando '+followTarget.label:'';
   $('contextCancel').textContent=build?'Cancelar':'Encerrar';
@@ -2063,10 +2166,16 @@ $('helpOpen').onclick=()=>{
   closeManagement();setPanel(false);guideStep=0;renderGuide();$('welcome').hidden=false;
   $('guideNext').focus?.();
 };
+$('manageBody').addEventListener('input',e=>{
+ if(e.target.id==='masterVolume'){audio?.setVolume(e.target.value/100);$('masterValue').textContent=e.target.value+'%'}
+ if(e.target.id==='ambientVolume'){audio?.setAmbience(e.target.value/100);$('ambientValue').textContent=e.target.value+'%'}
+});
 $('manageBody').onclick=e=>{
   const button=e.target.closest('[data-mgaction]');
   if(!button)return;
   const index=Number(button.dataset.index||0),action=button.dataset.mgaction;
+  if(action==='sound'){audio?.setEnabled(!audio.snapshot().enabled);updateSoundButton();renderManagement(true);return}
+  if(action==='growthGoals'){manageTab='metas';renderManagement(true);return}
   if(action==='buyHorse'){
     $('buyhorse').onclick();renderManagement(true);return;
   }
@@ -2074,14 +2183,14 @@ $('manageBody').onclick=e=>{
     const farm=owners[index];
     if(!farm)return;
     stopFollowing();panX=farm.x;panY=farm.y;zoom=2.35;overview=false;
-    $('map').textContent='🗺️ Mapa';
+    navLabel('map','Mapa');
     $('status').textContent='🌿 Visitando '+farm.name+' · '+farm.style.label+'.';
     closeManagement();return;
   }
   if(action==='visitFair'){
     stopFollowing();
     panX=fairground.x;panY=fairground.y;zoom=2.25;overview=false;
-    $('map').textContent='🗺️ Mapa';
+    navLabel('map','Mapa');
     $('status').textContent='🏛️ Visitando o Centro Rural.';
     closeManagement();return;
   }
@@ -2100,7 +2209,7 @@ $('manageBody').onclick=e=>{
     panY=cared?(handler.y+cared.y)*.5:handler.y;
     zoom=3.65;overview=false;
     follow('care',handler,'o manejo');
-    $('map').textContent='🗺️ Mapa';
+    navLabel('map','Mapa');
     $('status').textContent='👁️ Acompanhando o manejo de '+(cared?.name||'seus cavalos')+'.';
     closeManagement();return;
   }
@@ -2109,7 +2218,7 @@ $('manageBody').onclick=e=>{
     const animal=herd.find(h=>h.pastureStage==='campo'&&h.motion==='graze')||herd.find(h=>h.pastureStage==='campo'||h.pastureStage==='saindo')||herd.find(h=>!farmers.some(f=>f.targetHorseId===h.id))||herd[0];
     if(!animal)return;
     follow('horse',animal,animal.name+' · pastoreio');panX=animal.x;panY=animal.y;zoom=4.25;overview=false;
-    $('map').textContent='🗺️ Mapa';closeManagement();return;
+    navLabel('map','Mapa');closeManagement();return;
   }
   if(action==='breedHorse'){
     breedHorses();renderManagement(true);return;
@@ -2129,13 +2238,14 @@ $('manageBody').onclick=e=>{
   if(!obj)return;
   follow(action==='findHorse'?'horse':'worker',obj,obj.name||obj.role);
   panX=obj.x;panY=obj.y;zoom=3.45;overview=false;
-  $('map').textContent='🗺️ Mapa';
+  navLabel('map','Mapa');
   $('status').textContent=action==='findHorse'?'🐎 Acompanhando '+obj.name:'👨‍🌾 Acompanhando '+obj.role;
   closeManagement();
 };
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    if(!$('welcome').hidden)finishGuide();
+    if(observing)setObserving(false);
+    else if(!$('welcome').hidden)finishGuide();
     else if(!$('management').hidden)closeManagement();
     else{setPanel(false);build=null;stopFollowing()}
   }
@@ -2150,16 +2260,24 @@ function refresh(){
   placeHorses();
   evaluateGoals();
   renderManagement();
-  $('date').textContent='📅 Dia '+day;
-  $('money').textContent='💰 R$ '+owners[0].cash.toLocaleString('pt-BR');
+  $('date').textContent='CAMPOS DO SUL · Dia '+day;
+  $('money').textContent=brl(owners[0].cash);
   const sites=buildings.filter(b=>b.status==='building'||b.status==='upgrading').length;
   const myReady=ownBuildings().filter(isBuilt).length;
-  $('buildings').textContent='🏡 '+myReady+' estruturas · 🏅 '+reputation;
+  $('buildings').textContent=myReady+' estruturas · '+reputation+' rep.';
   $('buildings').title='Estruturas da sua cabanha / total da região · reputação';
   const e=finances(owners[0]);
   $('economy').textContent='🐎 '+horses.filter(h=>h.o===owners[0]).length+'/'+capacity(owners[0])+
     ' cavalos · '+(e.net>=0?'+':'')+brl(e.net)+' / 5 dias · 💚 '+herdCare(owners[0])+'/100';
   $('economy').title=brl(e.gross)+' de receitas · '+brl(e.cost)+' de despesas por ciclo';
+  const level=managementLevel(),site=activeSite(owners[0]);
+  const nextGoal=goalDefs.find(g=>!finishedGoals.has(g.id));
+  $('growthTitle').textContent=site?'Um novo espaço tomando forma':level.name;
+  $('growthLevel').textContent='Nível '+level.level;
+  $('growthDetail').textContent=site?typeNames[site.type]+' · '+Math.round(site.progress)+'% concluído':
+    nextGoal?nextGoal.title+' · '+Math.min(nextGoal.target,Math.round(nextGoal.progress())).toLocaleString('pt-BR')+' / '+nextGoal.target.toLocaleString('pt-BR'):
+    'Sua cabanha se tornou uma referência';
+  $('growthFill').style.width=(site?site.progress:nextGoal?ratio(nextGoal.progress(),nextGoal.target):100)+'%';
   const report=$('workerReport');
   if(report){
     const team=farmers.filter(f=>f.o===owners[0]);
@@ -2191,6 +2309,7 @@ const typeNames={house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'
 function finishConstruction(b){
   if(b.status==='upgrading')b.tier=Math.max(b.tier||1,Math.min(3,b.plannedTier||((b.tier||1)+1)));
   b.status='complete';b.progress=100;b.plannedTier=null;
+  if(b.o===owners[0]){growthMoment('Mais espaço para crescer',typeNames[b.type]+' concluído · nível '+b.tier+'.','build');$('status').textContent='🌱 '+typeNames[b.type]+' pronto. Sua cabanha ganhou um novo espaço.';}
   $('news').textContent='✅ '+b.o.name+' concluiu '+typeNames[b.type]+(b.tier>1?' (nível '+b.tier+')':'')+'.';
 }
 function tick(){
@@ -2223,7 +2342,7 @@ function tick(){
     const index=owners.indexOf(o),policy=farmPolicy[index];
     const own=buildings.filter(b=>b.o===o);
     const herd=horses.filter(h=>h.o===o).length;
-    if(herd<capacity(o)&&o.cash>8500&&rnd()<.29){
+    if(herd<capacity(o)&&herdCare(o)>70&&o.cash>8500&&rnd()<.29){
       o.cash-=2500;horses.push(makeHorse(o));
       $('news').textContent=o.name+' adquiriu um cavalo.';
       continue;
@@ -2278,12 +2397,12 @@ let prev=performance.now();function frame(now){try{
   }
   const dt=Math.max(0,Math.min(.05,(now-prev)/1000));prev=now;
   if(!paused&&$('management').hidden&&$('welcome').hidden){
-    acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);
+    sceneClock+=dt;acc+=dt*speed;horses.forEach(h=>h.phase+=dt*speed*.4);
     placeHorses(dt*speed);animateFarmers(dt*speed);
     horses.forEach(h=>motion.blend(h,dt*speed));farmers.forEach(f=>motion.blend(f,dt*speed));
     if(acc>=3){acc-=3;tick()}
   }
-  updateFollowing();if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
+  updateFollowing();if(now-lastObservationUpdate>500){updateObservation();lastObservationUpdate=now}if(!mode3D)render()}catch(e){$('error').hidden=false;$('error').textContent='Erro de renderização: '+e.message;return}requestAnimationFrame(frame)}
 // Gestos robustos: uma máquina de estados para um e dois dedos.
 // Nunca reaproveita distância anterior após levantar ou cancelar um ponteiro.
 const pointers=new Map();
@@ -2332,7 +2451,7 @@ function changeZoom(next,x=W/2,y=H/2){
     panX=clamp(panX+(x-W/2)*correction,-610,610);
     panY=clamp(panY+(y-H/2)*correction/.67,-560,560);
   }
-  if(overview){overview=false;$('map').textContent='🗺️ Mapa'}
+  if(overview){overview=false;navLabel('map','Mapa')}
 }
 function touchGeometry(){
   const values=[...pointers.values()];
@@ -2430,7 +2549,7 @@ $('resetGame').onclick=()=>{if(!confirm('Reiniciar a Fazenda Viva do dia 1? Toda
     $('status').textContent='🗺️ Vista regional · cinco propriedades separadas';
   }else{
     panX=owners[0].x;panY=owners[0].y;zoom=2.45;
-    $('map').textContent='🗺️ Mapa';
+    navLabel('map','Mapa');
     $('status').textContent='⌖ Sua cabanha';
   }
 };
@@ -2448,7 +2567,7 @@ $('viewWorkers').onclick=()=>{
   const f=team[viewedWorkerIndex%team.length];
   viewedWorkerIndex++;
   follow('worker',f,f.role);panX=f.x;panY=f.y;zoom=3.45;overview=false;
-  setPanel(false);$('map').textContent='🗺️ Mapa';
+  setPanel(false);navLabel('map','Mapa');
   $('status').textContent='👨‍🌾 '+f.role+' · '+(f.activity||'iniciando')+
     ' · '+(f.tasksDone||0)+' serviços concluídos. Toque novamente para o próximo trabalhador.';
 };
@@ -2456,10 +2575,10 @@ $('visitFarm').onclick=()=>{
   stopFollowing();visitIndex=(visitIndex+1)%owners.length;
   const o=owners[visitIndex];
   panX=o.x;panY=o.y;zoom=2.1;overview=false;
-  $('map').textContent='🗺️ Mapa';setPanel(false);
+  navLabel('map','Mapa');setPanel(false);
   $('status').textContent='🧭 '+o.name;
 };
-$('focus').onclick=()=>{stopFollowing();panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;$('map').textContent='🗺️ Mapa';$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;stopFollowing();setPanel(false);updateSceneContext();$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
+$('focus').onclick=()=>{stopFollowing();panX=owners[0].x;panY=owners[0].y;zoom=2.45;overview=false;navLabel('map','Mapa');$('status').textContent='📷 Câmera centralizada na sua cabanha'};$('actions').onclick=e=>{let t=e.target.closest('[data-type]');if(t){selected=null;$('upgrade').hidden=true;build=t.dataset.type;stopFollowing();setPanel(false);updateSceneContext();$('status').textContent='Toque no terreno para construir '+({house:'casa',stable:'cocheira',barn:'galpão',paddock:'piquete'}[build]||build)}};panX=owners[0].x;panY=owners[0].y;
 
 function reportPerformance(snapshot){
   performanceSnapshot=snapshot;
@@ -2481,10 +2600,10 @@ $('perfMode').onclick=()=>{
 };
 window.FazendaVivaBridge={
   state:()=>({owners,buildings,horses,farmers,trees,ponds,fields,regionalRoads,trails:farmTrails(),zoom,panX,panY,day,lowGraphics,ruralEvent,ruralEventHistory,pregnancies,market,regionalTradeHistory,fairground,
-    regionalOffers:regionalHorseOffers(),ranchDecor:farmLandscaping(),
+    growthJournal,audio:audio?.snapshot(),regionalOffers:regionalHorseOffers(),ranchDecor:farmLandscaping(),
     cameraGesture:pointers.size>0,followTarget,performance:performanceSnapshot,
     overlaysOpen:!$('management').hidden||!$('panel').hidden||!$('welcome').hidden,careMean:owners.map(herdCare),
-    careJournal}),
+    careJournal,wildlife:wildlife(),sceneClock,paused,observing}),
   projectedGroundAt:(x,y,z)=>cameraGroundAt(x,y,z),
   reportPerformance,
   mode:(active)=>{
@@ -2511,4 +2630,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=0993"></script></body></html>
+</script><script type="module" src="./world3d.js?v=0999"></script></body></html>
