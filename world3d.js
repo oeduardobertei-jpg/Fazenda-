@@ -234,6 +234,26 @@ function building(b,detail=true){
       cylinder(group,.55,.62,.64,x,.42,front+.81,0x967e5e,7);
     }
     box(group,usedW*.95,.35,.35,0,2.50,front+.83,PALETTE.lightWood);
+    // Chaminé revestida e floreiras: casa com assinatura rural própria.
+    const chimneyX=-usedW*.25;
+    box(group,.93,2.8,.93,chimneyX,height+1.85,-usedD*.15,0xa78971);
+    box(group,1.17,.26,1.17,chimneyX,height+3.28,-usedD*.15,0x765d52);
+    for(const sign of [-1,1]){
+      const bx=sign*usedW*.34,bz=front+.48;
+      box(group,1.45,.54,.62,bx,.47,bz,0xb27d56);
+      cylinder(group,.35,.45,.60,bx-.28,.89,bz,0x63944d,6);
+      cylinder(group,.33,.42,.55,bx+.27,.87,bz,0x608b50,6);
+      for(const x of [bx-.30,bx+.28]){
+        cylinder(group,.17,.17,.16,x,1.24,bz,
+          variety%2===0?0xe5bd73:0xd27c73,7);
+      }
+    }
+    // Insígnia de cada cabanha no alpendre. A cor identifica o proprietário.
+    box(group,usedW*.25,.36,.16,usedW*.20,2.40,front+1.01,b.o.color);
+    if(t>=2){
+      for(const side of [-1,1])
+        box(group,.20,1.60,.20,side*usedW*.43,1.18,front+.80,0xe2c89b);
+    }
   }else if(b.type==='stable'){
     // Aberturas reais de baias com portões de madeira e separação física.
     const count=Math.min(t+2,4);
@@ -260,6 +280,19 @@ function building(b,detail=true){
       box(group,.45,1.05,.20,x,height*.53,front+.27,0x627e79);
       box(group,.49,.15,.24,x,height*.82,front+.30,PALETTE.lightWood);
     }
+    // Respiro na cumeeira, fardos, armário de arreios e indicação de baias.
+    for(let j=0;j<Math.min(t+1,3);j++){
+      const sx=-usedW*.25+j*usedW*.23;
+      cylinder(group,.48,.58,.42,sx,ridge+.22,0,0x6b5b48,7);
+    }
+    for(const sx of [-usedW*.44,usedW*.44]){
+      cylinder(group,.61,.73,.71,sx,.54,front+.31,0xc4ae6e,8);
+      box(group,.21,.87,.24,sx,1.25,front+.36,0x6c5540);
+    }
+    if(t>=2){
+      box(group,2.9,.22,.6,usedW*.29,3.77,front+.30,0xd3b17d);
+      box(group,2.3,.20,.47,usedW*.29,3.40,front+.46,0x8a6646);
+    }
   }else{
     // Galpão agrícola: portões duplos, ripas metálicas e pequenas janelas de ventilação.
     const doorWidth=Math.min(usedW*.67,7.8);
@@ -278,6 +311,17 @@ function building(b,detail=true){
     for(let i=0;i<3;i++){
       const x=-usedW*.24+i*usedW*.24;
       box(group,.70,.38,.25,x,height*.92,front+.23,0x4b5f5c);
+    }
+    // Silos verticais modestos dentro do lote, sem invadir a circulação externa.
+    const siloX=Math.min(w*.40,w*.5-1.52);
+    cylinder(group,1.10,1.13,7.10,siloX,3.70,-d*.24,0xa0a8a0,9);
+    cylinder(group,.14,1.15,1.38,siloX,7.92,-d*.24,0x7b8983,9);
+    for(let i=0;i<4;i++)
+      box(group,.12,.16,.28,siloX+1.13,.95+i*1.42,-d*.24,0xcfd3c0);
+    // Pilhas paletizadas e sacarias remetem a uma operação agrícola real.
+    for(let k=0;k<(t>=2?3:2);k++){
+      box(group,1.12,.74,.83,-w*.36+k*1.32,.69,front+.36,0x987a56);
+      box(group,1.16,.15,.87,-w*.36+k*1.32,1.14,front+.36,0xd2b582);
     }
   }
   // Ampliações físicas ocorrem dentro da reserva original (níveis 2 e 3).
