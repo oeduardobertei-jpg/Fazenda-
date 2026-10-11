@@ -13,5 +13,6 @@ A anatomia da 0.9.9.2 melhorou segundo o usuário, mas ainda não atingiu a apar
 ## Verificação
 
 - **Node:** suíte local passou: cinemática de apoio no mundo, limites de giro em ±π, gestos de alimentação/escovação, cascos/botas acima do solo e focinho em pasto. Simulação até o dia 1.221, 64 estruturas, 15 trabalhadores, 810 tarefas e 91 excursões; zero interseções de caminhos com edifícios nas amostras.
-- **Navegador:** uma rodada completa de Chromium/WebGL2 por software é executada no fechamento, com cinco viewports e prancha de fases de passada/descanso/gestos. Conferir resultado do workflow correspondente à versão.
+- **Navegador:** Chromium/WebGL2 por software passou em cinco viewports no [workflow 38158078778](https://github.com/oeduardobertei-jpg/Fazenda-/actions/runs/38158078778), sem erros JS, com troca 2D/3D e recuperação de contexto. Capturas das quatro fases da passada, descanso, pasto e gestos inspecionadas. Cena inicial de 390×844 conserva 165 chamadas e 152.533 triângulos.
+- **Publicação:** PR #5 integrada; GitHub Pages concluiu implantação. Os bytes públicos de index.html, motion.js e world3d.js conferem com a versão testada.
 - **Android físico:** a avaliação contínua de aparência e movimento depende do aparelho do usuário. Renderização por software não mede FPS Android e a 1.0 permanece em desenvolvimento.
