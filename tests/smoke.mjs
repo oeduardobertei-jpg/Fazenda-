@@ -53,6 +53,17 @@ try{
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  assert.equal(get().fairground.x,-65,'coordenada da praça de feiras');
+  assert.ok(get().regionalOffers.length>=3,'ofertas entre propriedades existentes');
+  for(const h of get().horses){
+    assert.ok(['velocidade','resistencia','temperamento'].every(t=>
+      Number.isFinite(h.genetics?.[t])&&h.genetics[t]>=25&&h.genetics[t]<=99),
+      'cavalo precisa de atributos genéticos consistentes');
+    const weighted=Math.round(h.genetics.velocidade*.35+
+      h.genetics.resistencia*.40+h.genetics.temperamento*.25);
+    assert.equal(h.quality,weighted,'qualidade derivada dos atributos');
+  }
+
   // A 0.9 adiciona uma interface de gestão sem comprometer o mundo 3D.
   ui.get('manageOpen').onclick();
   assert.equal(ui.get('management').hidden,false,'painel de gestão abre');
@@ -238,7 +249,9 @@ try{
   const foal=get().horses.find(h=>h.motherId===pending.motherId);
   assert.ok(foal&&foal.age===0&&foal.fatherId===pending.fatherId,
     'identidade genética e idade inicial do potro');
-  assert.ok(foal.quality>=35&&foal.quality<=96,'qualidade genética limitada');
+  assert.ok(foal.quality>=25&&foal.quality<=99,'qualidade genética limitada');
+  assert.ok(['velocidade','resistencia','temperamento'].every(t=>
+      Number.isFinite(foal.genetics[t])),'potro herda três aptidões');
   const foalIndex=get().horses.filter(h=>h.o===player)
     .findIndex(h=>h.id===foal.id);
   const beforeSale=player.cash;
@@ -251,6 +264,22 @@ try{
   assert.ok(ui.get('manageBody').innerHTML.includes('Agenda regional'),
     'mercado descreve eventos');
   assert.ok(get().ruralEventHistory.length>=1,'calendário rural apresenta eventos');
+  const offers=get().regionalOffers;
+  assert.ok(offers.length>=1,'ao menos uma oferta regional disponível');
+  const offer=offers[0],ownerCash=player.cash,sellerCash=offer.seller.cash;
+  const sellerHerd=get().horses.filter(h=>h.o===offer.seller).length;
+  ui.get('manageBody').onclick({target:{closest:()=>({
+    dataset:{mgaction:'buyRegional',id:String(offer.horse.id)}})}});
+  assert.equal(offer.horse.o,player,'negociação deve transferir cavalo real');
+  assert.equal(player.cash,ownerCash-offer.price,'pagamento integral ao vendedor');
+  assert.equal(offer.seller.cash,sellerCash+offer.price,'receita do proprietário vendedor');
+  assert.equal(get().horses.filter(h=>h.o===offer.seller).length,
+    sellerHerd-1,'vendedor reduz seu plantel');
+  assert.ok(!get().regionalOffers.some(x=>x.horse.id===offer.horse.id),
+    'oferta não pode ser comprada duas vezes');
+  assert.ok(get().regionalTradeHistory.some(x=>x.name===offer.horse.name),
+    'histórico de negociações atualizado');
+
   ui.get('manageClose').onclick();
   assert.equal(ui.get('error').textContent,'','sem erros fatais');
   ui.get('resetGame').onclick();
