@@ -1,8 +1,8 @@
-# Fazenda Viva — versão 0.9.3
+# Fazenda Viva — versão 0.9.4
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=093
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=094
 
 ## Novidades da série 0.8
 
@@ -160,6 +160,32 @@ A atualização 0.9.1 já tinha alinhado as trilhas 2D e 3D, mas os trabalhadore
 
 **Nota:** esta atualização introduz genética simples, mas ainda não implementa seleção genética profunda, competições equinas completas, contratos diretos entre proprietários ou animação esquelética profissional. São etapas em aberto para as próximas versões. Ainda é necessária inspeção visual real no Android.
 
+### 0.9.4 — Circuito de criadores, identidades rurais e praça de exposições
+
+**Objetivo:** conectar economia, cavalos, instalações e território de forma visível no navegador mobile, aproximando o jogo da leitura orgânica desejada para a versão 1.0.
+
+#### Economia e criação
+- **Genética interpretável:** os cavalos possuem velocidade, resistência e temperamento em escala 25–99; a qualidade pondera essas aptidões (35% / 40% / 25%). Raças apresentam tendências discretas; o potro herda cada atributo separadamente, com variação limitada.
+- **Comércio entre as cinco cabanhas:** fazendas autônomas oferecem animais reais do seu plantel quando possuem excedente; o jogador pode comprar um animal listado em `Gestão → Mercado`. Dinheiro, posse, espaço na cocheira e posição do animal são transferidos dentro da simulação, sem duplicação de cavalo.
+- **Negócios rastreáveis:** compras entre propriedades e vendas para o mercado externo aparecem no histórico de transferências. Proprietários autônomos podem negociar entre si periodicamente quando um possui excedente e outro dispõe de vagas e dinheiro.
+- **Preços consistentes:** valor base do animal considera sua qualidade, idade e índice equestre; o vendedor pode solicitar um prêmio. Só se permite uma oferta por cabanha, com retenção mínima de um animal e carência temporária para revendas.
+- **Gestão do plantel:** cada animal exibe suas três aptidões genéticas, a idade, a linhagem e o valor de negociação.
+
+#### Identidade do mundo 2D e 3D
+- **Centro Rural permanente:** uma praça de exposições situada na região em `(-65, 212)`, fora dos cinco lotes e ligada à estrada pública. A clareira é protegida da geração de árvores. Botão `Visitar Centro Rural` facilita a navegação pelo celular.
+- **Eventos físicos no mapa:** o mesmo calendário econômico agora modifica quatro tendas da praça e seus materiais. Feira de criadores, contratos agrícolas, suprimentos e mutirões possuem cores e objetos distintos; a sinalização identifica o evento em curso.
+- **Fazendas mais reconhecíveis:** sedes com chaminés, floreiras, detalhes no alpendre e insígnias; cocheiras com ventilação na cumeeira, fardos e detalhes de manejo; galpões com silo dentro do lote e materiais agrícolas.
+- **Agricultura volumétrica:** lavouras recebem cultivos instanciados em 3D, sem centenas de chamadas de desenho independentes, com detalhe correspondente no Canvas 2D quando o zoom se aproxima.
+- **Açudes melhorados:** plantas aquáticas acima da superfície reduzem a sensação de polígonos planos. Uma lavoura que sobrepunha o açude oriental foi reposicionada, eliminando aquela colisão de footprints.
+- **Gráficos econômicos:** a cena respeita a opção de baixa qualidade ao diminuir tendas e detalhes, sem eliminar o Centro Rural nem os controles.
+
+#### Testes
+- Smoke de simulação valida todas as estruturas já existentes, as rotas dos NPCs, a reprodução, genética, transação real entre dois proprietários, crédito/débito de caixa, estoque de animais e proteção contra compra duplicada.
+- Teste 3D simulado valida a orientação das estradas, o aparecimento das tendas de evento, a regeneração quando o evento muda, o cache de objetos sem alteração e as lavouras instanciadas.
+- **Simulação prolongada aprovada:** dia **3.146**, **64 instalações**, **1.940 serviços de trabalhadores** e **zero travessias de trilhas por dentro dos edifícios detectadas nas amostras**.
+
+**Ainda pendente antes da 1.0:** validar a aparência e o desempenho em WebGL no Android real, ampliar a coerência visual das outras estruturas, aprimorar as animações dos cavalos/NPCs, equilibrar o comércio autônomo de longo prazo e consolidar uma experiência estável e intuitiva. Os testes simulados não substituem revisão visual mobile.
+
 ## Controles
 
 - **Arrastar:** deslocar câmera.
@@ -198,5 +224,8 @@ Execute localmente `node tests/smoke.mjs` e `node tests/render3d.mjs` para verif
 0.9.1 — correção arquitetural das trilhas e locomoção procedural 2D/3D; pendente inspeção visual Android;
 0.9.2 — locomoção dos NPCs sobre a rede real, visual equestre, portões e regressões automatizadas; falta QA visual no Android;
 0.9.3 — agenda regional, mercado ativo, reprodução com pedigree básico e negociação equina; concluída no código, pendente QA Android;
-0.9.4 — aperfeiçoar genética, comércio entre fazendas, variedade de modelos e equilíbrio mobile;
+0.9.4 — genética com três aptidões, compra regional real, Centro Rural e um novo beauty-pass 2D/3D; validada em simulação, QA Android pendente;
+0.9.5 — arquitetura rural autoral, vegetação/microterreno, interações NPC–cavalo e câmera/touch Android;
+0.9.6 — estabilidade de longo prazo, acesso dos NPCs, desempenho e verificação visual mobile;
+1.0 — integração, balanceamento, acabamento audiovisual e critérios de aceitação mobile/desktop;
 1.0 — integração e critérios de estabilidade.
