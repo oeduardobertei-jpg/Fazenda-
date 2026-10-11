@@ -5,14 +5,16 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import * as Three from 'three';
 const motion=createRequire(import.meta.url)('../motion.js');
+const terrain=createRequire(import.meta.url)('../terrain.js');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const source=world.slice(world.indexOf('/* Fazenda Viva'));
-const owner={name:'Teste',x:0,y:0,color:'#b78355',style:{wall:0xe2cbac,roof:0x98543e},ai:false};
+const owner={name:'Teste',x:0,y:0,color:'#b78355',style:{wall:0xe2cbac,roof:0x98543e,ground:0xa6b98a,leaf:0x607e4a},ai:false};
 const horse={o:owner,id:1,x:0,y:23,coat:'#78513b',motion:'walk',gait:0,phase:0,age:4};
 const worker={o:owner,id:1,x:-10,y:-20,role:'agricultor',motion:'walk',gait:0,animTime:0};
 const building={o:owner,type:'house',x:0,y:0,w:12,h:10,status:'complete',tier:1};
 const state={owners:[owner],buildings:[building],horses:[horse],farmers:[worker],
   trees:[],fields:[],ponds:[],trails:[],ranchDecor:[],zoom:3,panX:0,panY:0,day:1};
+state.terrain=terrain.generate(state);
 let scene,frame;
 const noop=()=>{};
 const ui={style:{},textContent:'',addEventListener:noop};
@@ -23,7 +25,7 @@ class Renderer{
 }
 const previous=new Map();
 for(const [key,value] of Object.entries({
-  window:{FazendaVivaMotion:motion,FazendaVivaBridge:{state:()=>state,mode:noop},addEventListener:noop},
+  window:{FazendaVivaMotion:motion,FazendaVivaTerrain:terrain,FazendaVivaBridge:{state:()=>state,mode:noop},addEventListener:noop},
   document:{getElementById:()=>ui,body:{insertBefore:noop},createElement:()=>({...ui,style:{},appendChild:noop})},
   innerWidth:390,innerHeight:844,devicePixelRatio:2,requestAnimationFrame:f=>frame=f
 })){
@@ -34,6 +36,14 @@ try{
   let now=40;
   for(let i=0;i<90;i++){motion.blend(horse,1/60);motion.blend(worker,1/60);frame(now+=40)}
   assert.ok(scene,'cena real Three.js deve ser construída');
+  let textured=0;
+  scene.traverse(obj=>{
+    if(!obj.isMesh||!obj.material.map)return;
+    textured++;
+    assert.equal(obj.geometry.getAttribute('uv')?.count,obj.geometry.getAttribute('position').count,
+      'fusão de malhas texturizadas deve preservar UVs para todos os vértices');
+  });
+  assert.ok(textured>=3,'chão e manchas devem receber a textura de grão');
   let horseModel,workerModel,houseModel;
   scene.traverse(obj=>{
     if(obj.userData.horse===horse)horseModel=obj;

@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.10 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.11 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -16,7 +16,9 @@ const motion = window.FazendaVivaMotion;
 if (!api) throw Error('Simulação principal indisponível');
 const btn = document.getElementById('renderMode');
 const fail = document.getElementById('renderStatus');
-let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer, ranchLayer, faunaLayer;
+let renderer, scene, camera, content, horseLayer, workerLayer, trailLayer, grassLayer, fairLayer, ranchLayer, faunaLayer, terrainLayer;
+let lastTerrain=null,terrainGrain=null,terrainGroundMaterial=null;
+const grainMaterials=new Map();
 let enabled = false, detailMode=null, trailStamp3D='', grassStamp3D='';
 const modelsByBuilding=new Map();
 let lastTrailObject=null,lastTrailLength=-1,lastGrassBuildings=-1,lastGrassTrails=null;
@@ -95,6 +97,37 @@ function box(parent,w,h,d,x,y,z,color) {
 function flat(parent,w,d,x,z,color,y=.16) {
   return box(parent,w,.13,d,x,y,z,color);
 }
+function grainMap(){
+ if(terrainGrain)return terrainGrain;
+ const data=window.FazendaVivaTerrain?.grain();if(!data)return null;
+ terrainGrain=new THREE.DataTexture(data,128,128,THREE.RGBAFormat);
+ terrainGrain.wrapS=terrainGrain.wrapT=THREE.RepeatWrapping;
+ terrainGrain.magFilter=THREE.LinearFilter;terrainGrain.minFilter=THREE.LinearMipmapLinearFilter;
+ terrainGrain.generateMipmaps=true;terrainGrain.needsUpdate=true;
+  terrainGrain.colorSpace=THREE.SRGBColorSpace;
+ return terrainGrain;
+}
+function grainSurface(mesh,offsetX=0,offsetZ=0){
+ if(!mesh.geometry.getAttribute||!window.FazendaVivaTerrain)return mesh;
+ const geo=mesh.geometry.clone(),pos=geo.getAttribute('position'),uv=geo.getAttribute('uv'),point=new THREE.Vector3();
+ if(!uv){geo.dispose();return mesh}
+ mesh.updateMatrix();
+ for(let i=0;i<pos.count;i++){
+  point.fromBufferAttribute(pos,i).applyMatrix4(mesh.matrix);
+  uv.setXY(i,(point.x+offsetX)/24,(point.z+offsetZ)/24);
+ }
+ geo.__fvTransient=true;mesh.geometry=geo;
+ const original=mesh.material;
+ if(!grainMaterials.has(original)){const material=original.clone();material.map=grainMap();grainMaterials.set(original,material)}
+ mesh.material=grainMaterials.get(original);return mesh;
+}
+function pastureBlades(){
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.Float32BufferAttribute([
+  -.18,0,0,0,1,0,.13,0,0, 0,0,-.18,0,.83,0,0,0,.13,
+  -.13,0,-.05,.32,.67,.16,.12,0,.08
+ ],3));geo.computeVertexNormals();geo.__fvTransient=true;return geo;
+}
 function cylinder(parent,rTop,rBottom,h,x,y,z,color,segments=7) {
   const geo=new THREE.CylinderGeometry(rTop,rBottom,h,segments);
   geo.__fvTransient=true;
@@ -127,11 +160,11 @@ function batchStaticMeshes(group){
       return copy.applyMatrix4(mesh.matrix);
     });
     const merged=new THREE.BufferGeometry();
-    for(const name of ['position','normal']){
+    for(const name of ['position','normal',...(material.map?['uv']:[])]){
       const arrays=geometries.map(geometry=>geometry.getAttribute(name).array);
       const data=new Float32Array(arrays.reduce((n,a)=>n+a.length,0));
       let offset=0;for(const array of arrays){data.set(array,offset);offset+=array.length}
-      merged.setAttribute(name,new THREE.BufferAttribute(data,3));
+      merged.setAttribute(name,new THREE.BufferAttribute(data,name==='uv'?2:3));
     }
     merged.__fvTransient=true;merged.computeBoundingSphere();
     for(const geo of geometries)geo.dispose();
@@ -258,7 +291,7 @@ function building(b,detail=true){
   }
   const variety=(Math.abs(Math.round(b.x*17+b.y*23+((b.o?.style?.roof||0)%17)))%5);
   if(b.type==='paddock'){
-    flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28);
+    grainSurface(flat(group,w-.6,d-.6,0,0,variety%2?0x78a05a:0x85a963,.28),b.x,b.y);
     rails(group,w-.7,d-.7,PALETTE.lightWood,1.4,6.2);
     if(!detail){
       // Mesmo na visão regional, o piquete CONCLUÍDO não parece uma obra vazia.
@@ -267,7 +300,7 @@ function building(b,detail=true){
     }
     if(detail){
       // Um piquete CONCLUÍDO contém abrigo, bebedouro, cocho e capim — não é um canteiro de obras.
-      flat(group,w*.78,d*.73,0,0,variety%2?0x84ac65:0x79a35c,.33);
+      grainSurface(flat(group,w*.78,d*.73,0,0,variety%2?0x84ac65:0x79a35c,.33),b.x,b.y);
       box(group,2.2,.72,.95,-w*.34,.65,d*.32,0x98734f);
       box(group,2.6,.45,1,w*.33,.67,d*.32,0x638f9c);
       // Abrigo simples no canto, dentro do espaço cercado.
@@ -709,15 +742,8 @@ function makeCrops(parent,fields){
 function drawWorld(s){
   const root=new THREE.Group(); scene.add(root);
   // O plano deve ocupar toda a extensão visível em zoom regional — sem bordas azuis.
-  flat(root,3600,3400,0,0,colors.grass,-.12);
-  // Grandes manchas de pastagem orgânica. Evita quadrados escuros perfeitamente repetidos.
-  const rng=(n)=>{const v=Math.sin(n*93.174+8.32)*43758.5453;return v-Math.floor(v)};
-  for(let i=0;i<88;i++){
-    const x=rng(i*3)*2800-1400,z=rng(i*3+1)*2600-1300;
-    const rx=20+rng(i+91)*48,rz=18+rng(i+134)*41;
-    const tint=i%4===0?0x8eaf73:i%3===0?0x86a66c:0x8aaa70;
-    ellipse(root,x,z,rx,rz,tint,.065+(i%4)*.013);
-  }
+  grainSurface(flat(root,3600,3400,0,0,colors.grass,-.12));
+  // As manchas externas são compartilhadas com o Canvas em syncTerrain.
   // Centro Rural: referência espacial persistente, conectado à estrada horizontal.
   const fx=s.fairground?.x??-65,fz=s.fairground?.y??212;
   flat(root,81,58,fx,fz,0x9ba979,.12);
@@ -751,7 +777,7 @@ function drawWorld(s){
       else if(o.x>100)road(root,140,o.y,o.x-122,o.y,8,.235);
       else road(root,o.x,140,o.x,o.y+120,8,.235);
     }
-    ellipse(root,o.x,o.y,121,118,o.style?.ground??(o.ai?0x91ae74:0xa0b779),.24);
+    grainSurface(ellipse(root,o.x,o.y,121,118,o.style?.ground??(o.ai?0x91ae74:0xa0b779),.24));
     // Solo compactado junto à entrada, sem passar por baixo das estruturas.
     const entranceX=o.x<-100?o.x+112:o.x>100?o.x-112:o.x;
     const entranceY=Math.abs(o.x)<100?o.y+112:o.y;
@@ -829,6 +855,46 @@ function drawWorld(s){
   fairLayer=new THREE.Group();scene.add(fairLayer);
   ranchLayer=new THREE.Group();scene.add(ranchLayer);
   faunaLayer=new THREE.Group();scene.add(faunaLayer);
+  terrainLayer=new THREE.Group();scene.add(terrainLayer);
+}
+function syncTerrain(s){
+ const data=s.terrain;
+ if(data!==lastTerrain){
+  lastTerrain=data;
+  for(const child of [...terrainLayer.children]){terrainLayer.remove(child);disposeTransientGroup(child)}
+  if(data&&window.FazendaVivaTerrain){
+   for(const layer of ['outside','field','pen']){
+    const positions=[],colors=[],uvs=[],base=new THREE.Color(),center=new THREE.Color();
+    for(const area of data.areas.filter(a=>a.layer===layer)){
+     const edge=window.FazendaVivaTerrain.contour(area);base.set(area.base);center.set(area.color);
+     for(let i=0;i<edge.length;i++){
+      const next=edge[(i+1)%edge.length];
+      for(const [x,z,color] of [[area.x,area.y,center],[next.x,next.y,base],[edge[i].x,edge[i].y,base]]){
+       positions.push(x,area.elevation,z);colors.push(color.r,color.g,color.b);uvs.push(x/24,z/24);
+      }
+     }
+    }
+    if(!positions.length)continue;
+    const geo=new THREE.BufferGeometry();geo.__fvTransient=true;
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+    geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geo.computeVertexNormals();
+    if(!terrainGroundMaterial)terrainGroundMaterial=new THREE.MeshLambertMaterial({vertexColors:true,map:grainMap(),side:THREE.DoubleSide,depthWrite:false});
+    // Desenhar depois dos sólidos, sem gravar profundidade entre manchas
+    // sobrepostas. Prédios, cascos e plantas continuam protegidos pelo depth test.
+    const mesh=new THREE.Mesh(geo,terrainGroundMaterial);mesh.renderOrder=1;mesh.userData.terrain=layer;terrainLayer.add(mesh);
+   }
+   const mesh=new THREE.InstancedMesh(pastureBlades(),mat(0xffffff),data.sprigs.length),dummy=new THREE.Object3D();
+   data.sprigs.forEach((g,i)=>{
+    dummy.position.set(g.x,g.elevation,g.y);dummy.rotation.set(0,g.angle,0);
+    dummy.scale.set(g.scale,g.height,g.scale);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+    if(mesh.setColorAt)mesh.setColorAt(i,new THREE.Color(g.color));
+   });mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+   mesh.userData.terrain='sprigs';terrainLayer.add(mesh);
+  }
+ }
+ for(const mesh of terrainLayer.children)mesh.visible=mesh.userData.terrain==='outside'?s.zoom>=.24:
+  mesh.userData.terrain==='field'?s.zoom>=.48:!s.lowGraphics&&s.zoom>=1.18;
 }
 // Mesmo conjunto de props usados no Canvas. Geometrias simples, recoloridas
 // por InstancedMesh e recalculadas só quando a simulação rearranja o terreno.
@@ -1084,11 +1150,11 @@ function scatterPasture(s){
     }
   }
   if(patches.length){
-    const clusters=new THREE.InstancedMesh(new THREE.ConeGeometry(.82,1,5),mat(0x71984e),patches.length);
+    const clusters=new THREE.InstancedMesh(pastureBlades(),mat(0xffffff),patches.length);
     const dummy=new THREE.Object3D();
     for(let i=0;i<patches.length;i++){
       const g=patches[i];
-      dummy.position.set(g.x,.37+g.height*.5,g.z);
+      dummy.position.set(g.x,.37,g.z);
       dummy.rotation.set(0,(i*2.39996)%(Math.PI*2),0);
       dummy.scale.set(g.scale,g.height,g.scale);
       dummy.updateMatrix();clusters.setMatrixAt(i,dummy.matrix);
@@ -1143,6 +1209,7 @@ function syncWildlife(s){
  mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
 }
 function sync(s){
+  syncTerrain(s);
   syncWildlife(s);
   syncTrails(s);
   syncFairground(s);
