@@ -529,6 +529,10 @@ function placeHorses(){
     for(const o of owners){
       const assigned=[];
       const herd=horses.filter(h=>h.o===o);
+      const obstacles=farmLandscaping().filter(p=>p.o===o);
+      const spaceFree=(x,y)=>obstacles.every(p=>
+        Math.hypot(x-p.x,y-p.y)>(p.kind==='arvore'?7.0:
+          p.kind==='feno'?5.0:4.2));
       const paddocks=buildings.filter(b=>b.o===o&&b.type==='paddock'&&isBuilt(b));
       const candidates=[];
       for(const b of paddocks){
@@ -540,6 +544,7 @@ function placeHorses(){
           const x=o.x+radius*Math.cos(a),y=o.y+radius*Math.sin(a);
           if(!insideFarm(o,x,y,7,7))continue;
           if(buildings.some(b=>Math.abs(x-b.x)<b.w/2+5&&Math.abs(y-b.y)<b.h/2+5))continue;
+          if(!spaceFree(x,y))continue;
           candidates.push({x,y});
         }
       }
