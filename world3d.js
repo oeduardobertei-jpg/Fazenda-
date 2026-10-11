@@ -466,6 +466,45 @@ function makeTrees(parent,trees){
   });
   for(const m of [trunks,round,round2,cones,cones2]){m.instanceMatrix.needsUpdate=true;parent.add(m)}
 }
+function makeCrops(parent,fields){
+  // Cultivos físicos por instancing: uma chamada de desenho para centenas
+  // de plantas, sem centenas de Mesh independentes no navegador do celular.
+  const cols=7,rows=11;
+  const plants=new THREE.InstancedMesh(new THREE.ConeGeometry(.69,2.0,5),
+    mat(0x8daa53),fields.length*cols*rows);
+  const top=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.48,0),
+    mat(0xbdad65),fields.length*cols*rows);
+  const dummy=new THREE.Object3D();
+  let id=0;
+  for(let k=0;k<fields.length;k++){
+    const f=fields[k];
+    for(let i=1;i<=cols;i++)for(let j=1;j<=rows;j++){
+      const x=f.x-f.w*.5+i*f.w/(cols+1);
+      const z=f.y-f.h*.5+j*f.h/(rows+1);
+      const variation=Math.sin((i*41+j*17+k*103)*1.783);
+      const scale=.80+.16*(variation+1);
+      dummy.position.set(x,1.32*scale+.41,z);
+      dummy.rotation.set(0,i*.37+j*.13,0);
+      dummy.scale.set(scale,scale,scale);
+      dummy.updateMatrix();plants.setMatrixAt(id,dummy.matrix);
+      dummy.position.set(x,2.1*scale+.38,z);
+      dummy.scale.set(scale*.52,scale*.62,scale*.52);
+      dummy.updateMatrix();top.setMatrixAt(id,dummy.matrix);
+      if(plants.setColorAt){
+        plants.setColorAt(id,new THREE.Color(
+          (i+j+k)%4===0?0xb2b164:(i+j)%2?0x789d50:0x8baa50));
+      }
+      if(top.setColorAt)
+        top.setColorAt(id,new THREE.Color((i+j+k)%3?0xc9b574:0x9eb15c));
+      id++;
+    }
+  }
+  for(const obj of [plants,top]){
+    obj.instanceMatrix.needsUpdate=true;
+    if(obj.instanceColor)obj.instanceColor.needsUpdate=true;
+    parent.add(obj);
+  }
+}
 function drawWorld(s){
   const root=new THREE.Group(); scene.add(root);
   // O plano deve ocupar toda a extensão visível em zoom regional — sem bordas azuis.
@@ -554,12 +593,24 @@ function drawWorld(s){
     flat(root,f.w,f.h,f.x,f.y,colors.crop,.29);
     for(let i=-3;i<=3;i++)flat(root,1.2,f.h-3,f.x+i*f.w/8,f.y,0x6d8f4c,.38);
   }
+  makeCrops(root,s.fields);
   for(const p of s.ponds){
     ellipse(root,p.x,p.y,p.rx+3,p.ry+3,0xc1bb87,.38);
     ellipse(root,p.x,p.y,p.rx,p.ry,colors.water,.46);
     for(let i=0;i<12;i++){
       const a=(i*2.39996),x=p.x+(p.rx+1)*Math.cos(a),z=p.y+(p.ry+1)*Math.sin(a);
       cylinder(root,.35,.5,2.1,x,1.08,z,i%2?0x57833c:0x6c984e,5);
+    }
+    // Plantas flutuantes discretas, sem triângulos coplanares no açude.
+    for(let i=0;i<8;i++){
+      const angle=(i*2.39996),
+        x=p.x+Math.cos(angle)*p.rx*.59,
+        z=p.y+Math.sin(angle)*p.ry*.56;
+      const pad=new THREE.Mesh(new THREE.CircleGeometry(1,12),
+        mat(i%2?0x55885f:0x6f965d));
+      pad.position.set(x,.504,z);pad.rotation.x=-Math.PI/2;
+      pad.scale.set(1.0+i%3*.27,.51+i%2*.12,1);
+      root.add(pad);
     }
   }
   makeTrees(root,s.trees);
