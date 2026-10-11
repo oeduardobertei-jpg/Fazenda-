@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.6 — câmera ancorada e diagnóstico/adaptação leve de desempenho WebGL.
+/* Fazenda Viva 0.9.7 — manejo animal visível, cuidado equino e integração 2D/3D.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -428,6 +428,17 @@ function makeHorse(h){
   if(h.id%4===0){
     box(group,.46,.16,1.12,.58,3.10,0,0xcbb897);
   }
+  // Sinal de trato: flutua acima do animal somente durante/recentemente
+  // após o serviço realizado por um trabalhador desta mesma fazenda.
+  const careFx=new THREE.Group();
+  careFx.position.set(0,5.1,0);
+  box(careFx,.72,.72,.23,-.34,.05,0,0x9ed4a9);
+  box(careFx,.72,.72,.23,.34,.05,0,0x9ed4a9);
+  box(careFx,.88,.79,.21,0,-.34,0,0x7dbf8c).rotation.z=Math.PI/4;
+  box(careFx,.20,.56,.16,.08,-1.04,.01,0xe4e3ad);
+  careFx.visible=false;
+  group.add(careFx);
+  group.userData.careFx=careFx;
   group.userData.horse=h;
   group.userData.legs=legs;
   group.userData.neck=neckPivot;
@@ -1033,11 +1044,25 @@ function sync(s){
       legs[j].rotation.z=walking?Math.sin(gait+pair)*.27:0;
     }
     if(mesh.userData.neck)
-      mesh.userData.neck.rotation.z=h.motion==='graze'?
-        -.60+Math.sin(h.phase*.32)*.06:
+      mesh.userData.neck.rotation.z=h.interacting?
+        -.12+Math.sin(h.phase*2.5+h.id)*.09:
+        h.motion==='graze'?-.60+Math.sin(h.phase*.32)*.06:
         walking?Math.sin(gait*.5)*.08:-.05;
     if(mesh.userData.tail)
-      mesh.userData.tail.rotation.z=-.18+Math.sin(h.phase*.48+h.id)*.14;
+      mesh.userData.tail.rotation.z=h.interacting?
+        -.14+Math.sin(h.phase*3.2+h.id)*.22:
+        -.18+Math.sin(h.phase*.48+h.id)*.14;
+    const careFx=mesh.userData.careFx;
+    if(careFx){
+      careFx.visible=s.zoom>1.5&&!s.lowGraphics&&
+        (h.interacting||(h.careEffectUntil??-1)>h.phase);
+      if(careFx.visible){
+        careFx.position.y=5.4+Math.sin(h.phase*4+h.id)*.21;
+        careFx.rotation.y=-mesh.rotation.y;
+        const size=.86+Math.sin(h.phase*3+h.id)*.06;
+        careFx.scale.set(size,size,size);
+      }
+    }
   });
   if(workerLayer.children.length!==s.farmers.length){
     for(const child of [...workerLayer.children]){
