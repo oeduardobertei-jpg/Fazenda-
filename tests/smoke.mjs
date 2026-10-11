@@ -53,6 +53,29 @@ try{
   assert.equal(get().day,1,'partida deve começar no dia 1');
   assert.equal(get().farmers.length,15,'15 trabalhadores');
   assert.equal(get().buildings.length,15,'15 estruturas iniciais');
+  const ruralProps=get().ranchDecor;
+  assert.ok(ruralProps.length>=150,'mata, jardins e adornos devem ocupar as cinco cabanhas');
+  for(const owner of get().owners){
+    const sites=ruralProps.filter(p=>p.o===owner);
+    assert.ok(sites.length>=25,'propriedade precisa de identidade paisagística');
+    for(const prop of sites){
+      const radius=prop.kind==='arvore'?4.4:prop.kind==='feno'?2.2:
+        prop.kind==='pedra'?1.9:1.6;
+      assert.ok(!get().buildings.some(b=>b.o===owner&&
+        Math.abs(b.x-prop.x)<b.w/2+radius+3.2&&
+        Math.abs(b.y-prop.y)<b.h/2+radius+3.2),
+      'props de paisagismo não podem atravessar edifícios');
+      assert.ok(!get().trails.filter(t=>t.owner===owner.name).some(t=>{
+        const dx=t.x2-t.x1,dy=t.y2-t.y1,n=dx*dx+dy*dy||1;
+        const ratio=Math.max(0,Math.min(1,
+          ((prop.x-t.x1)*dx+(prop.y-t.y1)*dy)/n));
+        return Math.hypot(prop.x-t.x1-ratio*dx,
+          prop.y-t.y1-ratio*dy)<(t.w||2.5)*.5+radius+1.5;
+      }),'paisagismo não pode invadir caminhos');
+    }
+  }
+  assert.equal(get().ranchDecor,ruralProps,'paisagismo em cache durante navegação');
+
   assert.equal(get().fairground.x,-65,'coordenada da praça de feiras');
   assert.ok(get().regionalOffers.length>=3,'ofertas entre propriedades existentes');
   for(const h of get().horses){
@@ -279,6 +302,17 @@ try{
     'oferta não pode ser comprada duas vezes');
   assert.ok(get().regionalTradeHistory.some(x=>x.name===offer.horse.name),
     'histórico de negociações atualizado');
+  // Comprar um cavalo já existente também deve movê-lo fisicamente.
+  // Na 0.9.4 a troca de proprietário não invalidava o cache de piquetes.
+  ui.get('manageClose').onclick();
+  for(let i=0;i<10;i++){ms+=50;step(ms)}
+  assert.ok(Math.hypot(offer.horse.x-player.x,offer.horse.y-player.y)<113,
+    'cavalo negociado ficou na cabanha anterior em vez de migrar');
+  assert.ok(Math.hypot(offer.horse.x-offer.seller.x,
+    offer.horse.y-offer.seller.y)>100,
+    'cavalo vendido não pode continuar fisicamente na propriedade vendedora');
+  ui.get('manageOpen').onclick();
+
 
   ui.get('manageClose').onclick();
   assert.equal(ui.get('error').textContent,'','sem erros fatais');
