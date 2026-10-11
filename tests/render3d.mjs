@@ -7,6 +7,7 @@ const source=world.slice(world.indexOf('/* Fazenda Viva'));
 assert.ok(source.startsWith('/* Fazenda Viva'));
 const meshes=[];
 let renders=0,frame,modelsCreated=0;
+const pixelRatios=[];
 class Mock3D{
   constructor(...args){
     modelsCreated++;
@@ -28,7 +29,7 @@ class Mock3D{
   remove(item){this.children=this.children.filter(c=>c!==item)}
   setAttribute(){}
   computeVertexNormals(){}
-  setPixelRatio(){}
+  setPixelRatio(value){pixelRatios.push(value)}
   setSize(){}
   setClearColor(){}
   updateProjectionMatrix(){}
@@ -71,7 +72,7 @@ const Three=new Proxy({
   SRGBColorSpace:'srgb',DoubleSide:2
 },{get:(target,k)=>target[k]??Mock3D});
 const ui=new Map(['hud','renderMode','renderStatus'].map(id=>
-  [id,{style:{},textContent:'',addEventListener(){}}]));
+  [id,{style:{},textContent:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn}}]));
 const owner={name:'Sua cabanha',x:-315,y:-280,color:'#b78355',ai:false};
 const mk=(type,x,y,w,h)=>({
   o:owner,type,x,y,w,h,tier:1,status:'complete',progress:100
@@ -174,6 +175,23 @@ try{
   state.lowGraphics=false;
   frame(600);
   assert.ok(renders>=10,'eventos e troca de qualidade não devem parar renderização');
+  // Em um aparelho lento (intervalos de 80 ms), o DPR precisa cair em passos
+  // discretos sem destruir a cena ou reiniciar o contexto.
+  const baselineDpr=pixelRatios.at(-1);
+  for(let i=1;i<=130;i++)frame(600+i*80);
+  assert.ok(pixelRatios.some(v=>v<baselineDpr-.06),
+    'qualidade adaptativa deve reduzir resolução interna em quadros lentos');
+  const beforeStop=renders;
+  const staleFrame=frame;
+  ui.get('renderMode').listeners.click();
+  staleFrame(20000);
+  assert.equal(renders,beforeStop,'RAF antigo não pode continuar após mudar para 2D');
+  ui.get('renderMode').listeners.click();
+  frame(20050);
+  const restarted=renders;
+  staleFrame(20100);
+  assert.equal(renders,restarted,'RAF anterior não pode duplicar desenhos após voltar ao 3D');
+  assert.ok(renders>beforeStop,'volta ao 3D deve retomar o renderizador');
 
   assert.ok(!ui.get('renderStatus').textContent.includes('indisponível'),
     'renderizador não pode desativar por erro');
