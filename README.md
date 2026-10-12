@@ -1,10 +1,19 @@
-# Fazenda Viva — 0.9.9.13
+# Fazenda Viva — 0.9.9.14
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=09913
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=09914
 
 Partida nova no dia 1 a cada abertura, sem salvamento automático. A versão completa aparece no HUD.
+
+## 0.9.9.14 — pastagens em setores
+
+- Parcelas de pastagem em verdes e tons de palha, com faixas discretas de corte, inspiradas na leitura de paisagem da referência Farm Manager.
+- Vegetação baixa agrupada em manchas; setores preservam caminhos, água e instalações, e cedem espaço a novas obras.
+- Distribuição e cores compartilhadas em Canvas/Three.js. Ordem de desenho corrigida para a camada de solo ficar visível no 3D.
+- Geometria retangular simplificada e reunida em uma camada; sem novo sistema produtivo de feno.
+
+**Verificação:** `npm test` passou; revisão de paisagem em cinco telas e evidências em `RELEASE_0.9.9.14.md`. Instruções de retomada no Codex em `CODEX_HANDOFF.md`.
 
 ## 0.9.9.13 — manejo confiável e passagem livre
 
