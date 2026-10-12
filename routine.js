@@ -37,12 +37,12 @@
   }else if(b.type==='barn'){
    const front=(d-.55)*.44;
    for(let i=0;i<s.bundles;i++){
-    const x=-w*.25+(i%2)*1.15,y=.55+Math.floor(i/2)*.66;
-    add('bundle',x,y,front+.82,1.03,.60,.78,0xc4ad69);
-    add('binding',x,y+.32,front+.82,.16,.04,.84,0x806042);
+    const x=-w*.25+(i%2)*1.15,y=.60+Math.floor(i/2)*.66,z=Math.min(front+.82,d/2-.5);
+    add('bundle',x,y,z,1.03,.60,.78,0xc4ad69);
+    add('binding',x,y+.32,z,.16,.04,.84,0x806042);
    }
   }else if(b.type==='stable'&&s.clean){
-   add('bedding',0,.41,(d-.55)*.44+1.1,w*.40,.035,1.6,0xb3ae79);
+   add('bedding',0,.41,Math.min((d-.55)*.44+.4,d/2-.85),w*.40,.035,1.6,0xb3ae79);
   }
   return out;
  }

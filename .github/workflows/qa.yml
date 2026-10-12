@@ -40,8 +40,8 @@ jobs:
         run: npm ci
       - name: Instalar Chromium e bibliotecas de sistema
         run: npx playwright install --with-deps chromium
-      - name: Testar WebGL real e interface em cinco viewports
-        run: npm run test:browser
+      - name: Conferir ajuste de posições nas instalações em WebGL real
+        run: FAZENDA_BROWSER_FOCUS=services npm run test:browser
       - name: Guardar capturas e métricas para inspeção visual
         if: always()
         uses: actions/upload-artifact@v4

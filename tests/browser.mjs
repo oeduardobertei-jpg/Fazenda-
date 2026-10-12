@@ -6,6 +6,9 @@ import {resolve,extname} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
+if(process.env.FAZENDA_BROWSER_FOCUS==='services'){
+  await import('./routine-browser.mjs');process.exit(0);
+}
 
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const output=resolve(root,'qa-artifacts');mkdirSync(output,{recursive:true});
