@@ -10,6 +10,19 @@ const a=terrain.generate(state),b=terrain.generate(state);
 assert.deepEqual(a,b,'navegação não muda a distribuição do solo');
 assert.ok(a.areas.filter(s=>s.layer==='field').length>20,'manchas e acostamentos devem existir');
 assert.equal(a.areas.filter(s=>s.layer==='pen').length,3);
+const sectors=a.areas.filter(s=>s.sector);
+assert.ok(sectors.length>=6,'parcelas de pastagem devem ser legíveis mesmo na fazenda inicial');
+assert.ok(sectors.some(s=>s.dry)&&sectors.some(s=>!s.dry),'pastagem e palha têm variação tonal');
+for(const s of sectors){
+ assert.ok(!buildings.some(b=>Math.abs(s.x-b.x)<s.rx+b.w/2+4&&Math.abs(s.y-b.y)<s.ry+b.h/2+4),
+  'setores preservam a margem das instalações');
+ assert.ok(!(Math.abs(s.y+20)<s.ry+4.5&&s.x+s.rx+4.5>=-35&&s.x-s.rx-4.5<=35),
+  'faixas de pastagem não atravessam o caminho');
+ assert.ok(terrain.contour(s).every(p=>Math.hypot(p.x,p.y)<=116),'setores ficam dentro da propriedade');
+}
+const occupied=sectors[0],extra={o:owner,x:occupied.x,y:occupied.y,w:12,h:10,type:'barn',status:'building'};
+assert.ok(!terrain.generate({...state,buildings:[...buildings,extra]}).areas.some(s=>s.sector&&s.x===occupied.x&&s.y===occupied.y),
+ 'nova obra retira a parcela visual do espaço reservado');
 for(const area of a.areas){
  const outline=terrain.contour(area);
  assert.equal(outline.length,16);

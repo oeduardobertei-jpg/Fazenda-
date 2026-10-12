@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.13 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.14 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -861,7 +861,7 @@ function syncTerrain(s){
   lastTerrain=data;
   for(const child of [...terrainLayer.children]){terrainLayer.remove(child);disposeTransientGroup(child)}
   if(data&&window.FazendaVivaTerrain){
-   for(const layer of ['outside','field','pen']){
+   for(const layer of ['outside','field','sector','pen']){
     const positions=[],colors=[],uvs=[],base=new THREE.Color(),center=new THREE.Color();
     for(const area of data.areas.filter(a=>a.layer===layer)){
      const edge=window.FazendaVivaTerrain.contour(area);base.set(area.base);center.set(area.color);
@@ -892,7 +892,7 @@ function syncTerrain(s){
   }
  }
  for(const mesh of terrainLayer.children)mesh.visible=mesh.userData.terrain==='outside'?s.zoom>=.24:
-  mesh.userData.terrain==='field'?s.zoom>=.48:!s.lowGraphics&&s.zoom>=1.18;
+  mesh.userData.terrain==='sector'?s.zoom>=.24:mesh.userData.terrain==='field'?s.zoom>=.48:!s.lowGraphics&&s.zoom>=1.18;
 }
 // Mesmo conjunto de props usados no Canvas. Geometrias simples, recoloridas
 // por InstancedMesh e recalculadas só quando a simulação rearranja o terreno.
