@@ -1,10 +1,22 @@
-# Fazenda Viva — 0.9.9.12
+Warning: truncated output (original token count: 14120)
+Total output lines: 415
+
+# Fazenda Viva — 0.9.9.13
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=09912
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=09913
 
 Partida nova no dia 1 a cada abertura, sem salvamento automático. A versão completa aparece no HUD.
+
+## 0.9.9.13 — manejo confiável e passagem livre
+
+- Cuidado e deslocamentos usam o mesmo passo de simulação em 1×, 3× e 8×, incluindo quadros irregulares.
+- Tratador chega ao ponto de encontro e aguarda o cavalo parar; encontros evitam lugares já ocupados por funcionários.
+- Na alimentação, o cavalo abaixa a cabeça; o posicionamento lateral separa o focinho do chapéu.
+- Porteiras liberam animais que já saíram, cavalos aguardam a passagem de volta e encontros em caminhos estreitos têm desvios contínuos.
+
+**Verificação:** cenários locais até o dia 866 mantiveram cuidado próprio mínimo de 59/100 nas três velocidades. Chromium/WebGL passou nas cinco telas, com alimentação natural e capturas 2D/3D inspecionadas. Evidências em `RELEASE_0.9.9.13.md`. Aprovação artística e desempenho em Android físico permanecem pendentes.
 
 ## 0.9.9.12 — o trabalho deixa marcas na fazenda
 
@@ -14,7 +26,7 @@ Partida nova no dia 1 a cada abertura, sem salvamento automático. A versão com
 - Gestão → Equipe mostra o último serviço por trabalhador e as marcas de cada instalação. Contemplar identifica o serviço mais recente.
 - Atualizações 3D reutilizam geometria enquanto o estado visual não muda. Deslocamentos, circulação e regras econômicas preservados.
 
-**Verificação:** simulação e integração Chromium/WebGL passaram; instalações e capturas 2D/3D inspecionadas. A rodada ampla teve timeout de captura desktop; resultados por etapa e limites em `RELEASE_0.9.9.12.md` e na PR #9. Android físico permanece pendente.
+**Verificação:** simulação e integração Chromium/WebGL passaram; instalações e capturas 2D/3D inspecionadas. A rodada completa posterior passou nas cinco telas; resultados por etapa e limites em `RELEASE_0.9.9.12.md` e na PR #9. Android físico permanece pendente.
 
 ## 0.9.9.11 — chão de fazenda e margens naturais
 
@@ -217,9 +229,7 @@ A série 0.9.9 foi ampliada a pedido do usuário após inspeção das capturas d
 - **Rede interna conectada:** deixou de existir um feixe de trilhas diretas partindo da casa. O sistema constrói primeiro o acesso da estrada regional ao portão e à sede e conecta novas instalações ao ponto mais próximo da malha já existente, com desvio de obstáculos via A*.
 - **Dois renderizadores, um layout:** o Canvas 2D e o Three.js recebem exatamente o mesmo array de caminhos, sem decisões independentes sobre conexões. O desenho 3D ganhou extremidades arredondadas; trilhas de serviço não são mais cobertas de falsas marcas de rodas.
 - **Animais com estados:** `idle / walk / graze`, caminhada discreta dentro da posição reservada, atualização do rumo suavizada e frequência da passada conforme a distância real percorrida. Cavalos podem baixar o pescoço para pastar no modo 3D.
-- **Fazendeiros com estados:** `idle / walk / work`, fase de passo por distância e rotação suave. Braços e pernas usam pivôs nas articulações no 3D, em vez de girar caixas inteiras pelo centro; suas ações também são retratadas no 2D.
-- **Direção compartilhada:** a pose lógica `motion / gait / heading` da simulação alimenta ambos os modos. Trocar de 2D para 3D não recria estados de animação inconsistentes.
-- **Legibilidade mobile:** rótulos de trabalhadores próximos possuem verificação de colisão com outros rótulos e não aparecem sobre o HUD.
+- **Fazendeiros com estados:** `idle / walk / work`, fase de passo por distância e rotaç…120 tokens truncated…HUD.
 - **QA:** `tests/smoke.mjs` agora verifica caminhos que atravessam edifícios, estruturas sem acesso, distância entre cavalos, os três estados de animais e estados de trabalhadores. Criado `tests/render3d.mjs` para simular o ciclo Three.js e testar a orientação da trilha diagonal, câmeras e mudança de qualidade. Ambos configurados no GitHub Actions.
 
 **Limites:** os personagens continuam sendo modelos low-poly simples. A nova animação é procedural e mais coerente, mas não equivale a animações complexas de esqueleto feitas em Blender/GLB. Falta a conferência visual das posições e dos caminhos no **Android/WebGL real**.
