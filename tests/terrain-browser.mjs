@@ -52,6 +52,7 @@ async function capture(width,height,base=false){
 try{
  const before=await capture(390,844,true);results.push(before);
  for(const [w,h] of [[390,844],[320,568],[360,640],[844,390],[1365,900]])results.push(await capture(w,h));
+ console.log('ORÇAMENTO PAISAGEM',JSON.stringify(results));
  assert.ok(results[1].calls<=before.calls*1.10);assert.ok(results[1].triangles<=before.triangles*1.08);
  assert.deepEqual(errors,[]);
  writeFileSync(resolve(output,'terrain-browser-results.json'),JSON.stringify({baselineRef,renderer:'Chromium/WebGL2 SwiftShader',realAndroid:false,results,errors},null,2));

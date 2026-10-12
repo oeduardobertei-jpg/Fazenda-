@@ -25,7 +25,7 @@ assert.ok(!terrain.generate({...state,buildings:[...buildings,extra]}).areas.som
  'nova obra retira a parcela visual do espaço reservado');
 for(const area of a.areas){
  const outline=terrain.contour(area);
- assert.equal(outline.length,16);
+ assert.equal(outline.length,area.layer==='sector'?4:16);
  assert.ok(outline.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)),'contornos devem ser finitos');
  if(area.layer==='pen')assert.ok(outline.every(p=>Math.abs(p.x-area.building.x)<area.building.w/2&&Math.abs(p.y-area.building.y)<area.building.h/2),
   'solo gasto deve ficar dentro do piquete');

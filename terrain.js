@@ -18,10 +18,7 @@
  }
  function rectangle(x,y,w,h){
   const corners=[[-w/2,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]];
-  return corners.flatMap((p,i)=>Array.from({length:4},(_,j)=>{
-   const q=corners[(i+1)%4],t=j/4;
-   return {x:x+p[0]*(1-t)+q[0]*t,y:y+p[1]*(1-t)+q[1]*t};
-  }));
+  return corners.map(p=>({x:x+p[0],y:y+p[1]}));
  }
  function generate({owners=[],buildings=[],trails=[],ponds=[]}){
   const areas=[],sprigs=[];
