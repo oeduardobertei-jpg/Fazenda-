@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Baixar repositório e referência 0.9.9.12
+      - name: Baixar repositório e referência 0.9.9.13
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -43,12 +43,12 @@ jobs:
         run: npm ci
       - name: Instalar Chromium e bibliotecas de sistema
         run: npx playwright install --with-deps chromium
-      - name: Testar WebGL real e interface em cinco viewports
-        run: npm run test:browser
+      - name: Conferir paisagem 2D e WebGL em cinco viewports
+        run: npm run test:terrain-browser
       - name: Guardar capturas e métricas para inspeção visual
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fazenda-viva-qa-0.9.9.13
+          name: fazenda-viva-qa-0.9.9.14
           path: qa-artifacts/
           retention-days: 14
