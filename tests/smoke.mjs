@@ -44,6 +44,7 @@ const values={
     assert.ok(ui.has(id),'HTML control ausente: '+id);return ui.get(id);
   },addEventListener:noop},innerWidth:390,innerHeight:844,devicePixelRatio:2,
   addEventListener:noop,requestAnimationFrame:fn=>step=fn,
+  performance:{now:()=>0}, // Relógio exato: não depender da duração do bootstrap no runner.
   localStorage:{getItem:()=>null,setItem:()=>saved++,removeItem:noop},
   confirm:()=>true,location:{reload:()=>reset=true},
   MutationObserver:class{observe(){}}

@@ -36,7 +36,7 @@ const browser=await chromium.launch({
 const results=[];
 const errors=[];
 async function open(width,height,route='/'){
-  const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:2,
+  const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:width<900?2:1,
     isMobile:width<900,hasTouch:width<900});
   const page=await context.newPage();
   page.on('pageerror',error=>errors.push({width,height,message:error.message}));
@@ -155,7 +155,7 @@ try{
   await characterSheet(basePage,'baseline-0.9.9.11-cavalos.png',baseline,false,true);
   await baseContext.close();
 
-  for(const [width,height] of [[390,844],[320,568],[360,640],[844,390],[1365,900]]){
+  for(const [width,height] of (process.env.FAZENDA_BROWSER_FOCUS==='finish'?[]:[[390,844],[320,568],[360,640],[844,390],[1365,900]])){
     const {context,page}=await open(width,height);
     await page.waitForTimeout(350);
     const day=await page.evaluate(()=>window.FazendaVivaBridge.state().day);
