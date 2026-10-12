@@ -880,7 +880,7 @@ function syncTerrain(s){
     if(!terrainGroundMaterial)terrainGroundMaterial=new THREE.MeshLambertMaterial({vertexColors:true,map:grainMap(),side:THREE.DoubleSide,depthWrite:false});
     // Desenhar depois dos sólidos, sem gravar profundidade entre manchas
     // sobrepostas. Prédios, cascos e plantas continuam protegidos pelo depth test.
-    const mesh=new THREE.Mesh(geo,terrainGroundMaterial);mesh.renderOrder=100;mesh.userData.terrain=layer;terrainLayer.add(mesh);
+    const mesh=new THREE.Mesh(geo,terrainGroundMaterial);mesh.renderOrder=100+['outside','field','sector','pen'].indexOf(layer);mesh.userData.terrain=layer;terrainLayer.add(mesh);
    }
    const mesh=new THREE.InstancedMesh(pastureBlades(),mat(0xffffff),data.sprigs.length),dummy=new THREE.Object3D();
    data.sprigs.forEach((g,i)=>{
