@@ -6,6 +6,9 @@ on:
     branches: [main]
 permissions:
   contents: read
+concurrency:
+  group: fazenda-qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -40,8 +43,8 @@ jobs:
         run: npm ci
       - name: Instalar Chromium e bibliotecas de sistema
         run: npx playwright install --with-deps chromium
-      - name: Conferir recuperação WebGL, rotina real e capturas finais
-        run: FAZENDA_BROWSER_FOCUS=finish npm run test:browser
+      - name: Testar WebGL real e interface em cinco viewports
+        run: npm run test:browser
       - name: Guardar capturas e métricas para inspeção visual
         if: always()
         uses: actions/upload-artifact@v4
