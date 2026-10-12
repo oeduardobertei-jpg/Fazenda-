@@ -95,6 +95,22 @@ try{
           'cascos de adultos e potros não atravessam o terreno');
     }
   }
+  horse.age=4;horse.motion='idle';horse.interacting=true;horse.careKind='alimentacao';
+  horse.pose={walk:0,graze:0,care:1,rest:0};horse.x=0;horse.y=0;horse.heading=0;
+  worker.x=3.45;worker.y=-1.1;worker.visualHeading=Math.atan2(1.1,-3.45);
+  frame(now+=40);
+  const feedingMuzzle=new Three.Box3().setFromObject(horseModel.userData.muzzle);
+  assert.ok(feedingMuzzle.min.y>1.3&&feedingMuzzle.max.y<3.0,
+    'alimentação deve baixar o focinho à altura do atendimento');
+  const hatColor=new Three.Color(motion.workerLook(worker).hat),hatBounds=new Three.Box3();
+  workerModel.userData.upper.traverse(o=>{
+    if(!o.isMesh)return;const color=o.geometry.getAttribute('color'),pos=o.geometry.getAttribute('position');
+    if(!color)return;
+    for(let i=0;i<color.count;i++)if(Math.abs(color.getX(i)-hatColor.r)+Math.abs(color.getY(i)-hatColor.g)+Math.abs(color.getZ(i)-hatColor.b)<1e-5)
+      hatBounds.expandByPoint(new Three.Vector3().fromBufferAttribute(pos,i).applyMatrix4(o.matrixWorld));
+  });
+  assert.ok(!hatBounds.isEmpty(),'chapéu presente na geometria fundida');
+  assert.ok(!feedingMuzzle.intersectsBox(hatBounds),'o focinho não deve atravessar o chapéu na alimentação');
   const shadow=horseModel.children.find(m=>m.material?.transparent);
   assert.ok(shadow.getWorldPosition(new Three.Vector3()).y>.40,'sombra deve ficar acima do piquete');
   worker.motion='work';

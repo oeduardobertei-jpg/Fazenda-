@@ -130,7 +130,7 @@
     return {
       walk,graze,care,rest,legRoot:1.599-.079*walk,
       // O focinho alcança o capim: duas articulações, com transição contínua.
-      neck:-.06-graze*1.42-feeding*.12-rest*.10+
+      neck:-.06-graze*1.42-feeding*.72-rest*.10+
         Math.sin(time*.65+entity.id)*.018*(1-walk)+Math.sin(phase)*.025*walk,
       head:-.12+graze*.34+Math.sin(time*1.1)*.018+Math.sin(time*3)*.035*care,
       tail:-.12+Math.sin(time*.8+entity.id)*(.075+care*.035-rest*.03),

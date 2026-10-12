@@ -224,14 +224,23 @@ try{
   let trailIntersections=0,unconnectedStructures=0,roadSamples=0,landSamples=0,roadMiddle=0,offRoad=0;
   const horseStates=new Set(),workerStates=new Set(),previousHorses=new Map(),horseSpans=new Map();
   let horseBounds=0,horseBuildings=0,fenceCrossings=0,maxHorseStep=0,minOwnCare=100,maxHorseBlocked=0;
-  let joinedRuralEvent=false;
+  let joinedRuralEvent=false,worstBlocked=null;
   for(let i=0;i<1300;i++){
     ms+=50;step(ms);
     // Mesmo conjunto de estados usado por Canvas 2D e Three.js, independentemente
     // de qual renderizador esteja ativo no Android.
     const live=get();
     minOwnCare=Math.min(minOwnCare,...live.horses.filter(h=>h.o===live.owners[0]).map(h=>h.care));
-    maxHorseBlocked=Math.max(maxHorseBlocked,...live.horses.map(h=>h.blockedTime||0));
+    for(const h of live.horses)if((h.blockedTime||0)>maxHorseBlocked){
+      maxHorseBlocked=h.blockedTime;
+      worstBlocked={seconds:maxHorseBlocked,day:live.day,id:h.id,owner:h.o.name,x:h.x,y:h.y,stage:h.pastureStage,pending:h.careReturnPending,
+        route:h.pastureRoute?.map(p=>[p.x,p.y,p.home]),index:h.pastureIndex,
+        near:live.horses.filter(v=>v!==h&&v.o===h.o&&Math.hypot(v.x-h.x,v.y-h.y)<14)
+          .map(v=>({id:v.id,x:v.x,y:v.y,stage:v.pastureStage,pending:v.careReturnPending,route:v.pastureRoute?.map(p=>[p.x,p.y]),index:v.pastureIndex})),
+        handler:live.farmers.filter(f=>f.o===h.o&&f.role==='tratador').map(f=>({target:f.targetHorseId,release:f.releaseHorseId,activity:f.activity}))};
+      worstBlocked.obstacles=live.buildings.filter(b=>b.o===h.o&&Math.hypot(b.x-h.x,b.y-h.y)<35).map(b=>({type:b.type,x:b.x,y:b.y,w:b.w,h:b.h}));
+      worstBlocked.decor=live.ranchDecor.filter(p=>p.o===h.o&&Math.hypot(p.x-h.x,p.y-h.y)<16).map(p=>({kind:p.kind,x:p.x,y:p.y}));
+    }
     live.horses.forEach(h=>{
       horseStates.add(h.motion);
       if(!horseSpans.has(h.id))horseSpans.set(h.id,{x:h.x,y:h.y,owner:h.o,max:0});
@@ -341,9 +350,10 @@ try{
   for(const o of get().owners)assert.ok([...horseSpans.values()].some(h=>h.owner===o&&h.max>30),'cavalos precisam explorar os campos de '+o.name);
   assert.ok(get().horses.filter(h=>h.excursions>0).length>=5,'pastoreio deve incluir retorno à água e ao manejo');
   assert.ok(minOwnCare>50,'pastoreio não deve impedir o manejo contínuo do plantel inicial');
-  assert.ok(maxHorseBlocked<20,'encontros não podem bloquear cavalos indefinidamente');
+  assert.ok(maxHorseBlocked<20,'encontros não podem bloquear cavalos indefinidamente: '+JSON.stringify(worstBlocked));
   assert.ok(get().horses.filter(h=>h.id<=10).every(h=>h.careServices>=3),
-    'cavalos iniciais das cinco fazendas precisam continuar recebendo manejo');
+    'cavalos iniciais das cinco fazendas precisam continuar recebendo manejo: '+JSON.stringify({horses:get().horses.filter(h=>h.id<=10).map(h=>({id:h.id,owner:h.o.name,care:h.care,services:h.careServices,stage:h.pastureStage,x:h.x,y:h.y,route:h.pastureRoute?.map(p=>[p.x,p.y,p.home]),index:h.pastureIndex})),
+      handlers:get().farmers.filter(f=>f.role==='tratador').map(f=>({owner:f.o.name,activity:f.activity,target:f.targetHorseId,release:f.releaseHorseId,x:f.x,y:f.y,meeting:f.meetingPoint}))}));
   assert.ok(joinedRuralEvent,'participação em evento rural não foi exercitada');
   assert.ok(roadSamples>landSamples*2,'funcionários devem usar caminhos');
   assert.ok(roadMiddle>10,'trechos centrais de trilha devem ser utilizados');
