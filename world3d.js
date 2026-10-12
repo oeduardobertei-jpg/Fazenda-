@@ -6,7 +6,7 @@ try {
   THREE=await import('https://unpkg.com/three@0.165.0/build/three.module.js');
 }
 
-/* Fazenda Viva 0.9.9.11 — poses compartilhadas, contato com o solo e interface mobile.
+/* Fazenda Viva 0.9.9.12 — poses compartilhadas, contato com o solo e interface mobile.
  * O Canvas 2D continua funcionando caso import/WebGL falhe.
  * Controles, economia e reinício de partidas permanecem no index.html.
  */
@@ -264,10 +264,12 @@ function rails(parent,w,d,color=colors.fence,y=1.4,gate=0) {
     box(parent,.35,.3,d,x,y*.48,0,color);
   }
 }
-function building(b,detail=true){
+function building(b,detail=true,day=1){
   const group=new THREE.Group();group.position.set(b.x,0,b.y);
   const w=b.w,d=b.h,t=Math.max(1,Math.min(3,b.tier||1));
   const progress=Math.max(0,Math.min(100,b.progress??100));
+  const routine=window.FazendaVivaRoutine;
+  const marks=detail?routine?.props(b,day)||[]:[];
   if(b.status==='building'){
     // Uma obra visível por propriedade: terraplenagem -> pilares -> travamentos -> telhado.
     flat(group,w-.5,d-.5,0,0,0xa68b68,.30);
@@ -302,6 +304,7 @@ function building(b,detail=true){
       // Um piquete CONCLUÍDO contém abrigo, bebedouro, cocho e capim — não é um canteiro de obras.
       grainSurface(flat(group,w*.78,d*.73,0,0,variety%2?0x84ac65:0x79a35c,.33),b.x,b.y);
       box(group,2.2,.72,.95,-w*.34,.65,d*.32,0x98734f);
+      box(group,1.8,.04,.65,-w*.34,1.03,d*.32,0x514539);
       box(group,2.6,.45,1,w*.33,.67,d*.32,0x638f9c);
       // Abrigo simples no canto, dentro do espaço cercado.
       const sx=w*.29,sz=d*.32;
@@ -312,9 +315,8 @@ function building(b,detail=true){
         const x=-w*.30+(i%4)*1.7,z=d*.18+Math.floor(i/4)*2.1;
         cylinder(group,.28,.45,.7,x,.52,z,0x658f48,5);
       }
-      // Fardos e pilhas de material funcional de manejo.
-      cylinder(group,.9,1.0,.68,-w*.38,.53,d*.30,0xc4ad69,8);
-      cylinder(group,.9,1.0,.68,-w*.38,.53,d*.10,0xbca05d,8);
+      // Feno, trato e cama fresca aparecem após serviços realizados aqui.
+      for(const a of marks)box(group,a.w,a.h,a.d,a.x,a.y,a.z,a.color);
     }
     group.userData.building=b;return group;
   }
@@ -448,17 +450,13 @@ function building(b,detail=true){
     cylinder(group,.14,1.15,1.38,siloX,7.92,-d*.24,0x7b8983,9);
     for(let i=0;i<4;i++)
       box(group,.12,.16,.28,siloX+1.13,.95+i*1.42,-d*.24,0xcfd3c0);
-    const ready=Math.min(4,Math.floor((b.o.work?.agricultor||0)/.6));
-    for(let i=0;i<ready;i++){
-      box(group,.83,.60,.78,-w*.25+i*.95,.52,front-.42,0xc6ae74);
-      box(group,.86,.10,.81,-w*.25+i*.95,.87,front-.42,0xe0c78e);
-    }
     // Pilhas paletizadas e sacarias remetem a uma operação agrícola real.
     for(let k=0;k<(t>=2?3:2);k++){
       box(group,1.12,.74,.83,-w*.36+k*1.32,.69,front+.36,0x987a56);
       box(group,1.16,.15,.87,-w*.36+k*1.32,1.14,front+.36,0xd2b582);
     }
   }
+  for(const a of marks)box(group,a.w,a.h,a.d,a.x,a.y,a.z,a.color);
   // Ampliações físicas ocorrem dentro da reserva original (níveis 2 e 3).
   if(t>1)for(let j=0;j<t-1;j++){
     const x=usedW*.5-1.1-j*1.4;
@@ -1178,10 +1176,10 @@ function scatterPasture(s){
     flower.instanceMatrix.needsUpdate=true;grassLayer.add(flower);
   }
 }
-function modelVersion(b,highDetail){
+function modelVersion(b,highDetail,day){
   return (highDetail?'H':'L')+'|'+b.type+'|'+b.x.toFixed(2)+'|'+b.y.toFixed(2)+
     '|'+(b.tier||1)+'|'+(b.status||'complete')+'|'+(b.progress??100)+
-    '|'+(b.plannedTier||0)+'|'+(b.type==='barn'?Math.floor((b.o.work?.agricultor||0)/.6):0);
+    '|'+(b.plannedTier||0)+'|'+(highDetail?window.FazendaVivaRoutine?.signature(b,day)||'0':'0');
 }
 function syncWildlife(s){
  faunaLayer.visible=!s.lowGraphics&&s.zoom>1.2;
@@ -1242,14 +1240,14 @@ function sync(s){
     const distance=Math.hypot(b.x-s.panX,b.y-s.panY);
     const detailed=highDetail&&!s.lowGraphics&&
       distance<(s.zoom>=3?96:s.zoom>=1.7?145:205);
-    const version=modelVersion(b,detailed);
+    const version=modelVersion(b,detailed,s.day);
     const record=modelsByBuilding.get(b);
     if(record&&record.version===version)continue;
     if(record){
       content.remove(record.model);
       disposeTransientGroup(record.model);
     }
-    const model=batchStaticMeshes(building(b,detailed));
+    const model=batchStaticMeshes(building(b,detailed,s.day));
     content.add(model);
     modelsByBuilding.set(b,{model,version});
   }

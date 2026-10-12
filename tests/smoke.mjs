@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
+const routine=createRequire(import.meta.url)('../routine.js');
 const motion=createRequire(import.meta.url)('../motion.js');
 const sound=createRequire(import.meta.url)('../audio.js');
 const terrain=createRequire(import.meta.url)('../terrain.js');
@@ -39,10 +40,11 @@ const ui=new Map(ids.map(id=>[id,{
 }]));
 let step=()=>{},saved=0,reset=false;
 const values={
-  window:{FazendaVivaMotion:motion,FazendaVivaAudio:sound,FazendaVivaTerrain:terrain},document:{getElementById:id=>{
+  window:{FazendaVivaRoutine:routine,FazendaVivaMotion:motion,FazendaVivaAudio:sound,FazendaVivaTerrain:terrain},document:{getElementById:id=>{
     assert.ok(ui.has(id),'HTML control ausente: '+id);return ui.get(id);
   },addEventListener:noop},innerWidth:390,innerHeight:844,devicePixelRatio:2,
   addEventListener:noop,requestAnimationFrame:fn=>step=fn,
+  performance:{now:()=>0}, // Relógio exato: não depender da duração do bootstrap no runner.
   localStorage:{getItem:()=>null,setItem:()=>saved++,removeItem:noop},
   confirm:()=>true,location:{reload:()=>reset=true},
   MutationObserver:class{observe(){}}
@@ -489,12 +491,19 @@ try{
 
   ui.get('manageClose').onclick();
   assert.equal(ui.get('error').textContent,'','sem erros fatais');
+  const serviced=get().buildings.filter(b=>b.routine?.last);
+  assert.ok(serviced.length>=10,'serviços reais deixam marcas em instalações das fazendas');
+  assert.ok(serviced.some(b=>b.routine.feeding),'trato real chega ao estado do cocho');
+  assert.ok(serviced.some(b=>b.routine.cleaning),'limpeza real chega ao estado da instalação');
+  assert.ok(serviced.some(b=>b.routine.production),'agricultor deixa produção organizada no prédio atendido');
+  assert.ok(get().farmers.some(f=>f.lastService),'trabalhador conserva o último serviço concluído');
+  for(const b of serviced)assert.ok(b.routine.last.day<=get().day,'nenhuma marca vem do futuro');
   ui.get('resetGame').onclick();
   assert.ok(reset,'reset deve recarregar após confirmação');
   console.log('PASS Fazenda Viva',pageVersion,JSON.stringify({
     dia:get().day,estruturas:get().buildings.length,
     trabalhadores:get().farmers.length,
-    tarefas:get().farmers.reduce((sum,f)=>sum+(f.tasksDone||0),0),
+    tarefas:get().farmers.reduce((sum,f)=>sum+(f.tasksDone||0),0),instalacoesAtendidas:serviced.length,
     caminhos:get().trails.length,distanciaMinimaCavalos:+minHorse.toFixed(2),
     intersecoesDeCaminhos:trailIntersections,
     portoes:fenceCrossings,maxPasso:+maxHorseStep.toFixed(3),menorCuidadoProprio:+minOwnCare.toFixed(2),maiorEsperaEncontro:+maxHorseBlocked.toFixed(2),excursões:get().horses.reduce((n,h)=>n+(h.excursions||0),0),estadosCavalos:[...horseStates],estadosTrabalhadores:[...workerStates]

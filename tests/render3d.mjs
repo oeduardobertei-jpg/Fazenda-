@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
+const routine=createRequire(import.meta.url)('../routine.js');
 const motion=createRequire(import.meta.url)('../motion.js');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
 const source=world.slice(world.indexOf('/* Fazenda Viva'));
@@ -119,7 +120,7 @@ const state={
 };
 const previous=new Map();
 const mocks={
-  window:{FazendaVivaMotion:motion,FazendaVivaBridge:{state:()=>state,mode(){}},addEventListener(){}},
+  window:{FazendaVivaRoutine:routine,FazendaVivaMotion:motion,FazendaVivaBridge:{state:()=>state,mode(){}},addEventListener(){}},
   document:{
     body:{insertBefore(){}},
     createElement:()=>({style:{},textContent:'',appendChild(){},addEventListener(){}}),

@@ -1,10 +1,20 @@
-# Fazenda Viva — 0.9.9.11
+# Fazenda Viva — 0.9.9.12
 
 Simulador brasileiro de cabanhas, propriedades rurais, economia e criação de cavalos, jogável no navegador do celular.
 
-**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=09911
+**Jogar:** https://oeduardobertei-jpg.github.io/Fazenda-/?v=09912
 
 Partida nova no dia 1 a cada abertura, sem salvamento automático. A versão completa aparece no HUD.
+
+## 0.9.9.12 — o trabalho deixa marcas na fazenda
+
+- Trato concluído deixa alimento visível no cocho; escovação mantém seu próprio registro, sem preencher o cocho.
+- Limpeza deixa cama fresca na área de serviço; organização agrícola acrescenta até quatro fardos na instalação atendida.
+- Os sinais diminuem com os dias, compartilhando estado e posições em Canvas/WebGL. São marcas de trabalho recente, não um novo estoque comercial.
+- Gestão → Equipe mostra o último serviço por trabalhador e as marcas de cada instalação. Contemplar identifica o serviço mais recente.
+- Atualizações 3D reutilizam geometria enquanto o estado visual não muda. Deslocamentos, circulação e regras econômicas preservados.
+
+**Verificação:** simulação e integração Chromium/WebGL passaram; instalações e capturas 2D/3D inspecionadas. A rodada ampla teve timeout de captura desktop; resultados por etapa e limites em `RELEASE_0.9.9.12.md` e na PR #9. Android físico permanece pendente.
 
 ## 0.9.9.11 — chão de fazenda e margens naturais
 

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.11</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fazenda Viva 0.9.9.12</title>
 <style>
 :root{color-scheme:dark;--ink:#f8f1dd;--muted:#c4d1ba;--panel:#17392ded;--edge:#739477;--gold:#dfc18a;--top:calc(10px + env(safe-area-inset-top,0px));--base:calc(10px + env(safe-area-inset-bottom,0px));--side:12px}
 *{box-sizing:border-box}body{margin:0;background:#1b3528;color:var(--ink);font:14px/1.45 system-ui,sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#game{position:fixed;inset:0;z-index:0}
@@ -16,8 +16,8 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 @media(max-height:500px) and (min-width:600px){#hud{width:390px;grid-template-columns:1fr 1fr}#economy{top:calc(var(--top) + 80px)}#topTools{top:var(--top);right:var(--side);left:auto}#renderStatus{top:calc(var(--top) + 109px)}#zoomTools{top:55%}#panel,#management{left:var(--side);transform:none;width:min(470px,calc(100vw - 84px));bottom:calc(var(--base) + 77px)}#welcome{max-height:calc(100dvh - var(--base) - var(--top) - 85px);overflow:auto;padding:16px}#welcome h2{font-size:21px}#welcome p{font-size:12px}#welcome .welcomeActions{margin-top:10px}}
 #hud .brand{font-size:clamp(8.5px,2.6vw,11px);letter-spacing:0;padding-inline:5px}
 @media(prefers-reduced-motion:reduce){#status{transition:none}}
-</style><link rel="stylesheet" href="./ui.css?v=09911"></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.11</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><button id="growthHud" type="button" aria-label="Acompanhar crescimento da cabanha"><span id="growthTitle">Sua cabanha está começando</span><span id="growthLevel">Nível 1</span><span id="growthDetail">Primeira expansão · 3 de 4 estruturas</span><span id="growthTrack"><span id="growthFill" style="display:block"></span></span></button><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="soundToggle" type="button" aria-pressed="true" aria-label="Som ativado · silenciar" title="Som · volume em Gestão → Ambiente">Som</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button><button id="observe" type="button" aria-label="Contemplar a fazenda" title="Contemplar a fazenda">◉</button></div><aside id="observeTools" hidden aria-label="Modo contemplar"><div id="observeCaption">O ritmo da sua cabanha</div><div><button id="observeNext" type="button">Outra cena</button><button id="observePause" type="button">Pausar</button><button id="observeExit" type="button">Voltar</button></div></aside><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
+</style><link rel="stylesheet" href="./ui.css?v=09912"></head><body>
+<canvas id="game"></canvas><div id="hud"><div class="pill brand">🐎 FAZENDA VIVA · 0.9.9.12</div><div class="pill" id="date">📅 Dia 1</div><div class="pill" id="money">💰 R$ 19.000</div><div class="pill" id="buildings">🏡 15 estruturas · 4 IAs</div></div><div id="economy"></div><button id="growthHud" type="button" aria-label="Acompanhar crescimento da cabanha"><span id="growthTitle">Sua cabanha está começando</span><span id="growthLevel">Nível 1</span><span id="growthDetail">Primeira expansão · 3 de 4 estruturas</span><span id="growthTrack"><span id="growthFill" style="display:block"></span></span></button><div id="status" role="status" aria-live="polite">Arraste para mover · Pinça para zoom · ⌖ recentra</div><div id="panel" hidden><div class="panelHead"><h3>Construir na cabanha</h3><button id="panelClose" aria-label="Fechar construção">✕</button></div><p>Selecione uma estrutura e toque em um terreno livre perto da sua fazenda.</p><div id="actions"><button data-type="stable">🐴 Cocheira · R$ 3.200</button><button data-type="paddock">🌱 Piquete · R$ 1.300</button><button data-type="barn">🚜 Galpão · R$ 2.400</button><button data-type="house">🏠 Casa · R$ 4.000</button></div><button id="buyhorse">🐎 Comprar cavalo · R$ 2.500</button><button id="manageOpen" type="button">📊 Gestão da cabanha · Ver patrimônio, equipe e metas</button><button id="upgrade" hidden>🔨 Ampliar estrutura</button><p id="news" aria-live="polite">Quatro propriedades vizinhas evoluem autonomamente. O território agora é muito maior, com propriedades separadas.</p><details><summary>Exploração e opções</summary><button id="visitFarm">🧭 Visitar outra fazenda</button><button id="viewWorkers" type="button">👨‍🌾 Ver próximo trabalhador</button><button id="graphicsMode" type="button" aria-pressed="false">⚙️ Gráficos: normal</button><button id="perfMode" type="button" aria-pressed="false">📉 Diagnóstico de FPS: desligado</button><p id="workerReport" style="font-size:12px;line-height:1.45;opacity:.9">A equipe rural iniciará os serviços.</p><button id="resetGame" type="button">🔄 Reiniciar do dia 1</button><button id="helpOpen" type="button">❔ Guia da cabanha</button></details></div><div id="bottom"><button id="focus">⌖ Fazenda</button><button id="map">🗺️ Mapa</button><button id="manageQuick" type="button">📊 Gestão</button><button id="toggle" aria-expanded="false" aria-controls="panel">🔨 Construir</button></div><div id="topTools"><button id="renderMode" type="button">🌄 Iniciando 3D…</button><button id="pause" aria-pressed="false">⏸ Pausar</button><button id="soundToggle" type="button" aria-pressed="true" aria-label="Som ativado · silenciar" title="Som · volume em Gestão → Ambiente">Som</button><button id="speed" aria-label="Velocidade da simulação">⏩ 1×</button></div><div id="renderStatus">Carregando renderizador tridimensional…</div><output id="perfHud" role="status" aria-live="off" hidden>📉 Aguardando medições…</output><div id="zoomTools" aria-label="Controles de zoom"><button id="zoomIn" type="button" aria-label="Aproximar">+</button><button id="zoomOut" type="button" aria-label="Afastar">−</button><button id="observe" type="button" aria-label="Contemplar a fazenda" title="Contemplar a fazenda">◉</button></div><aside id="observeTools" hidden aria-label="Modo contemplar"><div id="observeCaption">O ritmo da sua cabanha</div><div><button id="observeNext" type="button">Outra cena</button><button id="observePause" type="button">Pausar</button><button id="observeExit" type="button">Voltar</button></div></aside><section id="management" aria-labelledby="manageTitle" aria-modal="true" role="dialog" hidden>
 <header class="manageHead"><strong id="manageTitle">Gestão da cabanha · tempo pausado</strong><button id="manageClose" type="button" aria-label="Fechar gestão">✕</button></header>
 <nav id="manageTabs" role="tablist" aria-label="Seções da gestão">
 <button id="tab-resumo" role="tab" aria-controls="manageBody" data-mgtab="resumo" aria-selected="true">🏡 Resumo</button>
@@ -32,9 +32,10 @@ button{font:inherit;color:var(--ink);background:#2d533d;border:1px solid var(--e
 </section><div id="sceneContext" hidden><span id="contextText"></span><button id="contextCancel" type="button">Encerrar</button></div>
 <section id="welcome" role="dialog" aria-labelledby="guideTitle"><div class="eyebrow">Campos do Sul · Fazenda Viva</div><div id="guideProgress">GUIA · 1 DE 3</div><h2 id="guideTitle">Sua cabanha, viva.</h2><p id="guideText">Explore cinco propriedades brasileiras. Seus funcionários cuidam dos animais e os vizinhos administram suas fazendas por conta própria.</p><p id="guideHint">A partida começa no dia 1 a cada abertura. Não há salvamento automático.</p><div class="welcomeActions"><button id="guideSkip" type="button">Explorar agora</button><button id="guideNext" type="button">Próximo →</button></div></section>
 <div id="error" hidden></div>
-<script src="./audio.js?v=09911"></script>
-<script src="./motion.js?v=09911"></script>
-<script src="./terrain.js?v=09911"></script>
+<script src="./audio.js?v=09912"></script>
+<script src="./motion.js?v=09912"></script>
+<script src="./terrain.js?v=09912"></script>
+<script src="./routine.js?v=09912"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');if(!ctx){$('error').hidden=false;$('error').textContent='Seu navegador não oferece Canvas 2D.';return}
 const motion=window.FazendaVivaMotion;
@@ -394,6 +395,18 @@ function drawRanchDecor(){
     }
   }
 }
+function drawRoutineBox(b,a){
+  const p=screen(b.x+a.x,b.y+a.z),s=Math.min(W/300,H/260)*zoom;
+  const w=a.w*s,d=a.d*s*.67,h=a.h*s*.8,x=p.x-w/2,y=p.y-d/2-(a.y+a.h/2)*s*.8;
+  const color='#'+a.color.toString(16).padStart(6,'0');
+  rect(x,y+h,w,d,color);
+  rect(x,y,w,d,color);
+  if(a.h>.1){ctx.fillStyle='rgba(69,58,38,.18)';ctx.fillRect(x,y+d,w,h)}
+}
+function drawRoutine(b){
+  if(!window.FazendaVivaRoutine)return;
+  for(const a of window.FazendaVivaRoutine.props(b,day))drawRoutineBox(b,a);
+}
 function drawBuilding(b){
   const p=screen(b.x,b.y),s=Math.min(W/300,H/260)*zoom,w=b.w*s,h=b.h*s*.67;
   const x=p.x-w/2,y=p.y-h/2;
@@ -429,8 +442,13 @@ function drawBuilding(b){
       rect(xx,y-2,Math.max(2,s*.25),Math.max(3,s*1.1),'#e4d4a5');
       rect(xx,y+h-3,Math.max(2,s*.25),Math.max(3,s*1.1),'#e4d4a5')
     }
-    rect(x+w*.10,y+h*.77,w*.20,h*.11,'#aa8054');
-    rect(x+w*.71,y+h*.78,w*.17,h*.08,'#649aad');
+    // Os mesmos pontos de serviço em 2D e 3D, dentro da cerca.
+    const service=window.FazendaVivaRoutine?.props(b,day)||[];
+    for(const a of service.filter(a=>a.kind==='bedding'))drawRoutineBox(b,a);
+    drawRoutineBox(b,{x:-b.w*.34,y:.65,z:b.h*.32,w:2.2,h:.72,d:.95,color:0x98734f});
+    drawRoutineBox(b,{x:-b.w*.34,y:1.03,z:b.h*.32,w:1.8,h:.04,d:.65,color:0x514539});
+    drawRoutineBox(b,{x:b.w*.33,y:.67,z:b.h*.32,w:2.6,h:.45,d:1,color:0x638f9c});
+    for(const a of service.filter(a=>a.kind!=='bedding'))drawRoutineBox(b,a);
     rect(x+w*.44,y+h*.31,Math.max(2,s*.8),Math.max(2,s*.8),'#5f9856');
     return;
   }
@@ -451,10 +469,7 @@ function drawBuilding(b){
     ctx.fillStyle='#ffe6a0';ctx.font='bold '+Math.max(9,s*5)+'px system-ui';
     ctx.textAlign='center';ctx.fillText('★'.repeat(n),x+w/2,y-h*.25);
   }
-  if(b.type==='barn'&&isBuilt(b)){
-    const stock=Math.min(4,Math.floor((b.o.work?.agricultor||0)/.6));
-    for(let i=0;i<stock;i++)rect(x+w*(.12+i*.10),y+h*.83,w*.08,h*.10,'#d5bd83');
-  }
+  if(isBuilt(b))drawRoutine(b);
   if(b.status==='upgrading'){
     const barW=Math.max(12,w*.80);
     rect(p.x-barW/2,p.y+h/2+3,barW,Math.max(3,s*.7),'#413b2b');
@@ -782,7 +797,7 @@ function render(){
     ctx.fillStyle='#eff5c4';ctx.fillText(o.style.label,p.x,p.y+16);
   }
 }}
-// 0.9.9.11 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
+// 0.9.9.12 — Pastoreio autônomo: portão -> campo -> água/manejo, sem órbitas fixas.
 let horseSlotsKey='',horseSlots=new Map();
 const animalObstacles=new Map();let animalDecor=null;
 function syncAnimalObstacles(){
@@ -808,7 +823,7 @@ function horseGateBusy(h){
 }
 function setHorseRoute(h,route,stage){
   h.pastureRoute=route;h.pastureIndex=0;h.pastureStage=stage;h.blockedTime=0;
-  h.activity=stage==='retornando'?'Voltando para água e manejo':stage==='saindo'?'Saindo pelo portão':'Caminhando pelo campo';
+  h.activity=stage==='retornando'?'Voltando para água e manejo':stage==='saindo'?'Saindo pelo portão':stage==='manejo'?'Indo encontrar o tratador':stage==='piquete'?'Caminhando no piquete':'Caminhando pelo campo';
 }
 function fieldDestination(h,rest=false){
   const candidates=[];
@@ -1457,8 +1472,14 @@ function completeWorkerJob(f){
       if(careJournal.length>80)careJournal.length=80;
       f.lastHorseName=cared.name;
       f.lastCareKind=f.serviceKind;
+      f.lastService=window.FazendaVivaRoutine?.record(f.targetBuilding,
+        {role:f.role,kind:f.serviceKind,day,horseId:cared.id});
       if(cared.homePaddock){f.releaseHorseId=cared.id;cared.pastureStage='campo';returnHorseHome(cared)}
     }
+  }
+  if(f.role!=='tratador'||f.serviceKind==='limpeza'){
+    f.lastService=window.FazendaVivaRoutine?.record(f.targetBuilding,
+      {role:f.role,kind:f.serviceKind,day});
   }
   f.targetHorseId=null;f.serviceKind=null;f.targetBuilding=null;f.meetingPoint=null;
   f.working=false;f.activity='Serviço concluído';f.route=[];
@@ -2006,10 +2027,18 @@ function managementContent(tab){
             (horses.find(h=>h.id===f.targetHorseId)?.name||
              f.lastHorseName||'Aguardando')+'</strong></div>':'')+
         '<div class="mgLine"><span>Trabalhos concluídos</span><strong>'+(f.tasksDone||0)+'</strong></div>'+
+        (f.lastService?'<div class="mgSmall">Dia '+f.lastService.day+' · '+f.lastService.label+'</div>':'')+
         '<button type="button" data-mgaction="findWorker" data-index="'+i+'">📍 Acompanhar trabalhador no mapa</button></div>').join('')+
       '<div class="mgCard"><div class="mgLine"><span>Bônus temporário de produtividade</span><strong>'+brl(e.bonus)+'</strong></div>'+
       '<div class="mgLine"><span>Folha salarial por ciclo</span><strong>'+brl(e.payroll)+'</strong></div></div>'+
-      '<p class="mgNote">Os trabalhadores visitam instalações ligadas às suas funções. As tarefas geram produtividade simulada, sujeita a limites.</p>';
+      '<h4>🌾 Marcas do trabalho</h4>'+ownBuildings().filter(b=>b.routine?.last).map(b=>{
+        const r=window.FazendaVivaRoutine.state(b,day),marks=[];
+        if(r.feed)marks.push('Trato recente no cocho');
+        if(r.clean)marks.push('Área de serviço limpa');
+        if(r.bundles)marks.push(r.bundles+' fardos organizados');
+        return '<div class="mgCard"><strong>'+typeNames[b.type]+'</strong><div class="mgSmall">Dia '+r.last.day+' · '+r.last.label+'</div><p class="mgSmall">'+(marks.join(' · ')||'Aguardando próximo serviço')+'</p></div>';
+      }).join('')+
+      '<p class="mgNote">Cocho, área de serviço e fardos mostram tarefas concluídas nessa instalação. Essas marcas diminuem com os dias; as porções de alimento reforçado ficam em Cavalos. A produtividade da equipe já está incluída nas receitas.</p>';
   }
   if(tab==='mercado'){
     const comps=owners.filter(f=>f!==o).map(f=>({name:f.name,ownerId:owners.indexOf(f),
@@ -2157,7 +2186,8 @@ function nextObservation(){
  if(!views.length)return;
  const v=views[++observationIndex%views.length];
  if(v.kind==='building'){stopFollowing();panX=v.obj.x;panY=v.obj.y;zoom=3.1;
-  $('observeCaption').textContent=v.label+' · nível '+(v.obj.tier||1)+' · Dia '+day;}
+  const recent=v.obj.routine?.last;
+  $('observeCaption').textContent=v.label+' · nível '+(v.obj.tier||1)+(recent?' · '+recent.label:'')+' · Dia '+day;}
  else{follow(v.kind,v.obj,v.label);panX=v.obj.x;panY=v.obj.y;
   // Um personagem ocupa parte legível da tela, em retrato e paisagem.
   const pixels=Math.min(W*.46,H*.36),span=v.kind==='horse'?6:4.5;
@@ -2691,4 +2721,4 @@ new MutationObserver(noticeChanged).observe(statusNode,{childList:true,subtree:t
 noticeChanged();
 placeHorses();evaluateGoals();recordLedger();refresh();requestAnimationFrame(frame);
 })();
-</script><script type="module" src="./world3d.js?v=09911"></script></body></html>
+</script><script type="module" src="./world3d.js?v=09912"></script></body></html>
