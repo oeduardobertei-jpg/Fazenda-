@@ -16,6 +16,10 @@
    return {x:a.x+x*c-y*s,y:a.y+x*s+y*c};
   });
  }
+ function rectangle(x,y,w,h){
+  const corners=[[-w/2,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]];
+  return corners.map(p=>({x:x+p[0],y:y+p[1]}));
+ }
  function generate({owners=[],buildings=[],trails=[],ponds=[]}){
   const areas=[],sprigs=[];
   for(let i=0;i<40;i++){
@@ -36,9 +40,41 @@
      ry:8+hash(seed+9)*13,angle:hash(seed+11)*Math.PI,seed,layer:'field',base,
      color:mix(base,i%3===0?0xb9b07b:leaf,i%3===0?.23:.18),elevation:.263});
    }
+   // Parcelas visuais de pastagem/feno. Não criam lavouras ou obstáculos.
+   // Rejeitar o retângulo inteiro mantém água, construções e caminhos livres.
+   for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
+    const seed=41000+k*619+(row+2)*37+(col+2)*71,
+     x=o.x+col*40,y=o.y+row*40,w=34+hash(seed)*2,h=32+hash(seed+1)*3;
+    const outline=rectangle(x,y,w,h);
+    if(outline.some(p=>Math.hypot(p.x-o.x,p.y-o.y)>116))continue;
+    if(buildings.some(b=>b.o===o&&Math.abs(x-b.x)<w/2+b.w/2+4&&Math.abs(y-b.y)<h/2+b.h/2+4))continue;
+    if(ponds.some(p=>Math.abs(x-p.x)<w/2+p.rx+3&&Math.abs(y-p.y)<h/2+p.ry+3))continue;
+    const crosses=trails.some(t=>{
+     // Clip do segmento contra retângulo expandido pela margem do caminho.
+     const m=(t.w||2.5)/2+2,dx=t.x2-t.x1,dy=t.y2-t.y1;
+     let lo=0,hi=1;
+     for(const [origin,delta,min,max] of [[t.x1,dx,x-w/2-m,x+w/2+m],[t.y1,dy,y-h/2-m,y+h/2+m]]){
+      if(Math.abs(delta)<1e-9){if(origin<min||origin>max)return false}
+      else{const a=(min-origin)/delta,b=(max-origin)/delta;lo=Math.max(lo,Math.min(a,b));hi=Math.min(hi,Math.max(a,b));if(lo>hi)return false}
+     }
+     return true;
+    });
+    if(crosses)continue;
+    const dry=hash(seed+7)>.67,color=dry?mix(base,0xc6b36c,.58):mix(base,leaf,.24+hash(seed+3)*.18);
+    areas.push({x,y,rx:w/2,ry:h/2,angle:0,seed,layer:'sector',owner:o,base:color,color,
+     elevation:.269,outline,sector:true,dry});
+    const horizontal=(col+row+k)%2===0,count=8;
+    for(let i=0;i<count;i++){
+     const px=horizontal?x:x-w*.42+i*w*.12,py=horizontal?y-h*.42+i*h*.12:y,
+      rw=horizontal?w-2:.38,rh=horizontal?.38:h-2,stripe=mix(color,dry?0x8e945d:0xd0ca92,.12);
+     areas.push({x:px,y:py,rx:rw/2,ry:rh/2,angle:0,seed:seed+i,layer:'sector',owner:o,
+      base:stripe,color:stripe,elevation:.270,outline:rectangle(px,py,rw,rh),stripe:true});
+    }
+   }
    for(let i=0;i<95;i++){
-    const seed=k*811+i*13,t=hash(seed+13)*Math.PI*2,r=Math.sqrt(hash(seed+19))*104,
-     x=o.x+Math.cos(t)*r,y=o.y+Math.sin(t)*r;
+    const seed=k*811+i*13,cluster=Math.floor(i/12),t=hash(k*97+cluster*41)*Math.PI*2,
+     r=65+hash(k*103+cluster*43)*40,spread=4+hash(seed+19)*7,
+     x=o.x+Math.cos(t)*r+Math.cos(seed)*spread,y=o.y+Math.sin(t)*r+Math.sin(seed)*spread;
     if(clear(o,x,y,1.3))sprigs.push({x,y,height:.18+hash(seed+1)*.22,scale:.65+hash(seed+3)*.55,
      angle:t,color:mix(leaf,base,.32),elevation:.27});
    }
