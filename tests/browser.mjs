@@ -416,7 +416,8 @@ try{
   });
   await page.waitForTimeout(600);
   await page.screenshot({path:resolve(output,'0.9.9.12-rotina-depois-3d.png')});
-  await page.locator('#renderMode').click();
+  // Contemplar oculta os controles superiores; a troca manual já foi testada acima.
+  await page.evaluate(()=>document.getElementById('renderMode').click());
   await page.screenshot({path:resolve(output,'0.9.9.12-rotina-depois-2d.png')});
   await page.locator('#observeExit').click();await page.locator('#manageQuick').click();
   await page.locator('#tab-equipe').click();
