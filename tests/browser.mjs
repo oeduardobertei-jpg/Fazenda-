@@ -10,8 +10,8 @@ import {chromium} from 'playwright';
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const output=resolve(root,'qa-artifacts');mkdirSync(output,{recursive:true});
 const baseline=resolve(output,'baseline');mkdirSync(baseline,{recursive:true});
-const baselineRef=process.env.FAZENDA_BASELINE_REF||'534d3d67a4ecaa8450353fd9b85a4d7f9c93f5a7';
-for(const file of ['index.html','world3d.js','motion.js','audio.js','ui.css'])
+const baselineRef=process.env.FAZENDA_BASELINE_REF||'db2bda219d41a31081eee9b467163dbe1ce9a185';
+for(const file of ['index.html','world3d.js','motion.js','audio.js','ui.css','terrain.js'])
   writeFileSync(resolve(baseline,file),execFileSync('git',['show',baselineRef+':'+file],{cwd:root}));
 const server=createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
@@ -78,8 +78,8 @@ try{
   await basePage.locator('#guideSkip').click();
   await basePage.locator('#pause').click();
   const before=await measurements(basePage);
-  await basePage.screenshot({path:resolve(output,'baseline-0.9.9.10-portrait.png')});
-  results.push({version:'0.9.9.10',viewport:'390x844',...before});
+  await basePage.screenshot({path:resolve(output,'baseline-0.9.9.11-portrait.png')});
+  results.push({version:'0.9.9.11',viewport:'390x844',...before});
   console.log('BASELINE',JSON.stringify(results.at(-1)));
   // Prancha de revisão visual: os construtores de produção, sem cenário encobrindo.
   async function characterSheet(page,name,dir,movement=false,equineOnly=false){
@@ -147,9 +147,9 @@ try{
     await page.screenshot({path:resolve(output,name)});
   }
   await basePage.setViewportSize({width:1050,height:720});
-  await characterSheet(basePage,'baseline-0.9.9.10-personagens.png',baseline);
+  await characterSheet(basePage,'baseline-0.9.9.11-personagens.png',baseline);
   await basePage.setViewportSize({width:1280,height:800});
-  await characterSheet(basePage,'baseline-0.9.9.10-cavalos.png',baseline,false,true);
+  await characterSheet(basePage,'baseline-0.9.9.11-cavalos.png',baseline,false,true);
   await baseContext.close();
 
   for(const [width,height] of [[390,844],[320,568],[360,640],[844,390],[1365,900]]){
@@ -157,7 +157,7 @@ try{
     await page.waitForTimeout(350);
     const day=await page.evaluate(()=>window.FazendaVivaBridge.state().day);
     assert.equal(day,1,'guia deve pausar a simulação no dia 1');
-    await page.screenshot({path:resolve(output,`0.9.9.11-guide-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.12-guide-${width}x${height}.png`)});
     await page.locator('#guideSkip').click();
     await page.locator('#pause').click();
     const landscape=await page.evaluate(()=>{const t=window.FazendaVivaBridge.state().terrain;return {areas:t.areas.length,sprigs:t.sprigs.length}});
@@ -165,9 +165,9 @@ try{
     const after=await measurements(page);
     console.log('RENDER',width+'x'+height,JSON.stringify(after));
     assert.ok(after.calls<300,'orçamento inicial: menos de 300 chamadas na visão local');
-    if(width===390)assert.ok(after.calls<=before.calls*1.10,'nova anatomia deve preservar o orçamento de chamadas da 0.9.9.10');
-    if(width===390)assert.ok(after.triangles<=before.triangles*1.08,'revisão de volumes deve preservar o orçamento de triângulos');
-    await page.screenshot({path:resolve(output,`0.9.9.11-world-${width}x${height}.png`)});
+    if(width===390)assert.ok(after.calls<=before.calls*1.10,'rotina deve preservar o orçamento de chamadas da 0.9.9.11');
+    if(width===390)assert.ok(after.triangles<=before.triangles*1.08,'rotina deve preservar o orçamento de triângulos');
+    await page.screenshot({path:resolve(output,`0.9.9.12-world-${width}x${height}.png`)});
     assert.ok(await page.locator('#hud .brand').evaluate(el=>el.scrollWidth<=el.clientWidth),
       'a versão inteira deve caber no HUD');
     const bounds=await page.evaluate(()=>{
@@ -212,13 +212,13 @@ try{
       const setting=await page.evaluate(()=>window.FazendaVivaBridge.state().audio);
       assert.equal(setting.volume,.24);assert.equal(setting.ambience,.38);
       assert.equal(await page.locator('#masterValue').innerText(),'24%');
-      await page.screenshot({path:resolve(output,'0.9.9.11-ambiente.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-ambiente.png')});
       await page.locator('#tab-resumo').click();
       assert.ok((await page.locator('#manageBody').innerText()).includes('Diário de crescimento'));
-      await page.screenshot({path:resolve(output,'0.9.9.11-crescimento.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-crescimento.png')});
     }
     await page.locator('#tab-cavalos').click();
-    await page.screenshot({path:resolve(output,`0.9.9.11-management-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.12-management-${width}x${height}.png`)});
     await page.locator('[data-mgaction="findHorse"]').first().click();
     assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget.kind),'horse');
     await page.locator('#pause').click();
@@ -233,7 +233,7 @@ try{
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
       await page.waitForTimeout(1200);
-      await page.screenshot({path:resolve(output,'0.9.9.11-horse-close-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-horse-close-3d.png')});
       await page.locator('#renderMode').click();
       await page.waitForFunction(()=>{
         const s=window.FazendaVivaBridge.state(),h=s.horses.find(h=>h.id===s.followTarget.id);
@@ -244,7 +244,7 @@ try{
         const coat=parseInt(h.coat.slice(1),16);
         return Math.hypot(rgb[0]-(coat>>16&255),rgb[1]-(coat>>8&255),rgb[2]-(coat&255))<75;
       },null,{timeout:5000});
-      await page.screenshot({path:resolve(output,'0.9.9.11-horse-close-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-horse-close-2d.png')});
       await page.locator('#renderMode').click();
       await page.locator('#pause').click();
     }
@@ -259,7 +259,7 @@ try{
     assert.equal(await page.locator('#observeTools').isVisible(),true);
     assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().zoom>6.8),'Contemplar deve aproximar o personagem');
     await page.waitForTimeout(1200);
-    await page.screenshot({path:resolve(output,`0.9.9.11-contemplar-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.12-contemplar-${width}x${height}.png`)});
     await page.locator('#observeNext').click();
     assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().followTarget));
     await page.locator('#observeExit').click();
@@ -302,20 +302,20 @@ try{
       assert.ok((await page.locator('#renderMode').innerText()).includes('2D'));
     }
     await page.locator('#renderMode').click();
-    await page.screenshot({path:resolve(output,`0.9.9.11-2d-${width}x${height}.png`)});
+    await page.screenshot({path:resolve(output,`0.9.9.12-2d-${width}x${height}.png`)});
     await page.locator('#renderMode').click();
     assert.equal(await page.locator('#error').isVisible(),false);
     if(width===390){
       await page.locator('#manageQuick').click();await page.locator('#tab-mercado').click();
       assert.ok((await page.locator('#manageBody').innerText()).includes('As quatro bancas'));
       await page.locator('[data-mgaction="visitFair"]').click();
-      await page.screenshot({path:resolve(output,'0.9.9.11-centro-rural-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-centro-rural-3d.png')});
       await page.mouse.click(width/2,height/2);
       assert.equal(await page.locator('#management').isVisible(),true,'toque no Centro Rural abre o mercado');
       assert.equal(await page.locator('#tab-mercado').getAttribute('aria-selected'),'true');
       await page.locator('#manageClose').click();
       await page.locator('#renderMode').click();
-      await page.screenshot({path:resolve(output,'0.9.9.11-centro-rural-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-centro-rural-2d.png')});
       await page.mouse.click(width/2,height/2);
       assert.equal(await page.locator('#management').isVisible(),true,'Centro Rural também funciona em Canvas');
       await page.locator('#manageClose').click();await page.locator('#renderMode').click();
@@ -331,7 +331,7 @@ try{
         });
       });
       assert.ok(labelsClear,'nomes das fazendas não podem cobrir controles de zoom');
-      await page.screenshot({path:resolve(output,'0.9.9.11-regional-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-regional-3d.png')});
       assert.equal(await page.evaluate(()=>window.FazendaVivaBridge.state().owners.length),5);
       await page.locator('#focus').click();
       await page.locator('#toggle').click();
@@ -339,12 +339,12 @@ try{
       await page.locator('#pause').click();
       for(let i=0;i<4;i++)await page.locator('#zoomIn').click();
       await page.waitForTimeout(1200);
-      await page.screenshot({path:resolve(output,'0.9.9.11-worker-close-3d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-worker-close-3d.png')});
       await page.locator('#renderMode').click();
-      await page.screenshot({path:resolve(output,'0.9.9.11-worker-close-2d.png')});
+      await page.screenshot({path:resolve(output,'0.9.9.12-worker-close-2d.png')});
       await page.locator('#renderMode').click();
     }
-    results.push({version:'0.9.9.11',viewport:width+'x'+height,...after});
+    results.push({version:'0.9.9.12',viewport:width+'x'+height,...after});
     await context.close();
   }
   // Perda/restauração de contexto real, viewport e simulação funcionando juntas.
@@ -381,18 +381,57 @@ try{
   await page.waitForTimeout(1200); // Enquadramento 3D converge também no renderer por software.
   assert.ok(await page.evaluate(()=>window.FazendaVivaBridge.state().careMean[0]>50),
     'sessão de pastoreio deve manter manejo funcional');
-  await page.screenshot({path:resolve(output,'0.9.9.11-pastoreio-3d.png')});
+  await page.screenshot({path:resolve(output,'0.9.9.12-pastoreio-3d.png')});
   await page.locator('#renderMode').click();
-  await page.screenshot({path:resolve(output,'0.9.9.11-pastoreio-2d.png')});
+  await page.screenshot({path:resolve(output,'0.9.9.12-pastoreio-2d.png')});
   await page.locator('#renderMode').click();
-  await page.screenshot({path:resolve(output,'0.9.9.11-restored-webgl.png')});
+  await page.screenshot({path:resolve(output,'0.9.9.12-restored-webgl.png')});
+  const natural=await page.evaluate(()=>{
+    const s=window.FazendaVivaBridge.state();
+    return {serviced:s.buildings.filter(b=>b.routine?.last).length,
+      workers:s.farmers.filter(f=>f.lastService).length};
+  });
+  assert.ok(natural.serviced>0&&natural.workers>0,'tarefas naturais devem atualizar instalações no navegador');
+  console.log('ROTINA REAL',JSON.stringify(natural));
+  // Comparação visual controlada; a simulação natural foi verificada acima e no smoke.
+  await page.locator('#focus').click();await page.locator('#observe').click();
+  const penView=await page.evaluate(()=>{
+    const s=window.FazendaVivaBridge.state(),o=s.owners[0];
+    const list=s.buildings.filter(b=>b.o===o&&b.status!=='building');
+    return s.horses.filter(h=>h.o===o).length+s.farmers.filter(f=>f.o===o).length+list.findIndex(b=>b.type==='paddock');
+  });
+  for(let i=0;i<penView;i++)await page.locator('#observeNext').click();
+  await page.locator('#zoomIn').click();await page.locator('#zoomIn').click();
+  await page.evaluate(()=>{
+    const s=window.FazendaVivaBridge.state(),b=s.buildings.find(b=>b.o===s.owners[0]&&b.type==='paddock');
+    window.__qaRoutine=b.routine;b.routine={};
+  });
+  await page.waitForTimeout(600);
+  await page.screenshot({path:resolve(output,'0.9.9.12-rotina-antes-3d.png')});
+  await page.evaluate(()=>{
+    const s=window.FazendaVivaBridge.state(),b=s.buildings.find(b=>b.o===s.owners[0]&&b.type==='paddock'),r=window.FazendaVivaRoutine;
+    r.record(b,{role:'tratador',kind:'alimentacao',horseId:1,day:s.day});
+    r.record(b,{role:'tratador',kind:'limpeza',day:s.day});
+    for(let i=0;i<4;i++)r.record(b,{role:'agricultor',day:s.day});
+  });
+  await page.waitForTimeout(600);
+  await page.screenshot({path:resolve(output,'0.9.9.12-rotina-depois-3d.png')});
+  await page.locator('#renderMode').click();
+  await page.screenshot({path:resolve(output,'0.9.9.12-rotina-depois-2d.png')});
+  await page.locator('#observeExit').click();await page.locator('#manageQuick').click();
+  await page.locator('#tab-equipe').click();
+  assert.ok((await page.locator('#manageBody').innerText()).includes('Marcas do trabalho'));
+  await page.screenshot({path:resolve(output,'0.9.9.12-rotina-equipe.png')});
+  await page.evaluate(()=>{
+    const s=window.FazendaVivaBridge.state();s.buildings.find(b=>b.o===s.owners[0]&&b.type==='paddock').routine=window.__qaRoutine;
+  });
   await context.close();
   const sheet=await open(1050,720);
-  await characterSheet(sheet.page,'0.9.9.11-personagens.png',root);
+  await characterSheet(sheet.page,'0.9.9.12-personagens.png',root);
   await sheet.page.setViewportSize({width:1280,height:960});
-  await characterSheet(sheet.page,'0.9.9.11-movimento.png',root,true);
+  await characterSheet(sheet.page,'0.9.9.12-movimento.png',root,true);
   await sheet.page.setViewportSize({width:1280,height:800});
-  await characterSheet(sheet.page,'0.9.9.11-cavalos.png',root,false,true);
+  await characterSheet(sheet.page,'0.9.9.12-cavalos.png',root,false,true);
   await sheet.context.close();
   assert.deepEqual(errors,[],'nenhum erro JavaScript real');
   writeFileSync(resolve(output,'browser-results.json'),JSON.stringify({

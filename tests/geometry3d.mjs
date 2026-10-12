@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import * as Three from 'three';
+const routine=createRequire(import.meta.url)('../routine.js');
 const motion=createRequire(import.meta.url)('../motion.js');
 const terrain=createRequire(import.meta.url)('../terrain.js');
 const world=readFileSync(new URL('../world3d.js',import.meta.url),'utf8');
@@ -25,7 +26,7 @@ class Renderer{
 }
 const previous=new Map();
 for(const [key,value] of Object.entries({
-  window:{FazendaVivaMotion:motion,FazendaVivaTerrain:terrain,FazendaVivaBridge:{state:()=>state,mode:noop},addEventListener:noop},
+  window:{FazendaVivaRoutine:routine,FazendaVivaMotion:motion,FazendaVivaTerrain:terrain,FazendaVivaBridge:{state:()=>state,mode:noop},addEventListener:noop},
   document:{getElementById:()=>ui,body:{insertBefore:noop},createElement:()=>({...ui,style:{},appendChild:noop})},
   innerWidth:390,innerHeight:844,devicePixelRatio:2,requestAnimationFrame:f=>frame=f
 })){
@@ -100,6 +101,20 @@ try{
   for(let i=0;i<90;i++){motion.blend(worker,1/60);frame(now+=40)}
   assert.ok(workerModel.userData.elbows[1].rotation.z>.6,'mão deve levantar o instrumento ao trabalhar');
   assert.ok(workerModel.userData.upper.rotation.z<-.10,'agricultor deve inclinar o tronco no trabalho');
+  const pen={o:owner,type:'paddock',x:30,y:0,w:24,h:20,status:'complete',tier:1};
+  state.buildings.push(pen);frame(now+=40);
+  const findPen=()=>{let found;scene.traverse(o=>{if(o.userData.building===pen)found=o});return found};
+  const empty=findPen(),vertices=g=>{let n=0;g.traverse(o=>{if(o.isMesh)n+=o.geometry.getAttribute('position').count});return n};
+  const before=vertices(empty);
+  routine.record(pen,{role:'tratador',kind:'alimentacao',horseId:1,day:state.day});
+  routine.record(pen,{role:'agricultor',day:state.day});frame(now+=40);
+  const active=findPen();
+  assert.notEqual(active,empty,'serviço deve atualizar o modelo da instalação');
+  assert.ok(vertices(active)>before,'cocho e fardo precisam existir em geometria real');
+  frame(now+=40);
+  assert.equal(findPen(),active,'o mesmo estado reaproveita a geometria');
+  state.day+=61;frame(now+=40);
+  assert.equal(vertices(findPen()),before,'marcas antigas deixam a geometria');
   console.log('PASS geometria Three.js real',JSON.stringify({
     houseMeshes:houseModel.children.length,hoofFloor:+lowest.toFixed(3),
     muzzleHeight:+muzzle.min.y.toFixed(3),webgl:false
