@@ -264,12 +264,12 @@ function rails(parent,w,d,color=colors.fence,y=1.4,gate=0) {
     box(parent,.35,.3,d,x,y*.48,0,color);
   }
 }
-function building(b,detail=true){
+function building(b,detail=true,day=1){
   const group=new THREE.Group();group.position.set(b.x,0,b.y);
   const w=b.w,d=b.h,t=Math.max(1,Math.min(3,b.tier||1));
   const progress=Math.max(0,Math.min(100,b.progress??100));
   const routine=window.FazendaVivaRoutine;
-  const marks=detail?routine?.props(b,api.state().day)||[]:[];
+  const marks=detail?routine?.props(b,day)||[]:[];
   if(b.status==='building'){
     // Uma obra visível por propriedade: terraplenagem -> pilares -> travamentos -> telhado.
     flat(group,w-.5,d-.5,0,0,0xa68b68,.30);
@@ -1176,10 +1176,10 @@ function scatterPasture(s){
     flower.instanceMatrix.needsUpdate=true;grassLayer.add(flower);
   }
 }
-function modelVersion(b,highDetail){
+function modelVersion(b,highDetail,day){
   return (highDetail?'H':'L')+'|'+b.type+'|'+b.x.toFixed(2)+'|'+b.y.toFixed(2)+
     '|'+(b.tier||1)+'|'+(b.status||'complete')+'|'+(b.progress??100)+
-    '|'+(b.plannedTier||0)+'|'+(highDetail?window.FazendaVivaRoutine?.signature(b,api.state().day)||'0':'0');
+    '|'+(b.plannedTier||0)+'|'+(highDetail?window.FazendaVivaRoutine?.signature(b,day)||'0':'0');
 }
 function syncWildlife(s){
  faunaLayer.visible=!s.lowGraphics&&s.zoom>1.2;
@@ -1240,14 +1240,14 @@ function sync(s){
     const distance=Math.hypot(b.x-s.panX,b.y-s.panY);
     const detailed=highDetail&&!s.lowGraphics&&
       distance<(s.zoom>=3?96:s.zoom>=1.7?145:205);
-    const version=modelVersion(b,detailed);
+    const version=modelVersion(b,detailed,s.day);
     const record=modelsByBuilding.get(b);
     if(record&&record.version===version)continue;
     if(record){
       content.remove(record.model);
       disposeTransientGroup(record.model);
     }
-    const model=batchStaticMeshes(building(b,detailed));
+    const model=batchStaticMeshes(building(b,detailed,s.day));
     content.add(model);
     modelsByBuilding.set(b,{model,version});
   }
